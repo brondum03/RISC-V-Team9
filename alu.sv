@@ -1,3 +1,7 @@
+//ALU has 2 functions, addi and bne
+//for addi, i just add the two inputs
+//for bne, two check if two inputs are equal, i subtract one from the other
+//then check if the output is zero, indicating they are equal
 module alu#(
     parameter DATA_WIDTH = 32
 ) (
