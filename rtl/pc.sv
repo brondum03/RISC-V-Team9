@@ -1,4 +1,4 @@
-module clktick #(
+module pc #(
     parameter WIDTH = 32
 )(
   // interface signals
@@ -27,5 +27,6 @@ always_ff @(posedge clk or posedge rst) begin
         end
     end    
 
-assign out = PCReg
+assign out = PCReg;
+
 endmodule

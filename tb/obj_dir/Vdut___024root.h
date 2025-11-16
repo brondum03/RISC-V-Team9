@@ -1,0 +1,44 @@
+// Verilated -*- C++ -*-
+// DESCRIPTION: Verilator output: Design internal header
+// See Vdut.h for the primary calling header
+
+#ifndef VERILATED_VDUT___024ROOT_H_
+#define VERILATED_VDUT___024ROOT_H_  // guard
+
+#include "verilated.h"
+
+
+class Vdut__Syms;
+
+class alignas(VL_CACHE_LINE_BYTES) Vdut___024root final : public VerilatedModule {
+  public:
+
+    // DESIGN SPECIFIC STATE
+    VL_IN8(ALUctrl,2,0);
+    VL_OUT8(EQ,0,0);
+    CData/*0:0*/ __VstlFirstIteration;
+    CData/*0:0*/ __VicoFirstIteration;
+    CData/*0:0*/ __VactContinue;
+    VL_IN(ALUop1,31,0);
+    VL_IN(ALUop2,31,0);
+    VL_OUT(ALUout,31,0);
+    IData/*31:0*/ __VactIterCount;
+    VlTriggerVec<1> __VstlTriggered;
+    VlTriggerVec<1> __VicoTriggered;
+    VlTriggerVec<0> __VactTriggered;
+    VlTriggerVec<0> __VnbaTriggered;
+
+    // INTERNAL VARIABLES
+    Vdut__Syms* const vlSymsp;
+
+    // CONSTRUCTORS
+    Vdut___024root(Vdut__Syms* symsp, const char* v__name);
+    ~Vdut___024root();
+    VL_UNCOPYABLE(Vdut___024root);
+
+    // INTERNAL METHODS
+    void __Vconfigure(bool first);
+};
+
+
+#endif  // guard
