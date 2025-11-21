@@ -1,7 +1,13 @@
-//ALU has 2 functions, addi and bne
-//for addi, i just add the two inputs
-//for bne, two check if two inputs are equal, i subtract one from the other
-//then check if the output is zero, indicating they are equal
+// ALUControl              Meaning
+// 000                     ADD
+// 001                     SUB
+// 010                     AND
+// 011                     OR
+// 100                     XOR
+// 101                     SLT
+// 110                     SLTU
+// 111                     (reserved or pass through pc)
+
 module alu#(
     parameter DATA_WIDTH = 32
 ) (
@@ -12,16 +18,16 @@ module alu#(
     output  logic EQ
 );
 
-    localparam addition = 3'b001;
-    localparam subtract_with_flag = 3'b010;
-
     always_comb begin
         case(ALUctrl)
-            addition:   ALUout = ALUop1 + ALUop2;
-            
-            subtract_with_flag: ALUout = ALUop1 - ALUop2;
-            
-            default:    ALUout = {DATA_WIDTH{1'b0}};
+            3'b000:   ALUout = ALUop1 + ALUop2; //add
+            3'b001:   ALUout = ALUop1 - ALUop2; //sub
+            3'b010:   ALUout = ALUop1 & ALUop2; //and
+            3'b011:   ALUout = ALUop1 | ALUop2; //or
+            3'b100:   ALUout = ALUop1 ^ ALUop2; //xor
+            3'b101:   ALUout = ($signed(ALUop1) < $signed(ALUop2)) ? 1 : 0; //set less than (signed)
+            3'b110:   ALUout = (ALUop1 < ALUop2) ? 1 : 0; //set less than (unsigned)
+            default:  ALUout = {DATA_WIDTH{1'b0}};
         endcase
     end
 
