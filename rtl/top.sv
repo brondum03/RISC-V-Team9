@@ -13,11 +13,14 @@ module top #(
     logic RegWrite;
     logic Zero;
     logic ALUSrc;
+    logic MemWrite;
+    logic ResultSrc;
     logic [DATA_WIDTH-1:0] WriteData;
     logic [DATA_WIDTH-1:0] ImmExt;
     logic [DATA_WIDTH-1:0] SrcA;
     logic [DATA_WIDTH-1:0] SrcB;
     logic [DATA_WIDTH-1:0] ALUResult;
+    logic [DATA_WIDTH-1:0] ReadData;
     logic [DATA_WIDTH-1:0] Result;
     
     register #(
@@ -44,5 +47,17 @@ module top #(
         .ALUout(ALUResult), 
         .EQ(Zero) 
     );
+
+    datamemory #(
+        .DATA_WIDTH(DATA_WIDTH)
+    ) Data_Memory(
+        .clk(clk),
+        .WE(MemWrite),
+        .WD(WriteData),
+        .A(ALUResult),
+        .RD(ReadData)
+    );
+    
+    assign Result = ResultSrc ? ReadData : ALUResult;
 
 endmodule
