@@ -13,22 +13,19 @@ module register #(
     input   logic [DATA_WIDTH-1:0] WD3,  //write data for write address 3
     output  logic [DATA_WIDTH-1:0] RD1, //read data from address 1
     output  logic [DATA_WIDTH-1:0] RD2, //read data from address 2
-    output  logic [DATA_WIDTH-1:0] a0    //output from register x10
 );
 
     logic [DATA_WIDTH-1:0] register [2**ADDR_WIDTH-1:0];   //32 registers in this case
 
     //write port of the register must be synchronous
     always_ff @(posedge clk)begin
-        if(WE3 == 1b'1)
-            if(AD3 != {ADDR_WIDTH{1b'0}})    //register 0 should remain as 0
+        if(WE3 == 1'b1)
+            if(AD3 != {ADDR_WIDTH{1'b0}})    //register 0 should remain as 0
                 register[AD3] <= WD3;
     end
 
     //the two read ports of the register must be asynchronous
     assign RD1 = registers[AD1];         
     assign RD2 = registers[AD2];
-    
-    assign a0 = register[10];
 
 endmodule
