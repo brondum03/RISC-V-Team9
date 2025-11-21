@@ -1,6 +1,6 @@
 module top #(
-    DATA_WIDTH = 32,
-    ADDR_WIDTH = 5
+    parameter DATA_WIDTH = 32,
+    parameter ADDR_WIDTH = 5
 )(
     input   logic clk,
     input   logic rst,
@@ -13,7 +13,7 @@ module top #(
     logic RegWrite;
     logic Zero;
     logic ALUSrc;
-    logic [DATA_WIDTH-1:0] RD2;
+    logic [DATA_WIDTH-1:0] WriteData;
     logic [DATA_WIDTH-1:0] ImmExt;
     logic [DATA_WIDTH-1:0] SrcA;
     logic [DATA_WIDTH-1:0] SrcB;
@@ -30,10 +30,10 @@ module top #(
         .WE3(RegWrite),
         .WD3(Result),
         .RD1(SrcA),
-        .RD2(RD2)  
+        .RD2(WriteData)  
     );
     
-    assign SrcB = ALUSrc ? ImmExt : RD2;
+    assign SrcB = ALUSrc ? ImmExt : WriteData;
 
     alu #(
         .DATA_WIDTH(DATA_WIDTH)
