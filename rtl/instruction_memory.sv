@@ -1,4 +1,4 @@
-module instr_mem #(
+module instruction_memory #(
     parameter instr_width = 32,
     parameter data_width = 8,
     parameter mem_size   = 4096
