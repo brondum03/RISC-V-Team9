@@ -81,11 +81,18 @@ module top #(
     );
 
     memory_top memory (
+        .clk(clk),
         .ALUResult(ALUResult),
         .WriteData(WriteData),
         .MemWrite(MemWrite),
-        .clk(clk),
         .ReadData(ReadData)
+    );
+    
+    mux2 result (
+        .in0(ALUResult),
+        .in1(ReadData),
+        .sel(ResultSrc),
+        .out(Result)
     );
 
 endmodule
