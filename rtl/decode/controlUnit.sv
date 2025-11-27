@@ -6,7 +6,7 @@ module controlUnit (
     input logic [6:0]   op;
     input logic [2:0]   funct3;
     input logic         funct7;
-    input logic         zero;
+    input logic         Zero;
 
     output logic        PCSrc;
     output logic        ResultSrc;
@@ -42,6 +42,6 @@ module controlUnit (
         .ALUControl (ALUControl)
     );
 
-    assign PCSrc = Branch & zero;
+    assign PCSrc = Branch & Zero;
     
 endmodule

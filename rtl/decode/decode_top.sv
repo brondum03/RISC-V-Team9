@@ -7,7 +7,7 @@ module decode_top #(
     parameter DATA_WIDTH = 32,
 )(
     // input for control unit
-    input logic                     zero,
+    input logic                     Zero,
     // input for register
     input logic                     clk,
     input logic [DATA_WIDTH-1:0]    WD3, 
@@ -37,7 +37,7 @@ module decode_top #(
         .op(Instr[6:0]);
         .funct3(Instr[14:12]);
         .funct7(Instr[30]);
-        .zero(zero);
+        .Zero(Zero);
         // output
         .PCSrc(PCSrc);
         .ResultSrc(ResultSrc);

@@ -12,8 +12,10 @@ module top #(
     output  logic [DATA_WIDTH-1:0]
 );
     //interconnect line (add on for your individual parts) -  follow syntax from the project brief 
+
     //Logic for Instruction memory
     logic [DATA_WIDTH-1:0]          Instr; //instruction from instruction memory
+
     //Logic for alu control unit
     logic [2:0]                     ALUControl;   //alu control from control unit
     logic                           RegWrite;
@@ -29,13 +31,9 @@ module top #(
     logic [DATA_WIDTH-1:0]          ReadData;
     logic [DATA_WIDTH-1:0]          Result;
     
-    // Control Unit things
-    logic [6:0]                     op;
-    logic [2:0]                     funct3;
-    logic                           funct7;
-    logic                           Zero;
-    logic                           PCSrc;
-    logic [2:0]                     ImmSrc;
+    // decode_top internal wires
+    // logic                        Zero; -> shared with ALU
+    logic                           PCSrc; // -> connected to mux which selects PCNext
     
     register #(
         .DATA_WIDTH(DATA_WIDTH),
@@ -74,27 +72,25 @@ module top #(
     
     assign Result = ResultSrc ? ReadData : ALUResult;
 
+    decode_top decode #(
+        .DATA_WIDTH(DATA_WIDTH)
+    )(
+        // input
+        .Zero(Zero),    // internal
+        .clk(clk),     
+        .WD3(Result),     // internal
+        .Instr(Instr),
 
-    signextend sign_extension (
-        .instr(instr),
-        .ImmSrc(ImmSrc),
-        .ImmOp(ImmExt)
-    );
-
-    controlUnit control_unit (
-        .op(Instr[6:0]),
-        .funct3(Instr[14:12]),
-        .funct7(Instr[30]),
-        .Zero(Zero),
-
-        .PCSrc(PCSrc), // done
-        .ResultSrc(ResultSrc), // done
-        .MemWrite(MemWrite), // done
-        .ALUControl(ALUControl), // done
-        .ALUSrc(ALUSrc), // done
-        .ImmSrc(ImmSrc), // done
-        .RegWrite(RegWrite) // done
-    );
+        // output
+        .PCSrc(PCSrc),      // selects mux for PCNext
+        .ResultSrc(),       // selects mux for ResultSrc
+        .MemWrite(),        // WE in data memory
+        .ALUControl(),      // input to ALU
+        .ALUSrc(),          // selects mux for SrcB
+        .RD1(),             // SrcA
+        .RD2(),             // 0 for mux that outputs SrcB
+        .ImmExt(),          // goes into PCTarget
+    )
 
     fetch_top fetch (
         .PCsrc(PCSrc),
