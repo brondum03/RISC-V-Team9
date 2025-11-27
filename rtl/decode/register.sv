@@ -9,10 +9,10 @@ module register #(
     input   logic [ADDR_WIDTH-1:0] AD1, //address 1 (read)
     input   logic [ADDR_WIDTH-1:0] AD2, //address 2 (read)
     input   logic [ADDR_WIDTH-1:0] AD3, //address 3 (write)
-    input   logic                  WE3,  //write enable for write address 3
-    input   logic [DATA_WIDTH-1:0] WD3,  //write data for write address 3
+    input   logic                  WE3, //write enable for write address 3
+    input   logic [DATA_WIDTH-1:0] WD3, //write data for write address 3
     output  logic [DATA_WIDTH-1:0] RD1, //read data from address 1
-    output  logic [DATA_WIDTH-1:0] RD2 //read data from address 2
+    output  logic [DATA_WIDTH-1:0] RD2  //read data from address 2
 );
 
     logic [DATA_WIDTH-1:0] register [2**ADDR_WIDTH-1:0];   //32 registers in this case

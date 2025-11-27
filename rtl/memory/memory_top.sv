@@ -1,5 +1,3 @@
-include "./memory/memory_top.sv"
-
 module memory_top #(
     parameter DATA_WIDTH = 32
 )(

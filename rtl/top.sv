@@ -1,7 +1,7 @@
-include "./fetch/fetch_top.sv"
-include "./decode/decode_top.sv"
-include "./execute/execute_top.sv"
-include "./memory/memory_top.sv"
+`include "./fetch/fetch_top.sv"
+`include "./decode/decode_top.sv"
+`include "./execute/execute_top.sv"
+`include "./memory/memory_top.sv"
 
 module top #(
     parameter DATA_WIDTH = 32,
@@ -9,6 +9,7 @@ module top #(
 )(
     input   logic                       clk,
     input   logic                       rst,
+    input   logic                       stall,
     output  logic [DATA_WIDTH-1:0]      a0
 );
 
@@ -18,12 +19,19 @@ module top #(
     logic [DATA_WIDTH-1:0] PCPlus4;
 
     //decode
-    logic Zero;
-    logic ALUSrc;
-    logic [2:0] ALUControl;
-    logic [DATA_WIDTH-1:0] RD1; 
-    logic [DATA_WIDTH-1:0] RD2; 
-    logic [DATA_WIDTH-1:0] ImmExt; 
+    // control unit inputs
+    logic                   negative;
+    logic                   Zero;
+    logic                   MemWrite;
+    logic                   ALUSrc;
+    logic                   AddressingMode;
+    logic [1:0]             ResultSrc;
+    logic [3:0]             ALUControl;
+    // Register file wires
+    logic [DATA_WIDTH-1:0]  Result;
+    logic [DATA_WIDTH-1:0]  RD1; 
+    logic [DATA_WIDTH-1:0]  RD2; 
+    logic [DATA_WIDTH-1:0]  ImmExt; 
 
     //execute
     logic [DATA_WIDTH-1:0] ALUResult; 
@@ -38,36 +46,26 @@ module top #(
         .Result_in(Result)
     ); 
     
-    //ezekiel to implement decode_top
-    register #(
-        .DATA_WIDTH(DATA_WIDTH),
-        .ADDR_WIDTH(ADDR_WIDTH)
-    ) Register_File(
-        .AD1(Instr[19:15]),
-        .AD2(Instr[24:20]),
-        .AD3(Instr[11:7]),
-        .WE3(RegWrite),
-        .WD3(Result),
-        .RD1(SrcA),
-        .RD2(WriteData)  
-    );
-    
+    // complete decode_top
     decode_top decode (
         // input
-        .Zero(Zero),    // internal
-        .clk(clk),     
-        .WD3(Result),     // internal
+        .clk(clk),
+        .stall(stall),
         .Instr(Instr),
-
+        .WD3(Result),
+        .Zero(Zero),   
+        .negative(negative),     
+        
         // output
         .PCSrc(PCSrc),      // selects mux for PCNext
-        .ResultSrc(),       // selects mux for ResultSrc
-        .MemWrite(),        // WE in data memory
-        .ALUControl(),      // input to ALU
-        .ALUSrc(),          // selects mux for SrcB
-        .RD1(),             // SrcA
-        .RD2(),             // 0 for mux that outputs SrcB
-        .ImmExt(),          // goes into PCTarget
+        .ResultSrc(ResultSrc),       // selects mux for ResultSrc
+        .MemWrite(MemWrite),        // WE in data memory
+        .ALUControl(ALUControl),      // input to ALU
+        .ALUSrc(ALUSrc),          // selects mux for SrcB
+        .AddressingMode(AddressingMode),
+        .RD1(RD1),             // SrcA
+        .RD2(RD2),             // 0 for mux that outputs SrcB
+        .ImmExt(ImmExt),          // goes into PCTarget
     );
 
     execute_top execute (
