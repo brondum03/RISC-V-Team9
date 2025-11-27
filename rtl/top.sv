@@ -2,28 +2,34 @@ module top #(
     parameter DATA_WIDTH = 32,
     parameter ADDR_WIDTH = 5
 )(
-    input   logic clk,
-    input   logic rst,
+    input   logic                       clk,
+    input   logic                       rst,
     output  logic [DATA_WIDTH-1:0]
 );
     //interconnect line (add on for your individual parts) -  follow syntax from the project brief 
     //Logic for Instruction memory
-    logic [DATA_WIDTH-1:0] PC;    //program counter
-    logic [DATA_WIDTH-1:0] Instr; //instruction from instruction memory
+    logic [DATA_WIDTH-1:0]          PC;    //program counter
+    logic [DATA_WIDTH-1:0]          Instr; //instruction from instruction memory
     //Logic for alu control unit
-    logic [2:0] ALUControl;   //alu control from control unit
-    logic RegWrite;
-    logic Zero;
-    logic ALUSrc;
-    logic MemWrite;
-    logic ResultSrc;
-    logic [DATA_WIDTH-1:0] WriteData;
-    logic [DATA_WIDTH-1:0] ImmExt;
-    logic [DATA_WIDTH-1:0] SrcA;
-    logic [DATA_WIDTH-1:0] SrcB;
-    logic [DATA_WIDTH-1:0] ALUResult;
-    logic [DATA_WIDTH-1:0] ReadData;
-    logic [DATA_WIDTH-1:0] Result;
+    logic [2:0]                     ALUControl;   //alu control from control unit
+    logic                           RegWrite;
+    logic                           Zero;
+    logic                           ALUSrc;
+    logic                           MemWrite;
+    logic                           ResultSrc;
+    logic [DATA_WIDTH-1:0]          WriteData;
+    logic [DATA_WIDTH-1:0]          ImmExt;
+    logic [DATA_WIDTH-1:0]          SrcA;
+    logic [DATA_WIDTH-1:0]          SrcB;
+    logic [DATA_WIDTH-1:0]          ALUResult;
+    logic [DATA_WIDTH-1:0]          ReadData;
+    logic [DATA_WIDTH-1:0]          Result;
+    
+    // Control Unit things
+    logic [6:0]                     op;
+    logic [2:0]                     funct3;
+    logic                           funct7;
+    logic                           Zero;
     
     register #(
         .DATA_WIDTH(DATA_WIDTH),
@@ -85,6 +91,18 @@ module top #(
         .ImmOp(ImmExt)
     );
 
+    controlUnit control_unit (
+        .op(Instr[6:0]),
+        .funct3(Instr[14:12]),
+        .funct7(Instr[30]),
+        .Zero(Zero),
 
-
+        .PCSrc(PCSrc),
+        .ResultSrc(ResultSrc),
+        .MemWrite(MemWrite),
+        .ALUControl(ALUControl),
+        .ALUSrc(ALUSrc),
+        .ImmSrc(ImmSrc),
+        .RegWrite(RegWrite)
+    )
 endmodule
