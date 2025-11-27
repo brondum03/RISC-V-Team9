@@ -9,31 +9,34 @@ module top #(
 )(
     input   logic                       clk,
     input   logic                       rst,
-    output  logic [DATA_WIDTH-1:0]
+    output  logic [DATA_WIDTH-1:0]      a0
 );
-    //interconnect line (add on for your individual parts) -  follow syntax from the project brief 
 
-    //Logic for Instruction memory
-    logic [DATA_WIDTH-1:0]          Instr; //instruction from instruction memory
+    //fetch
+    logic PCSrc; // -> connected to mux which selects PCNext
+    logic [DATA_WIDTH-1:0] Instr; //instruction from instruction memory
+    logic [DATA_WIDTH-1:0] PCPlus4;
 
-    //Logic for alu control unit
-    logic [2:0]                     ALUControl;   //alu control from control unit
-    logic                           RegWrite;
-    logic                           Zero;
-    logic                           ALUSrc;
-    logic                           MemWrite;
-    logic                           ResultSrc;
-    logic [DATA_WIDTH-1:0]          WriteData;
-    logic [DATA_WIDTH-1:0]          ImmExt;
-    logic [DATA_WIDTH-1:0]          SrcA;
-    logic [DATA_WIDTH-1:0]          SrcB;
-    logic [DATA_WIDTH-1:0]          ALUResult;
-    logic [DATA_WIDTH-1:0]          ReadData;
-    logic [DATA_WIDTH-1:0]          Result;
+    //decode
+    logic Zero;
+    logic ALUSrc;
+    logic [2:0] ALUControl;
+    logic [DATA_WIDTH-1:0] RD1; 
+    logic [DATA_WIDTH-1:0] RD2; 
+    logic [DATA_WIDTH-1:0] ImmExt; 
     
-    // decode_top internal wires
-    // logic                        Zero; -> shared with ALU
-    logic                           PCSrc; // -> connected to mux which selects PCNext
+    //execute
+    logic [DATA_WIDTH-1:0] ALUResult; 
+    logic [DATA_WIDTH-1:0] WriteData;
+    
+     fetch_top fetch (
+        .PCsrc(PCSrc),
+        .clk(clk),
+        .rst(rst),
+        .ImmExt(ImmExt),
+        .Instr(Instr),
+        .Result_in(Result)
+    ); 
     
     register #(
         .DATA_WIDTH(DATA_WIDTH),
@@ -50,14 +53,16 @@ module top #(
     
     assign SrcB = ALUSrc ? ImmExt : WriteData;
 
-    alu #(
+    execute_top #(
         .DATA_WIDTH(DATA_WIDTH)
-    ) ALU(
-        .ALUop1(SrcA),   
-        .ALUop2(SrcB), 
-        .ALUctrl(ALUControl), 
-        .ALUout(ALUResult), 
-        .EQ(Zero) 
+    ) execute(
+        .RD1(RD1),   
+        .RD2(RD2), 
+        .ALUControl(ALUControl),
+        .ALUSrc(ALUSrc),
+        .ALUResult(ALUResult), 
+        .Zero(Zero), 
+        .WriteData(WriteData)
     );
 
     datamemory #(
@@ -92,11 +97,4 @@ module top #(
         .ImmExt(),          // goes into PCTarget
     )
 
-    fetch_top fetch (
-        .PCsrc(PCSrc),
-        .clk(clk),
-        .rst(rst),
-        .ImmExt(ImmExt),
-        .Instr(instr)
-    ); 
 endmodule
