@@ -18,7 +18,7 @@ module top #(
     logic [DATA_WIDTH-1:0] Instr; //instruction from instruction memory
     logic [DATA_WIDTH-1:0] PCPlus4;
 
-    //decode
+    /*decode*/
     // control unit inputs
     logic                   negative;
     logic                   Zero;
@@ -36,6 +36,7 @@ module top #(
     //execute
     logic [DATA_WIDTH-1:0] ALUResult; 
     logic [DATA_WIDTH-1:0] WriteData;
+
     
     fetch_top fetch (
         .PCsrc(PCSrc),
@@ -65,7 +66,7 @@ module top #(
         .AddressingMode(AddressingMode),
         .RD1(RD1),             // SrcA
         .RD2(RD2),             // 0 for mux that outputs SrcB
-        .ImmExt(ImmExt),          // goes into PCTarget
+        .ImmExt(ImmExt)          // goes into PCTarget
     );
 
     execute_top execute (
