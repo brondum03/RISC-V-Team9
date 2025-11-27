@@ -12,7 +12,7 @@ module decode_top #(
     input logic                     clk,
     input logic [DATA_WIDTH-1:0]    WD3, 
     
-    input logic [DATA_WIDTH-1:0]    instr,
+    input logic [DATA_WIDTH-1:0]   Instr,
 
     // output for control unit
     output logic                    PCSrc,
@@ -34,9 +34,9 @@ module decode_top #(
     // controlUnit.sv
     controlUnit control_unit(
         // input
-        .op(instr[6:0]);
-        .funct3(instr[14:12]);
-        .funct7(funct7[30]);
+        .op(Instr[6:0]);
+        .funct3(Instr[14:12]);
+        .funct7(Instr[30]);
         .zero(zero);
         // output
         .PCSrc(PCSrc);
@@ -52,9 +52,9 @@ module decode_top #(
     register register_file (
         // input 
         .clk(clk);
-        .AD1(instr[19:15]);
-        .AD2(instr[24:20]);
-        .AD3(instr[11:7]);
+        .AD1(Instr[19:15]);
+        .AD2(Instr[24:20]);
+        .AD3(Instr[11:7]);
         .WE3(RegWrite);
         .WD3(WD3);
         // output
@@ -65,12 +65,11 @@ module decode_top #(
     // signExtend.sv
     signExtend sign_extend(
         // input
-        .instr(instr);
+        .Instr(Instr);
         .ImmSrc(ImmSrc);
         // output 
         .ImmExt(ImmExt)
     );
 
     assign PCSrc = Branch & zero;
-    
 endmodule
