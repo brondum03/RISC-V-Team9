@@ -30,6 +30,8 @@ module top #(
     logic [2:0]                     funct3;
     logic                           funct7;
     logic                           Zero;
+    logic                           PCSrc;
+    logic [2:0]                     ImmSrc;
     
     register #(
         .DATA_WIDTH(DATA_WIDTH),
@@ -97,12 +99,12 @@ module top #(
         .funct7(Instr[30]),
         .Zero(Zero),
 
-        .PCSrc(PCSrc),
-        .ResultSrc(ResultSrc),
-        .MemWrite(MemWrite),
-        .ALUControl(ALUControl),
-        .ALUSrc(ALUSrc),
-        .ImmSrc(ImmSrc),
-        .RegWrite(RegWrite)
+        .PCSrc(PCSrc), // done
+        .ResultSrc(ResultSrc), // done
+        .MemWrite(MemWrite), // done
+        .ALUControl(ALUControl), // done
+        .ALUSrc(ALUSrc), // done
+        .ImmSrc(ImmSrc), // done
+        .RegWrite(RegWrite) // done
     )
 endmodule
