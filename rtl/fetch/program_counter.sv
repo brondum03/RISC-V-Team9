@@ -16,9 +16,9 @@ always_comb begin
     case (pcsrc) 
     2'b00:   nextPC = PCReg + 32'd4;
     2'b01:   nextPC = PCReg + immOP;
-    2'b10:   nextPC = PCReg + alu_in;
-    3'b11:   nextPC = PCReg;
-    default: nextPC = PCReg + 32'd4 
+    2'b10:   nextPC = PCReg + result_in;
+    2'b11:   nextPC = PCReg;
+    default: nextPC = PCReg + 32'd4;
     endcase
 end
 

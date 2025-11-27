@@ -7,14 +7,16 @@
 default: Vdut
 
 ### Constants...
-# Perl executable (from $PERL)
+# Perl executable (from $PERL, defaults to 'perl' if not set)
 PERL = perl
+# Python3 executable (from $PYTHON3, defaults to 'python3' if not set)
+PYTHON3 = python3
 # Path to Verilator kit (from $VERILATOR_ROOT)
-VERILATOR_ROOT = /usr/local/share/verilator
+VERILATOR_ROOT = /opt/homebrew/Cellar/verilator/5.038/share/verilator
 # SystemC include directory with systemc.h (from $SYSTEMC_INCLUDE)
-SYSTEMC_INCLUDE ?= 
+SYSTEMC_INCLUDE ?=
 # SystemC library directory with libsystemc.a (from $SYSTEMC_LIBDIR)
-SYSTEMC_LIBDIR ?= 
+SYSTEMC_LIBDIR ?=
 
 ### Switches...
 # C++ code coverage  0/1 (from --prof-c)
@@ -35,20 +37,20 @@ VM_PREFIX = Vdut
 VM_MODPREFIX = Vdut
 # User CFLAGS (from -CFLAGS on Verilator command line)
 VM_USER_CFLAGS = \
-	-isystem /opt/homebrew/Cellar/googletest/1.17.0/include \
+  -isystem /opt/homebrew/Cellar/googletest/1.17.0/include \
 
 # User LDLIBS (from -LDFLAGS on Verilator command line)
 VM_USER_LDLIBS = \
-	-L/opt/homebrew/Cellar/googletest/1.17.0/lib -lgtest -lgtest_main -lpthread \
+  -L/opt/homebrew/Cellar/googletest/1.17.0/lib -lgtest -lgtest_main -lpthread \
 
 # User .cpp files (from .cpp's on Verilator command line)
 VM_USER_CLASSES = \
-	mux_tb \
+  alu_tb \
 
 # User .cpp directories (from .cpp's on Verilator command line)
 VM_USER_DIR = \
-	/home/brandon03/Documents/RISC-V-Team9/tb/tests \
-
+  .. \
+  ../unit_tests \
 
 ### Default rules...
 # Include list of all generated classes
@@ -59,12 +61,11 @@ include $(VERILATOR_ROOT)/include/verilated.mk
 ### Executable rules... (from --exe)
 VPATH += $(VM_USER_DIR)
 
-mux_tb.o: /home/brandon03/Documents/RISC-V-Team9/tb/tests/mux_tb.cpp
-	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+alu_tb.o: /Users/enqilim/iac_labs/RISC-V-Team9/tb/unit_tests/alu_tb.cpp 
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST)  -c -o $@ $<
 
 ### Link rules... (from --exe)
 Vdut: $(VK_USER_OBJS) $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a $(VM_HIER_LIBS)
 	$(LINK) $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) $(LIBS) $(SC_LIBS) -o $@
-
 
 # Verilated -*- Makefile -*-

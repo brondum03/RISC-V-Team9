@@ -5,7 +5,7 @@
 
 # Constants
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
-TEST_FOLDER=$(realpath "$SCRIPT_DIR/tests")
+TEST_FOLDER=$(realpath "$SCRIPT_DIR/unit_tests")
 RTL_FOLDER=$(realpath "$SCRIPT_DIR/../rtl")
 GREEN=$(tput setaf 2)
 RED=$(tput setaf 1)
@@ -19,6 +19,7 @@ fails=0
 if [[ $# -eq 0 ]]; then
     # If no arguments provided, run all tests
     files=(${TEST_FOLDER}/*.cpp)
+
 else
     # If arguments provided, use them as input files
     files=("$@")
@@ -32,7 +33,13 @@ cd $SCRIPT_DIR
 # Iterate through files
 for file in "${files[@]}"; do
     name=$(basename "$file" _tb.cpp | cut -f1 -d\-)
-    
+    SVFILE=$(find "$RTL_FOLDER" -name "${name}.sv" | head -n 1)
+
+    if [[ ! -f "$SVFILE" ]]; then
+    echo "ERROR: Could not find module file for $name"
+    exit 1
+    fi
+
     # If verify.cpp -> we are testing the top module
     if [ $name == "verify.cpp" ]; then
         name="top"
@@ -40,9 +47,8 @@ for file in "${files[@]}"; do
 
     # Translate Verilog -> C++ including testbench
     verilator   -Wall --trace \
-                -cc ${RTL_FOLDER}/${name}.sv \
-                --exe ${file} \
-                -y ${RTL_FOLDER} \
+                -cc "$SVFILE" \
+                --exe $(realpath "$file") \
                 --prefix "Vdut" \
                 -o Vdut \
                 -CFLAGS "-isystem /opt/homebrew/Cellar/googletest/1.17.0/include"\

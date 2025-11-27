@@ -8,7 +8,7 @@ Vdut *top;
 VerilatedVcdC *tfp;
 unsigned int ticks = 0;
 
-class PcTestbench : public Testbench
+class PCTestbench : public Testbench
 {
 protected:
     void initializeInputs() override
@@ -21,7 +21,7 @@ protected:
     }
 };
 
-TEST_F(PcTestbench, ResetTest)
+TEST_F(PCTestbench, ResetTest)
 {
     top->rst = 1;
     
@@ -30,7 +30,7 @@ TEST_F(PcTestbench, ResetTest)
     EXPECT_EQ(top->out, 0);
 }
 
-TEST_F(PcTestbench, IncrementBy4)
+TEST_F(PCTestbench, IncrementBy4)
 {
     // First cycle: rst=1 makes PC=0
     top->rst = 1;
@@ -53,7 +53,7 @@ TEST_F(PcTestbench, IncrementBy4)
     EXPECT_EQ(top->out, 12);
 }
 
-TEST_F(PcTestbench, BranchTest)
+TEST_F(PCTestbench, BranchTest)
 {
 
     top->pcsrc = 1;
@@ -63,7 +63,7 @@ TEST_F(PcTestbench, BranchTest)
     EXPECT_EQ(top->out, 8);
 }
 
-TEST_F(PcTestbench, MixedBranchAndIncrement)
+TEST_F(PCTestbench, MixedBranchAndIncrement)
 {
     top->rst = 0;
 
@@ -79,7 +79,7 @@ TEST_F(PcTestbench, MixedBranchAndIncrement)
     EXPECT_EQ(top->out, 16);
 }
 
-TEST_F(PcTestbench, UpdateOnClockEdge)
+TEST_F(PCTestbench, UpdateOnClockEdge)
 {
     top->rst = 0;
 
