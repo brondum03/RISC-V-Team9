@@ -1,35 +1,25 @@
+`include "../mux2.sv"
+
 module program_counter #(
-    parameter WIDTH = 32
+    parameter DATA_WIDTH = 32
 )(
   // interface signals
   input  logic             clk,       
-  input  logic             rst,      
-  input  logic [1:0]       pcsrc,
-  input  logic [WIDTH-1:0] immOP,
-  input  logic [WIDTH-1:0] result_in,
-  output logic [WIDTH-1:0] out      
+  input  logic             rst,
+  input  logic [DATA_WIDTH-1:0] PCNext,
+  output logic [DATA_WIDTH-1:0] out   
 );
 
-logic [WIDTH-1:0] PCReg;
-logic [WIDTH-1:0] nextPC;
-always_comb begin
-    case (pcsrc) 
-    2'b00:   nextPC = PCReg + 32'd4;
-    2'b01:   nextPC = PCReg + immOP;
-    2'b10:   nextPC = PCReg + result_in;
-    2'b11:   nextPC = PCReg;
-    default: nextPC = PCReg + 32'd4;
-    endcase
-end
+logic [DATA_WIDTH-1:0] PC;
 
 always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
-            PCReg <= '0;
+            PC <= '0;
         end else begin
-            PCReg <= nextPC;
+            PC <= PCNext;
         end
     end    
 
-assign out = PCReg;
+assign out = PCNext;
 
 endmodule

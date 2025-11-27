@@ -39,12 +39,13 @@ module top #(
 
     
     fetch_top fetch (
-        .PCsrc(PCSrc),
         .clk(clk),
         .rst(rst),
+        .PCsrc(PCSrc),
         .ImmExt(ImmExt),
+        .ALUResult(ALUResult)
         .Instr(Instr),
-        .Result_in(Result)
+        .PCPlus4(PCPlus4)
     ); 
     
     // complete decode_top
