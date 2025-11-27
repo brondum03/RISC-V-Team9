@@ -3,6 +3,7 @@ module execute_top #(
 )(
     input   logic [DATA_WIDTH-1:0]  RD1,
     input   logic [DATA_WIDTH-1:0]  RD2,
+    input   logic [DATA_WIDTH-1:0]  ImmExt,
     input   logic [2:0]             ALUControl,
     input   logic                   ALUSrc,
     output  logic [DATA_WIDTH-1:0]  ALUResult,
@@ -10,6 +11,8 @@ module execute_top #(
     output  logic                   Zero
     
 );
+    
+    logic [DATA_WIDTH-1:0] SrcB;
 
     alu #(
         .DATA_WIDTH(DATA_WIDTH)
