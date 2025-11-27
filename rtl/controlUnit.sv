@@ -13,7 +13,7 @@ module controlUnit (
     output logic        MemWrite;
     output logic [2:0]  ALUControl;
     output logic        ALUSrc;
-    output logic [1:0]  ImmSrc;
+    output logic [2:0]  ImmSrc;
     output logic        RegWrite;
 );
 
