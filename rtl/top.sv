@@ -71,6 +71,7 @@ module top #(
     execute_top execute (
         .RD1(RD1),   
         .RD2(RD2), 
+        .ImmExt(ImmExt),
         .ALUControl(ALUControl),
         .ALUSrc(ALUSrc),
         .ALUResult(ALUResult), 
