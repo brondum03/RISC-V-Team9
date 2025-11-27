@@ -10,7 +10,7 @@
     logic [DATA_WIDTH-1:0]          PC; 
     
 
-    programcounter #(
+    program_counter #(
         .DATA_WIDTH(DATA_WIDTH)
     ) ProgramCounter(
         .clk(clk),

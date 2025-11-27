@@ -1,4 +1,4 @@
-module programcounter #(
+module program_counter #(
     parameter WIDTH = 32
 )(
   // interface signals
