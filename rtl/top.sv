@@ -79,6 +79,12 @@ module top #(
         .out(PC)
     );
 
+    signextend sign_extension (
+        .instr(instr),
+        .ImmSrc(ImmSrc),
+        .ImmOp(ImmExt)
+    );
+
 
 
 endmodule

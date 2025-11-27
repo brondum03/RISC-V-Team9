@@ -36,7 +36,7 @@ always_comb begin
         7'b0010011: begin
             RegWrite = 1;
             ALUSrc = 1;
-            ImmSrc = 1;
+            ImmSrc = 0;
             ALUOp = 2'b11;
         end
 
@@ -92,7 +92,7 @@ always_comb begin
         // J -> jump and link --> jal
         7'b1101111: begin
             RegWrite = 1;
-            ImmSrc = 2'b11;
+            ImmSrc = 3'b100;
             ALUSrc = 0;
             ALUOp = 2'b00;
         end
