@@ -12,7 +12,7 @@ module register #(
     input   logic                  WE3,  //write enable for write address 3
     input   logic [DATA_WIDTH-1:0] WD3,  //write data for write address 3
     output  logic [DATA_WIDTH-1:0] RD1, //read data from address 1
-    output  logic [DATA_WIDTH-1:0] RD2, //read data from address 2
+    output  logic [DATA_WIDTH-1:0] RD2 //read data from address 2
 );
 
     logic [DATA_WIDTH-1:0] register [2**ADDR_WIDTH-1:0];   //32 registers in this case
@@ -25,7 +25,7 @@ module register #(
     end
 
     //the two read ports of the register must be asynchronous
-    assign RD1 = registers[AD1];         
-    assign RD2 = registers[AD2];
+    assign RD1 = register[AD1];         
+    assign RD2 = register[AD2];
 
 endmodule
