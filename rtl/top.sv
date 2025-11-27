@@ -24,12 +24,12 @@ module top #(
     logic [DATA_WIDTH-1:0] RD1; 
     logic [DATA_WIDTH-1:0] RD2; 
     logic [DATA_WIDTH-1:0] ImmExt; 
-    
+
     //execute
     logic [DATA_WIDTH-1:0] ALUResult; 
     logic [DATA_WIDTH-1:0] WriteData;
     
-     fetch_top fetch (
+    fetch_top fetch (
         .PCsrc(PCSrc),
         .clk(clk),
         .rst(rst),
@@ -38,6 +38,7 @@ module top #(
         .Result_in(Result)
     ); 
     
+    //ezekiel to implement decode_top
     register #(
         .DATA_WIDTH(DATA_WIDTH),
         .ADDR_WIDTH(ADDR_WIDTH)
@@ -51,35 +52,7 @@ module top #(
         .RD2(WriteData)  
     );
     
-    assign SrcB = ALUSrc ? ImmExt : WriteData;
-
-    execute_top #(
-        .DATA_WIDTH(DATA_WIDTH)
-    ) execute(
-        .RD1(RD1),   
-        .RD2(RD2), 
-        .ALUControl(ALUControl),
-        .ALUSrc(ALUSrc),
-        .ALUResult(ALUResult), 
-        .Zero(Zero), 
-        .WriteData(WriteData)
-    );
-
-    datamemory #(
-        .DATA_WIDTH(DATA_WIDTH)
-    ) Data_Memory(
-        .clk(clk),
-        .WE(MemWrite),
-        .WD(WriteData),
-        .A(ALUResult),
-        .RD(ReadData)
-    );
-    
-    assign Result = ResultSrc ? ReadData : ALUResult;
-
-    decode_top decode #(
-        .DATA_WIDTH(DATA_WIDTH)
-    )(
+    decode_top decode (
         // input
         .Zero(Zero),    // internal
         .clk(clk),     
@@ -95,6 +68,24 @@ module top #(
         .RD1(),             // SrcA
         .RD2(),             // 0 for mux that outputs SrcB
         .ImmExt(),          // goes into PCTarget
-    )
+    );
+
+    execute_top execute (
+        .RD1(RD1),   
+        .RD2(RD2), 
+        .ALUControl(ALUControl),
+        .ALUSrc(ALUSrc),
+        .ALUResult(ALUResult), 
+        .Zero(Zero), 
+        .WriteData(WriteData)
+    );
+
+    memory_top memory (
+        .ALUResult(ALUResult),
+        .WriteData(WriteData),
+        .MemWrite(MemWrite),
+        .clk(clk),
+        .ReadData(ReadData)
+    );
 
 endmodule
