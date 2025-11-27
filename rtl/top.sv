@@ -13,7 +13,6 @@ module top #(
 );
     //interconnect line (add on for your individual parts) -  follow syntax from the project brief 
     //Logic for Instruction memory
-    logic [DATA_WIDTH-1:0]          PC;    //program counter
     logic [DATA_WIDTH-1:0]          Instr; //instruction from instruction memory
     //Logic for alu control unit
     logic [2:0]                     ALUControl;   //alu control from control unit
@@ -75,22 +74,6 @@ module top #(
     
     assign Result = ResultSrc ? ReadData : ALUResult;
 
-    instruction_memory #(
-        .DATA_WIDTH(DATA_WIDTH)
-    ) Instruction_Memory(
-        .in(PC),
-        .out(Instr)
-    );
-
-    programcounter #(
-        .DATA_WIDTH(DATA_WIDTH)
-    ) ProgramCounter(
-        .clk(clk),
-        .rst(rst),
-        .pcsrc(PCSrc),
-        .immOP(ImmExt),
-        .out(PC)
-    );
 
     signextend sign_extension (
         .instr(instr),
@@ -111,5 +94,13 @@ module top #(
         .ALUSrc(ALUSrc), // done
         .ImmSrc(ImmSrc), // done
         .RegWrite(RegWrite) // done
-    )
+    );
+
+    fetch_top fetch (
+        .PCsrc(PCSrc),
+        .clk(clk),
+        .rst(rst),
+        .ImmExt(ImmExt),
+        .Instr(instr)
+    ); 
 endmodule
