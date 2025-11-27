@@ -1,7 +1,7 @@
-`include "./fetch/fetch_top.sv"
-`include "./decode/decode_top.sv"
-`include "./execute/execute_top.sv"
-`include "./memory/memory_top.sv"
+include "./fetch/fetch_top.sv"
+include "./decode/decode_top.sv"
+include "./execute/execute_top.sv"
+include "./memory/memory_top.sv"
 
 module top #(
     parameter DATA_WIDTH = 32,
