@@ -20,7 +20,7 @@ always_comb begin
     ResultSrc = 0;
     MemWrite = 0;
     ALUSrc = 0;
-    ImmSrc = 2'b00;
+    ImmSrc = 3'b000;
     RegWrite = 0;
     ALUOp = 2'b00;
 
@@ -36,7 +36,7 @@ always_comb begin
         7'b0010011: begin
             RegWrite = 1;
             ALUSrc = 1;
-            ImmSrc = 0;
+            ImmSrc = 3'b000;
             ALUOp = 2'b11;
         end
 
@@ -45,7 +45,7 @@ always_comb begin
             RegWrite = 1;
             ALUSrc = 1;
             ResultSrc = 1;
-            ImmSrc = 2'b00;
+            ImmSrc = 3'b000;
             ALUOp = 2'b00;
         end
 
@@ -53,7 +53,7 @@ always_comb begin
         7'b1100111: begin
             RegWrite = 1;
             ALUSrc = 1;
-            ImmSrc = 2'b00;
+            ImmSrc = 3'b000;
             ALUOp = 2'b00;
         end
 
@@ -61,7 +61,7 @@ always_comb begin
         7'b0100011: begin
             MemWrite = 1;
             ALUSrc = 1;
-            ImmSrc = 2'b01;
+            ImmSrc = 3'b001;
             ALUOp = 2'b00;
         end
 
@@ -69,7 +69,7 @@ always_comb begin
         7'b1100011: begin
             Branch = 1;
             ALUSrc = 0;
-            ImmSrc = 2'b10;
+            ImmSrc = 3'b010;
             ALUOp = 2'b01;
         end
 
@@ -77,7 +77,7 @@ always_comb begin
         7'b0110111: begin
             RegWrite = 1;
             ALUSrc = 1;
-            ImmSrc = 2'b11;
+            ImmSrc = 3'b011;
             ALUOp = 2'b00;
         end
 
@@ -85,7 +85,7 @@ always_comb begin
         7'b0010111: begin
             RegWrite = 1;
             ALUSrc = 1;
-            ImmSrc = 2'b11;
+            ImmSrc = 3'b011;
             ALUOp = 2'b00;
         end
 
@@ -102,7 +102,7 @@ always_comb begin
             ResultSrc = 0;
             MemWrite = 0;
             ALUSrc = 0;
-            ImmSrc = 2'b00;
+            ImmSrc = 3'b000;
             RegWrite = 0;
             ALUOp = 2'b00;
         end
