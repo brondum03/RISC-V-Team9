@@ -8,7 +8,7 @@ module mux2 #(
     input logic [1:0]               sel,
     
     output logic [DATA_WIDTH-1:0]   out
-)
+);
 
     always_comb begin
         case(sel) 

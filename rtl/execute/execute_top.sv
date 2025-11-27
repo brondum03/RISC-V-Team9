@@ -1,3 +1,5 @@
+`include "../mux2.sv"
+
 module execute_top #(
     parameter DATA_WIDTH = 32
 )(
@@ -24,7 +26,13 @@ module execute_top #(
         .EQ(Zero)
     );
 
-    assign SrcB = ALUSrc ? ImmExt : RD2;
+    mux2 mux (
+        .in0(RD2),
+        .in1(ImmExt),
+        .sel(ALUSrc),
+        .out(SrcB)
+    );
+
     assign WriteData = RD2; 
 
 endmodule
