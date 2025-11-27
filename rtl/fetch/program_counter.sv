@@ -4,19 +4,22 @@ module program_counter #(
   // interface signals
   input  logic             clk,       
   input  logic             rst,      
-  input  logic             pcsrc,
-  input  logic [12:0]      immOP,
+  input  logic [1:0]       pcsrc,
+  input  logic [WIDTH-1:0] immOP,
+  input  logic [WIDTH-1:0] result_in,
   output logic [WIDTH-1:0] out      
 );
 
 logic [WIDTH-1:0] PCReg;
 logic [WIDTH-1:0] nextPC;
 always_comb begin
-    if (pcsrc) begin
-        nextPC = PCReg + immOP;   // branch 
-    end else begin
-        nextPC = PCReg + 32'd4;    // normal increment by 4
-    end
+    case (pcsrc) 
+    2'b00:   nextPC = PCReg + 32'd4;
+    2'b01:   nextPC = PCReg + immOP;
+    2'b10:   nextPC = PCReg + alu_in;
+    3'b11:   nextPC = PCReg;
+    default: nextPC = PCReg + 32'd4 
+    endcase
 end
 
 always_ff @(posedge clk or posedge rst) begin
