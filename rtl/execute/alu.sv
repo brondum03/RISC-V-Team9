@@ -1,38 +1,44 @@
-// ALUControl              Meaning
-// 000                     ADD
-// 001                     SUB
-// 010                     AND
-// 011                     OR
-// 100                     XOR
-// 101                     SLT
-// 110                     SLTU
-// 111                     (reserved or pass through pc)
+typedef enum logic [3:0] {
+    ADD = 4'b0000,
+    SUB = 4'b0001,
+    AND = 4'b0010,
+    OR  = 4'b0011,
+    XOR = 4'b0100,
+    SLL = 4'b0101, // shift left logical
+    SRL = 4'b0110, // shift right logical
+    SRA = 4'b0111, // shift right arithmetic (msb extended)
+    SLT = 4'b1000, // set less than signed
+    SLTU = 4'b1001 // set less than unsigned (zero extended)
+} ALU_controls;
 
 module alu#(
     parameter DATA_WIDTH = 32
 ) (
     input   logic [DATA_WIDTH-1:0]  ALUop1,
     input   logic [DATA_WIDTH-1:0]  ALUop2,
-    input   logic [2:0]             ALUctrl,
+    input   logic [3:0]             ALUctrl,
     output  logic [DATA_WIDTH-1:0]  ALUout,
-    output  logic                   EQ
+    output  logic                   Zero
 );
 
     always_comb begin
         case(ALUctrl)
-            3'b000:   ALUout = ALUop1 + ALUop2; //add
-            3'b001:   ALUout = ALUop1 - ALUop2; //sub
-            3'b010:   ALUout = ALUop1 & ALUop2; //and
-            3'b011:   ALUout = ALUop1 | ALUop2; //or
-            3'b100:   ALUout = ALUop1 ^ ALUop2; //xor
-            3'b101:   ALUout = ($signed(ALUop1) < $signed(ALUop2)) ? 1 : 0; //set less than (signed)
-            3'b110:   ALUout = (ALUop1 < ALUop2) ? 1 : 0; //set less than (unsigned)
+            ADD:   ALUout = ALUop1 + ALUop2; 
+            SUB:   ALUout = ALUop1 - ALUop2; 
+            AND:   ALUout = ALUop1 & ALUop2; 
+            OR:    ALUout = ALUop1 | ALUop2; 
+            XOR:   ALUout = ALUop1 ^ ALUop2; 
+            SLL:   ALUout = ALUop1 << ALUop2;
+            SRL:   ALUout = ALUop1 >> ALUop2;
+            SRA:   ALUout = ALUop1 >>> ALUop2;
+            SLT:   ALUout = ($signed(ALUop1) < $signed(ALUop2)) ? {31'b0, 1'b1} : 32'b0;
+            SLTU:  ALUout = ($unsigned(ALUop1) < $unsigned(ALUop2)) ? {31'b0, 1'b1} : 32'b0;      
             default:  ALUout = {DATA_WIDTH{1'b0}};
         endcase
     end
 
     //the EQ flag will be used to determine if ALUop1 = ALUop2
     //after subtraction, if ALUout = 0, meaning both inputs are the same, then EQ will output 1
-    assign EQ = (ALUout == {DATA_WIDTH{1'b0}}); 
+    assign Zero = (ALUout == {DATA_WIDTH{1'b0}}); 
 
 endmodule
