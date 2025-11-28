@@ -34,8 +34,9 @@ always_comb begin
         ImmSrc = 3'b000;
         MemWrite = 1'b0;
         ResultSrc = 2'b00;
-        PCSrc = 2'b11;
+        PCSrc = 2'b00;
         ALUSrc = 1'b0;
+        AddressingMode = 1'b0;
     case (op)
         // R -> register to register arithmetic and logical op -->add, sub, ans, or, xor
         7'b0110011: begin
@@ -98,7 +99,7 @@ always_comb begin
         // B -> conditional branch operations -->> beq, bne, blt, bge
         7'b1100011: begin
             RegWrite = 1'b0;
-            ALUSrc = 0;
+            ALUSrc = 1'b0;
             ImmSrc = 3'b010;
             MemWrite = 1'b0;
             case (funct3)
@@ -114,16 +115,16 @@ always_comb begin
 
         // U  -> load upper immediate --> lui
         7'b0110111: begin
-            RegWrite = 1;
-            ALUSrc = 1;
+            RegWrite = 1'b1;
             ImmSrc = 3'b011;
             MemWrite = 1'b0;
+            ResultSrc = 2'b11;
             PCSrc = 2'b00;
         end
 
         // J -> jump and link --> jal
         7'b1101111: begin
-            RegWrite = 1;
+            RegWrite = 1'b1;
             ImmSrc = 3'b100;
             MemWrite = 1'b0;
             ResultSrc = 2'b10;

@@ -56,7 +56,7 @@ module decode_top #(
         .AD1(Instr[19:15]),
         .AD2(Instr[24:20]),
         .AD3(Instr[11:7]),
-        .WD3(result),
+        .WD3(WD3),
         // output
         .RD1(RD1),
         .RD2(RD2)
