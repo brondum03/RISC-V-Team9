@@ -55,6 +55,7 @@ module top #(
     decode_top decode (
         // input
         .clk(clk),
+        .rst(rst),
         .stall(stall),
         .Instr(Instr),
         .WD3(Result),

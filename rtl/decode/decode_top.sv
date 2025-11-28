@@ -12,6 +12,7 @@ module decode_top #(
     input logic                     clk,
     input logic [DATA_WIDTH-1:0]    WD3, 
     input logic [DATA_WIDTH-1:0]    Instr,
+    input logic                     rst,
 
     output logic [1:0]              PCSrc,
     output logic [1:0]              ResultSrc,
@@ -52,6 +53,7 @@ module decode_top #(
     register register_file (
         // input 
         .clk(clk),
+        .rst(rst),
         .WE3(RegWrite),
         .AD1(Instr[19:15]),
         .AD2(Instr[24:20]),
