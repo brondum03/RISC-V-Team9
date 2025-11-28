@@ -10,7 +10,7 @@ module top #(
 )(
     input   logic                       clk,
     input   logic                       rst,
-    input   logic                       stall,
+    input   logic                       trigger,
     output  logic [DATA_WIDTH-1:0]      a0
 );
 
@@ -56,7 +56,7 @@ module top #(
         // input
         .clk(clk),
         .rst(rst),
-        .stall(stall),
+        .stall(trigger),
         .Instr(Instr),
         .WD3(Result),
         .Zero(Zero),   
