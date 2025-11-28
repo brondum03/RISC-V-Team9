@@ -11,7 +11,7 @@ module instruction_memory #(
 logic [DATA_WIDTH-1:0] mem [MEM_SIZE-1:0];
 
 initial begin
-    $readmemh("programs.hex", mem); 
+    $readmemh("program.hex", mem); 
 end;
 
 always_comb begin

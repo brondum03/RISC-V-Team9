@@ -37,7 +37,7 @@ VM_PREFIX = Vdut
 VM_MODPREFIX = Vdut
 # User CFLAGS (from -CFLAGS on Verilator command line)
 VM_USER_CFLAGS = \
-  -isystem /opt/homebrew/Cellar/googletest/1.17.0/include \
+  -std=c++17 -isystem /opt/homebrew/Cellar/googletest/1.17.0/include \
 
 # User LDLIBS (from -LDFLAGS on Verilator command line)
 VM_USER_LDLIBS = \
@@ -45,7 +45,7 @@ VM_USER_LDLIBS = \
 
 # User .cpp files (from .cpp's on Verilator command line)
 VM_USER_CLASSES = \
-  alu_tb \
+  fetch_top_tb \
 
 # User .cpp directories (from .cpp's on Verilator command line)
 VM_USER_DIR = \
@@ -61,7 +61,7 @@ include $(VERILATOR_ROOT)/include/verilated.mk
 ### Executable rules... (from --exe)
 VPATH += $(VM_USER_DIR)
 
-alu_tb.o: /Users/enqilim/iac_labs/RISC-V-Team9/tb/unit_tests/alu_tb.cpp 
+fetch_top_tb.o: /Users/jerryzhang/Desktop/College/y2/IAC/Fall/labs/RISC-V-Team9/tb/unit_tests/fetch_top_tb.cpp 
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST)  -c -o $@ $<
 
 ### Link rules... (from --exe)

@@ -1,5 +1,3 @@
-`include "../mux2.sv"
-
 module program_counter #(
     parameter DATA_WIDTH = 32
 )(
@@ -10,16 +8,16 @@ module program_counter #(
   output logic [DATA_WIDTH-1:0] out   
 );
 
-logic [DATA_WIDTH-1:0] PC;
+logic [DATA_WIDTH-1:0] pc;
 
 always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
-            PC <= '0;
+            pc <= '0;
         end else begin
-            PC <= PCNext;
+            pc <= PCNext;
         end
     end    
 
-assign out = PCNext;
+assign out = pc;
 
 endmodule
