@@ -5,7 +5,7 @@
 
 
 module top #(
-    parameter DATA_WIDTH = 32,
+    parameter DATA_WIDTH = 32
 )(
     input   logic                       clk,
     input   logic                       rst,
@@ -36,9 +36,6 @@ module top #(
     // execute
     logic [DATA_WIDTH-1:0] ALUResult; 
     logic [DATA_WIDTH-1:0] WriteData;
-    
-    // memory
-    logic [DATA_WIDTH-1:0] ReadData;
     
     fetch_top fetch (
         .clk(clk),
@@ -90,18 +87,12 @@ module top #(
         .clk(clk),
         .AddressingMode(AddressingMode),
         .ALUResult(ALUResult),
+        .ImmExt(ImmExt),
+        .PCPlus4(PCPlus4),
+        .ResultSrc(ResultSrc),
         .WriteData(WriteData),
         .MemWrite(MemWrite),
-        .ReadData(ReadData)
-    );
-    
-    mux4 result (
-        .in0(ALUResult),
-        .in1(ReadData),
-        .in2(PCPlus4),
-        .in3(ImmExt),
-        .sel(ResultSrc),
-        .out(Result)
+        .Result(Result)
     );
 
 endmodule
