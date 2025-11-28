@@ -35,11 +35,6 @@ for file in "${files[@]}"; do
     name=$(basename "$file" _tb.cpp | cut -f1 -d\-)
     SVFILE=$(find "$RTL_FOLDER" -name "${name}.sv" | head -n 1)
 
-    if [[ ! -f "$SVFILE" ]]; then
-    echo "ERROR: Could not find module file for $name"
-    exit 1
-    fi
-
     # If verify.cpp -> we are testing the top module
     if [ $name == "verify.cpp" ]; then
         name="top"
