@@ -14,26 +14,19 @@ class alignas(VL_CACHE_LINE_BYTES) Vdut___024root final : public VerilatedModule
   public:
 
     // DESIGN SPECIFIC STATE
-    VL_IN8(clk,0,0);
-    VL_IN8(rst,0,0);
-    VL_IN8(PCsrc,1,0);
+    VL_IN8(ALUctrl,3,0);
+    VL_OUT8(Zero,0,0);
     CData/*0:0*/ __VstlFirstIteration;
     CData/*0:0*/ __VicoFirstIteration;
-    CData/*0:0*/ __Vtrigprevexpr___TOP__clk__0;
-    CData/*0:0*/ __Vtrigprevexpr___TOP__rst__0;
     CData/*0:0*/ __VactContinue;
-    VL_IN(ImmExt,31,0);
-    VL_IN(ALUResult,31,0);
-    VL_OUT(Instr,31,0);
-    VL_OUT(PCPlus4,31,0);
-    IData/*31:0*/ fetch_top__DOT__PCNext;
-    IData/*31:0*/ fetch_top__DOT__ProgramCounter__DOT__pc;
+    VL_IN(ALUop1,31,0);
+    VL_IN(ALUop2,31,0);
+    VL_OUT(ALUout,31,0);
     IData/*31:0*/ __VactIterCount;
-    VlUnpacked<CData/*7:0*/, 4096> fetch_top__DOT__Instruction_Memory__DOT__mem;
     VlTriggerVec<1> __VstlTriggered;
     VlTriggerVec<1> __VicoTriggered;
-    VlTriggerVec<2> __VactTriggered;
-    VlTriggerVec<2> __VnbaTriggered;
+    VlTriggerVec<0> __VactTriggered;
+    VlTriggerVec<0> __VnbaTriggered;
 
     // INTERNAL VARIABLES
     Vdut__Syms* const vlSymsp;

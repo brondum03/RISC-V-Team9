@@ -23,23 +23,11 @@ void Vdut___024root__trace_chg_0_sub_0(Vdut___024root* vlSelf, VerilatedVcd::Buf
     // Init
     uint32_t* const oldp VL_ATTR_UNUSED = bufp->oldp(vlSymsp->__Vm_baseCode + 1);
     // Body
-    bufp->chgBit(oldp+0,(vlSelfRef.clk));
-    bufp->chgBit(oldp+1,(vlSelfRef.rst));
-    bufp->chgCData(oldp+2,(vlSelfRef.PCsrc),2);
-    bufp->chgIData(oldp+3,(vlSelfRef.ImmExt),32);
-    bufp->chgIData(oldp+4,(vlSelfRef.ALUResult),32);
-    bufp->chgIData(oldp+5,(vlSelfRef.Instr),32);
-    bufp->chgIData(oldp+6,(vlSelfRef.PCPlus4),32);
-    bufp->chgIData(oldp+7,(vlSelfRef.fetch_top__DOT__ProgramCounter__DOT__pc),32);
-    bufp->chgIData(oldp+8,((vlSelfRef.ImmExt + vlSelfRef.fetch_top__DOT__ProgramCounter__DOT__pc)),32);
-    bufp->chgIData(oldp+9,(((2U & (IData)(vlSelfRef.PCsrc))
-                             ? ((1U & (IData)(vlSelfRef.PCsrc))
-                                 ? vlSelfRef.fetch_top__DOT__ProgramCounter__DOT__pc
-                                 : vlSelfRef.ALUResult)
-                             : ((1U & (IData)(vlSelfRef.PCsrc))
-                                 ? (vlSelfRef.ImmExt 
-                                    + vlSelfRef.fetch_top__DOT__ProgramCounter__DOT__pc)
-                                 : vlSelfRef.PCPlus4))),32);
+    bufp->chgIData(oldp+0,(vlSelfRef.ALUop1),32);
+    bufp->chgIData(oldp+1,(vlSelfRef.ALUop2),32);
+    bufp->chgCData(oldp+2,(vlSelfRef.ALUctrl),4);
+    bufp->chgIData(oldp+3,(vlSelfRef.ALUout),32);
+    bufp->chgBit(oldp+4,(vlSelfRef.Zero));
 }
 
 void Vdut___024root__trace_cleanup(void* voidSelf, VerilatedVcd* /*unused*/) {

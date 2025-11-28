@@ -10,13 +10,11 @@
 Vdut::Vdut(VerilatedContext* _vcontextp__, const char* _vcname__)
     : VerilatedModel{*_vcontextp__}
     , vlSymsp{new Vdut__Syms(contextp(), _vcname__, this)}
-    , clk{vlSymsp->TOP.clk}
-    , rst{vlSymsp->TOP.rst}
-    , PCsrc{vlSymsp->TOP.PCsrc}
-    , ImmExt{vlSymsp->TOP.ImmExt}
-    , ALUResult{vlSymsp->TOP.ALUResult}
-    , Instr{vlSymsp->TOP.Instr}
-    , PCPlus4{vlSymsp->TOP.PCPlus4}
+    , ALUctrl{vlSymsp->TOP.ALUctrl}
+    , Zero{vlSymsp->TOP.Zero}
+    , ALUop1{vlSymsp->TOP.ALUop1}
+    , ALUop2{vlSymsp->TOP.ALUop2}
+    , ALUout{vlSymsp->TOP.ALUout}
     , rootp{&(vlSymsp->TOP)}
 {
     // Register model with the context

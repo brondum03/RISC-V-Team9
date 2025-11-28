@@ -30,7 +30,7 @@ module alu#(
             XOR:   ALUout = ALUop1 ^ ALUop2; 
             SLL:   ALUout = ALUop1 << ALUop2;
             SRL:   ALUout = ALUop1 >> ALUop2;
-            SRA:   ALUout = ALUop1 >>> ALUop2;
+            SRA: ALUout = $signed(ALUop1) >>> ALUop2;
             SLT:   ALUout = ($signed(ALUop1) < $signed(ALUop2)) ? {31'b0, 1'b1} : 32'b0;
             SLTU:  ALUout = ($unsigned(ALUop1) < $unsigned(ALUop2)) ? {31'b0, 1'b1} : 32'b0;      
             default:  ALUout = {DATA_WIDTH{1'b0}};

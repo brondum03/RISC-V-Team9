@@ -22,14 +22,38 @@ VL_INLINE_OPT void Vdut___024root___ico_sequent__TOP__0(Vdut___024root* vlSelf) 
     Vdut__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Body
-    vlSelfRef.fetch_top__DOT__PCNext = ((2U & (IData)(vlSelfRef.PCsrc))
-                                         ? ((1U & (IData)(vlSelfRef.PCsrc))
-                                             ? vlSelfRef.fetch_top__DOT__ProgramCounter__DOT__pc
-                                             : vlSelfRef.ALUResult)
-                                         : ((1U & (IData)(vlSelfRef.PCsrc))
-                                             ? (vlSelfRef.ImmExt 
-                                                + vlSelfRef.fetch_top__DOT__ProgramCounter__DOT__pc)
-                                             : vlSelfRef.PCPlus4));
+    vlSelfRef.ALUout = ((8U & (IData)(vlSelfRef.ALUctrl))
+                         ? ((4U & (IData)(vlSelfRef.ALUctrl))
+                             ? 0U : ((2U & (IData)(vlSelfRef.ALUctrl))
+                                      ? 0U : ((1U & (IData)(vlSelfRef.ALUctrl))
+                                               ? ((vlSelfRef.ALUop1 
+                                                   < vlSelfRef.ALUop2)
+                                                   ? 1U
+                                                   : 0U)
+                                               : (VL_LTS_III(32, vlSelfRef.ALUop1, vlSelfRef.ALUop2)
+                                                   ? 1U
+                                                   : 0U))))
+                         : ((4U & (IData)(vlSelfRef.ALUctrl))
+                             ? ((2U & (IData)(vlSelfRef.ALUctrl))
+                                 ? ((1U & (IData)(vlSelfRef.ALUctrl))
+                                     ? VL_SHIFTRS_III(32,32,32, vlSelfRef.ALUop1, vlSelfRef.ALUop2)
+                                     : VL_SHIFTR_III(32,32,32, vlSelfRef.ALUop1, vlSelfRef.ALUop2))
+                                 : ((1U & (IData)(vlSelfRef.ALUctrl))
+                                     ? VL_SHIFTL_III(32,32,32, vlSelfRef.ALUop1, vlSelfRef.ALUop2)
+                                     : (vlSelfRef.ALUop1 
+                                        ^ vlSelfRef.ALUop2)))
+                             : ((2U & (IData)(vlSelfRef.ALUctrl))
+                                 ? ((1U & (IData)(vlSelfRef.ALUctrl))
+                                     ? (vlSelfRef.ALUop1 
+                                        | vlSelfRef.ALUop2)
+                                     : (vlSelfRef.ALUop1 
+                                        & vlSelfRef.ALUop2))
+                                 : ((1U & (IData)(vlSelfRef.ALUctrl))
+                                     ? (vlSelfRef.ALUop1 
+                                        - vlSelfRef.ALUop2)
+                                     : (vlSelfRef.ALUop1 
+                                        + vlSelfRef.ALUop2)))));
+    vlSelfRef.Zero = (0U == vlSelfRef.ALUout);
 }
 
 void Vdut___024root___eval_triggers__ico(Vdut___024root* vlSelf);
@@ -55,44 +79,10 @@ void Vdut___024root___eval_act(Vdut___024root* vlSelf) {
     auto& vlSelfRef = std::ref(*vlSelf).get();
 }
 
-void Vdut___024root___nba_sequent__TOP__0(Vdut___024root* vlSelf);
-
 void Vdut___024root___eval_nba(Vdut___024root* vlSelf) {
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vdut___024root___eval_nba\n"); );
     Vdut__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     auto& vlSelfRef = std::ref(*vlSelf).get();
-    // Body
-    if ((3ULL & vlSelfRef.__VnbaTriggered.word(0U))) {
-        Vdut___024root___nba_sequent__TOP__0(vlSelf);
-    }
-}
-
-VL_INLINE_OPT void Vdut___024root___nba_sequent__TOP__0(Vdut___024root* vlSelf) {
-    VL_DEBUG_IF(VL_DBG_MSGF("+    Vdut___024root___nba_sequent__TOP__0\n"); );
-    Vdut__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    auto& vlSelfRef = std::ref(*vlSelf).get();
-    // Body
-    vlSelfRef.fetch_top__DOT__ProgramCounter__DOT__pc 
-        = ((IData)(vlSelfRef.rst) ? 0U : vlSelfRef.fetch_top__DOT__PCNext);
-    vlSelfRef.Instr = (((vlSelfRef.fetch_top__DOT__Instruction_Memory__DOT__mem
-                         [(0xfffU & ((IData)(3U) + vlSelfRef.fetch_top__DOT__ProgramCounter__DOT__pc))] 
-                         << 0x18U) | (vlSelfRef.fetch_top__DOT__Instruction_Memory__DOT__mem
-                                      [(0xfffU & ((IData)(2U) 
-                                                  + vlSelfRef.fetch_top__DOT__ProgramCounter__DOT__pc))] 
-                                      << 0x10U)) | 
-                       ((vlSelfRef.fetch_top__DOT__Instruction_Memory__DOT__mem
-                         [(0xfffU & ((IData)(1U) + vlSelfRef.fetch_top__DOT__ProgramCounter__DOT__pc))] 
-                         << 8U) | vlSelfRef.fetch_top__DOT__Instruction_Memory__DOT__mem
-                        [(0xfffU & vlSelfRef.fetch_top__DOT__ProgramCounter__DOT__pc)]));
-    vlSelfRef.PCPlus4 = ((IData)(4U) + vlSelfRef.fetch_top__DOT__ProgramCounter__DOT__pc);
-    vlSelfRef.fetch_top__DOT__PCNext = ((2U & (IData)(vlSelfRef.PCsrc))
-                                         ? ((1U & (IData)(vlSelfRef.PCsrc))
-                                             ? vlSelfRef.fetch_top__DOT__ProgramCounter__DOT__pc
-                                             : vlSelfRef.ALUResult)
-                                         : ((1U & (IData)(vlSelfRef.PCsrc))
-                                             ? (vlSelfRef.ImmExt 
-                                                + vlSelfRef.fetch_top__DOT__ProgramCounter__DOT__pc)
-                                             : vlSelfRef.PCPlus4));
 }
 
 void Vdut___024root___eval_triggers__act(Vdut___024root* vlSelf);
@@ -102,7 +92,7 @@ bool Vdut___024root___eval_phase__act(Vdut___024root* vlSelf) {
     Vdut__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Init
-    VlTriggerVec<2> __VpreTriggered;
+    VlTriggerVec<0> __VpreTriggered;
     CData/*0:0*/ __VactExecute;
     // Body
     Vdut___024root___eval_triggers__act(vlSelf);
@@ -158,7 +148,7 @@ void Vdut___024root___eval(Vdut___024root* vlSelf) {
 #ifdef VL_DEBUG
             Vdut___024root___dump_triggers__ico(vlSelf);
 #endif
-            VL_FATAL_MT("/Users/jerryzhang/Desktop/College/y2/IAC/Fall/labs/RISC-V-Team9/rtl/fetch/fetch_top.sv", 6, "", "Input combinational region did not converge.");
+            VL_FATAL_MT("/Users/enqilim/iac_labs/RISC-V-Team9/rtl/execute/alu.sv", 14, "", "Input combinational region did not converge.");
         }
         __VicoIterCount = ((IData)(1U) + __VicoIterCount);
         __VicoContinue = 0U;
@@ -174,7 +164,7 @@ void Vdut___024root___eval(Vdut___024root* vlSelf) {
 #ifdef VL_DEBUG
             Vdut___024root___dump_triggers__nba(vlSelf);
 #endif
-            VL_FATAL_MT("/Users/jerryzhang/Desktop/College/y2/IAC/Fall/labs/RISC-V-Team9/rtl/fetch/fetch_top.sv", 6, "", "NBA region did not converge.");
+            VL_FATAL_MT("/Users/enqilim/iac_labs/RISC-V-Team9/rtl/execute/alu.sv", 14, "", "NBA region did not converge.");
         }
         __VnbaIterCount = ((IData)(1U) + __VnbaIterCount);
         __VnbaContinue = 0U;
@@ -185,7 +175,7 @@ void Vdut___024root___eval(Vdut___024root* vlSelf) {
 #ifdef VL_DEBUG
                 Vdut___024root___dump_triggers__act(vlSelf);
 #endif
-                VL_FATAL_MT("/Users/jerryzhang/Desktop/College/y2/IAC/Fall/labs/RISC-V-Team9/rtl/fetch/fetch_top.sv", 6, "", "Active region did not converge.");
+                VL_FATAL_MT("/Users/enqilim/iac_labs/RISC-V-Team9/rtl/execute/alu.sv", 14, "", "Active region did not converge.");
             }
             vlSelfRef.__VactIterCount = ((IData)(1U) 
                                          + vlSelfRef.__VactIterCount);
@@ -206,11 +196,7 @@ void Vdut___024root___eval_debug_assertions(Vdut___024root* vlSelf) {
     Vdut__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Body
-    if (VL_UNLIKELY(((vlSelfRef.clk & 0xfeU)))) {
-        Verilated::overWidthError("clk");}
-    if (VL_UNLIKELY(((vlSelfRef.rst & 0xfeU)))) {
-        Verilated::overWidthError("rst");}
-    if (VL_UNLIKELY(((vlSelfRef.PCsrc & 0xfcU)))) {
-        Verilated::overWidthError("PCsrc");}
+    if (VL_UNLIKELY(((vlSelfRef.ALUctrl & 0xf0U)))) {
+        Verilated::overWidthError("ALUctrl");}
 }
 #endif  // VL_DEBUG
