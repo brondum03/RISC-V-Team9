@@ -15,7 +15,7 @@ module top #(
 );
 
     //fetch
-    logic PCSrc; // -> connected to mux which selects PCNext
+    logic [1:0] PCSrc; // -> connected to mux which selects PCNext
     logic [DATA_WIDTH-1:0] Instr; //instruction from instruction memory
     logic [DATA_WIDTH-1:0] PCPlus4;
 
@@ -34,10 +34,12 @@ module top #(
     logic [DATA_WIDTH-1:0]  RD2; 
     logic [DATA_WIDTH-1:0]  ImmExt; 
 
-    //execute
+    // execute
     logic [DATA_WIDTH-1:0] ALUResult; 
     logic [DATA_WIDTH-1:0] WriteData;
 
+    // memory
+    logic [DATA_WIDTH-1:0] ReadData;
     
     fetch_top fetch (
         .clk(clk),
@@ -90,9 +92,11 @@ module top #(
         .ReadData(ReadData)
     );
     
-    mux2 result (
+    mux4 result (
         .in0(ALUResult),
         .in1(ReadData),
+        .in2(PCPlus4),
+        .in3(ImmExt),
         .sel(ResultSrc),
         .out(Result)
     );
