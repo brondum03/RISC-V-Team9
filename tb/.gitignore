@@ -1,0 +1,29 @@
+# Verilator build directory
+obj_dir/
+Vdut
+V*/           # any generated Verilator models
+
+# Test output
+fetch.vcd
+*.vcd
+*.fst
+
+# Temporary program files
+program.hex
+
+# Compiled testbench binaries
+*.o
+*.out
+*.a
+
+# macOS junk
+.DS_Store
+
+# VSCode
+.vscode/
+
+# Ignore testbench folder
+tb/unit_tests
+
+# Ignore Verilator object directory (already present, but ensure coverage)
+obj_dir/

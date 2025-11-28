@@ -51,7 +51,7 @@ for file in "${files[@]}"; do
                 --exe $(realpath "$file") \
                 --prefix "Vdut" \
                 -o Vdut \
-                -CFLAGS "-isystem /opt/homebrew/Cellar/googletest/1.17.0/include"\
+                -CFLAGS "-std=c++17 -isystem /opt/homebrew/Cellar/googletest/1.17.0/include"\
                 -LDFLAGS "-L/opt/homebrew/Cellar/googletest/1.17.0/lib -lgtest -lgtest_main -lpthread" \
 
     # Build C++ project with automatically generated Makefile

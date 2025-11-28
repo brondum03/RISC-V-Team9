@@ -1,5 +1,7 @@
-//`include "mux4.sv"
-//`include "adder.sv"
+`include "../rtl/mux4.sv"
+`include "../rtl/adder.sv"
+`include "../rtl/fetch/program_counter.sv"
+`include "../rtl/fetch/instruction_memory.sv"
 
 module fetch_top#(
     parameter DATA_WIDTH = 32
@@ -21,7 +23,11 @@ mux4 pcmux(
     .in1(PCTarget),
     .in2(ALUResult),
     .in3(PC),
+<<<<<<< HEAD
     .sel(PCSrc),
+=======
+    .sel(PCsrc),
+>>>>>>> b1fcb5981799c15997d947e92e5e32e217a110f4
     .out(PCNext)
 );
 
@@ -49,4 +55,8 @@ instruction_memory Instruction_Memory(
     .out(Instr)
 );
 
+<<<<<<< HEAD
 endmodule
+=======
+endmodule
+>>>>>>> b1fcb5981799c15997d947e92e5e32e217a110f4
