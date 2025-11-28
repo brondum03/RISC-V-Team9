@@ -87,6 +87,7 @@ module top #(
 
     memory_top memory (
         .clk(clk),
+        .AddressingMode(AddressingMode),
         .ALUResult(ALUResult),
         .WriteData(WriteData),
         .MemWrite(MemWrite),
