@@ -11,7 +11,8 @@ module execute_top #(
     input   logic                   ALUSrc,
     output  logic [DATA_WIDTH-1:0]  ALUResult,
     output  logic [DATA_WIDTH-1:0]  WriteData,
-    output  logic                   Zero
+    output  logic                   Zero,
+    output  logic                   Negative
     
 );
     
@@ -24,7 +25,8 @@ module execute_top #(
         .ALUop2(SrcB),
         .ALUctrl(ALUControl),
         .ALUout(ALUResult),
-        .Zero(Zero)
+        .Zero(Zero),
+        .Negative(Negative)
     );
 
     mux2 mux (

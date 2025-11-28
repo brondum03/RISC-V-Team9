@@ -6,7 +6,6 @@
 
 module top #(
     parameter DATA_WIDTH = 32,
-    parameter ADDR_WIDTH = 5
 )(
     input   logic                       clk,
     input   logic                       rst,
@@ -21,8 +20,8 @@ module top #(
 
     /*decode*/
     // control unit inputs
-    logic                   negative;
     logic                   Zero;
+    logic                   Negative;
     logic                   MemWrite;
     logic                   ALUSrc;
     logic                   AddressingMode;
@@ -37,7 +36,7 @@ module top #(
     // execute
     logic [DATA_WIDTH-1:0] ALUResult; 
     logic [DATA_WIDTH-1:0] WriteData;
-
+    
     // memory
     logic [DATA_WIDTH-1:0] ReadData;
     
@@ -60,7 +59,7 @@ module top #(
         .Instr(Instr),
         .WD3(Result),
         .Zero(Zero),   
-        .negative(negative),     
+        .negative(Negative),     
         
         // output
         .PCSrc(PCSrc),      // selects mux for PCNext
@@ -71,7 +70,8 @@ module top #(
         .AddressingMode(AddressingMode),
         .RD1(RD1),             // SrcA
         .RD2(RD2),             // 0 for mux that outputs SrcB
-        .ImmExt(ImmExt)          // goes into PCTarget
+        .ImmExt(ImmExt),          // goes into PCTarget
+        .a0(a0)
     );
 
     execute_top execute (
@@ -82,7 +82,8 @@ module top #(
         .ALUSrc(ALUSrc),
         .ALUResult(ALUResult), 
         .Zero(Zero), 
-        .WriteData(WriteData)
+        .WriteData(WriteData),
+        .Negative(Negative)
     );
 
     memory_top memory (

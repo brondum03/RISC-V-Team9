@@ -22,10 +22,6 @@ module controlUnit (
     output logic [3:0]  ALUControl
 );
 
-    // internal wire connections
-    logic       Branch;
-    logic [1:0] ALUOp;
-
     // main decoder
     mainDecoder mainDec(
         .op        (op),

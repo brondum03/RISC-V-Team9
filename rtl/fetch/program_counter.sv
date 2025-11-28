@@ -10,9 +10,9 @@ module program_counter #(
 
 logic [DATA_WIDTH-1:0] pc;
 
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
         if (rst) begin
-            pc <= '0;
+            pc <= {DATA_WIDTH{1'b0}};
         end else begin
             pc <= PCNext;
         end
