@@ -1,8 +1,8 @@
 /*
 Ezekiel
 */
-`include "./subControlUnit/aluDecoder.sv"
-`include "./subControlUnit/mainDecoder.sv"
+`include "../rtl/decode/subControlUnit/aluDecoder.sv"
+`include "../rtl/decode/subControlUnit/mainDecoder.sv"
 
 module controlUnit (
     input logic [6:0]   op,

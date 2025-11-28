@@ -1,3 +1,5 @@
+`include "../rtl/memory/datamemory.sv"
+
 module memory_top #(
     parameter DATA_WIDTH = 32,
     parameter BYTE_WIDTH = 8

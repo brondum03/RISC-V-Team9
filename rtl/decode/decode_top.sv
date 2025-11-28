@@ -3,6 +3,10 @@ Ezekiel
 decode_top.sv
 */
 
+`include "../rtl/decode/register.sv"
+`include "../rtl/decode/signExtend.sv"
+`include "../rtl/decode/controlUnit.sv"
+
 module decode_top #(
     parameter DATA_WIDTH = 32
 )(

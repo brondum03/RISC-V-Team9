@@ -18,4 +18,7 @@ bfc0000c <iloop>:
 bfc0000c:	00058513          	mv	a0,a1
 bfc00010:	00158593          	addi	a1,a1,1
 bfc00014:	fe659ce3          	bne	a1,t1,bfc0000c <iloop>
-bfc00018:	fe0318e3          	bnez	t1,bfc00008 <mloop>
+bfc00018:	00051263          	bnez	a0,bfc0001c <finish>
+
+bfc0001c <finish>:
+bfc0001c:	00051063          	bnez	a0,bfc0001c <finish>
