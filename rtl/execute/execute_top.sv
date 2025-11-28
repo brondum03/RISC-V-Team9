@@ -1,4 +1,4 @@
-`include "../mux2.sv"
+//`include "mux2.sv"
 
 module execute_top #(
     parameter DATA_WIDTH = 32

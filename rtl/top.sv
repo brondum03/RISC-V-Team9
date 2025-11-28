@@ -3,6 +3,7 @@
 `include "./execute/execute_top.sv"
 `include "./memory/memory_top.sv"
 
+
 module top #(
     parameter DATA_WIDTH = 32,
     parameter ADDR_WIDTH = 5
@@ -43,7 +44,7 @@ module top #(
         .rst(rst),
         .PCsrc(PCSrc),
         .ImmExt(ImmExt),
-        .ALUResult(ALUResult)
+        .ALUResult(ALUResult),
         .Instr(Instr),
         .PCPlus4(PCPlus4)
     ); 

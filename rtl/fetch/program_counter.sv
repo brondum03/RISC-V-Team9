@@ -1,4 +1,4 @@
-`include "../mux2.sv"
+// `include "mux2.sv"
 
 module program_counter #(
     parameter DATA_WIDTH = 32

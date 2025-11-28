@@ -1,52 +1,52 @@
-    `include "../mux4.sv"
-    `include "../adder.sv"
-    
-    module fetch_top#(
-        parameter DATA_WIDTH = 32
-    )(
-        input   logic                          clk,
-        input   logic                          rst,
-        input   logic [1:0]                    PCsrc,
-        input   logic [DATA_WIDTH-1:0]         ImmExt,
-        input   logic [DATA_WIDTH-1:0]         ALUResult,
-        output  logic [DATA_WIDTH-1:0]         Instr,
-        output  logic [DATA_WIDTH-1:0]         PCPlus4
-    );
-    logic [DATA_WIDTH-1:0]          PC;
-    logic [DATA_WIDTH-1:0]          PCTarget; 
-    logic [DATA_WIDTH-1:0]          PCNext;  
+//`include "mux4.sv"
+//`include "adder.sv"
 
-    mux4 pcmux(
-        .in0(PCPlus4),
-        .in1(PCTarget),
-        .in2(ALUResult),
-        .in3(PC),
-        .sel(PCSrc),
-        .out(PCNext)
-    );
+module fetch_top#(
+    parameter DATA_WIDTH = 32
+)(
+    input   logic                          clk,
+    input   logic                          rst,
+    input   logic [1:0]                    PCsrc,
+    input   logic [DATA_WIDTH-1:0]         ImmExt,
+    input   logic [DATA_WIDTH-1:0]         ALUResult,
+    output  logic [DATA_WIDTH-1:0]         Instr,
+    output  logic [DATA_WIDTH-1:0]         PCPlus4
+);
+logic [DATA_WIDTH-1:0]          PC;
+logic [DATA_WIDTH-1:0]          PCTarget; 
+logic [DATA_WIDTH-1:0]          PCNext;  
 
-    adder adder_branch(
-        .in0(PC),
-        .in1(ImmExt),
-        .out(PCTarget)
-    );
+mux4 pcmux(
+    .in0(PCPlus4),
+    .in1(PCTarget),
+    .in2(ALUResult),
+    .in3(PC),
+    .sel(PCSrc),
+    .out(PCNext)
+);
 
-    adder adder_plus4(
-        .in0(PC),
-        .in1(4),
-        .out(PCPlus4)
-    );
+adder adder_branch(
+    .in0(PC),
+    .in1(ImmExt),
+    .out(PCTarget)
+);
 
-    program_counter ProgramCounter(
-        .clk(clk),
-        .rst(rst),
-        .PCNext(PCNext),
-        .out(PC)
-    );
+adder adder_plus4(
+    .in0(PC),
+    .in1(4),
+    .out(PCPlus4)
+);
 
-    instruction_memory Instruction_Memory(
-        .in(PC),
-        .out(Instr)
-    );
+program_counter ProgramCounter(
+    .clk(clk),
+    .rst(rst),
+    .PCNext(PCNext),
+    .out(PC)
+);
 
-    endmodule
+instruction_memory Instruction_Memory(
+    .in(PC),
+    .out(Instr)
+);
+
+endmodule
