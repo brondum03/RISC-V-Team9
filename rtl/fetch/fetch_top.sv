@@ -23,11 +23,7 @@ mux4 pcmux(
     .in1(PCTarget),
     .in2(ALUResult),
     .in3(PC),
-<<<<<<< HEAD
-    .sel(PCSrc),
-=======
     .sel(PCsrc),
->>>>>>> b1fcb5981799c15997d947e92e5e32e217a110f4
     .out(PCNext)
 );
 
@@ -55,8 +51,4 @@ instruction_memory Instruction_Memory(
     .out(Instr)
 );
 
-<<<<<<< HEAD
 endmodule
-=======
-endmodule
->>>>>>> b1fcb5981799c15997d947e92e5e32e217a110f4
