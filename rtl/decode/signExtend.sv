@@ -6,7 +6,7 @@ INCOMPLETE : working on control unit first
 module signExtend #(
     parameter DATA_WIDTH = 32
 )(
-    input logic [DATA_WIDTH-1:0]    Instr,
+    input logic [DATA_WIDTH-1:7]    Instr,
     input logic [2:0]               ImmSrc,
     
     output logic [DATA_WIDTH-1:0]   ImmExt

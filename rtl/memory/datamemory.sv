@@ -3,7 +3,7 @@ module datamemory #(
     parameter BYTE_WIDTH = 8
 )(    
     input   logic [DATA_WIDTH-1:0]  write_data,
-    input   logic [DATA_WIDTH-1:0]  address,
+    input   logic [16:0]            address,
     input   logic                   addr_mode,  //0 for word, 1 for byte
     input   logic                   write_enable,
     input   logic                   clk,

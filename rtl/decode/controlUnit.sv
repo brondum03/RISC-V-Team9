@@ -1,8 +1,8 @@
 /*
 Ezekiel
 */
-`include "./subControlUnit/aluDecoder.sv"
-`include "./subControlUnit/mainDecoder.sv"
+`include "../rtl/decode/subControlUnit/aluDecoder.sv"
+`include "../rtl/decode/subControlUnit/mainDecoder.sv"
 
 module controlUnit (
     input logic [6:0]   op,
@@ -21,10 +21,6 @@ module controlUnit (
     output logic        AddressingMode, // --> 0 for word, 1 for byte
     output logic [3:0]  ALUControl
 );
-
-    // internal wire connections
-    logic       Branch;
-    logic [1:0] ALUOp;
 
     // main decoder
     mainDecoder mainDec(

@@ -3,6 +3,10 @@ Ezekiel
 decode_top.sv
 */
 
+`include "../rtl/decode/register.sv"
+`include "../rtl/decode/signExtend.sv"
+`include "../rtl/decode/controlUnit.sv"
+
 module decode_top #(
     parameter DATA_WIDTH = 32
 )(
@@ -22,7 +26,8 @@ module decode_top #(
     output logic                    AddressingMode,
     output logic [DATA_WIDTH-1:0]   RD1, 
     output logic [DATA_WIDTH-1:0]   RD2,
-    output logic [DATA_WIDTH-1:0]   ImmExt
+    output logic [DATA_WIDTH-1:0]   ImmExt,
+    output logic [DATA_WIDTH-1:0]   a0
 );
 
     // internal wire connections
@@ -61,13 +66,14 @@ module decode_top #(
         .WD3(WD3),
         // output
         .RD1(RD1),
-        .RD2(RD2)
+        .RD2(RD2),
+        .a0(a0)
     );
 
     // signExtend.sv
     signExtend sign_extend(
         // input
-        .Instr(Instr),
+        .Instr(Instr[31:7]),
         .ImmSrc(ImmSrc),
         // output 
         .ImmExt(ImmExt)
