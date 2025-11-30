@@ -15,8 +15,7 @@ protected:
     {
         top->clk = 0;
         top->rst = 0;
-        top->pcsrc = 0;
-        top->immOP = 0;
+        top->PCNext = 0;
         // output: out
     }
 };
@@ -40,63 +39,46 @@ TEST_F(PCTestbench, IncrementBy4)
     // Now release reset
     top->rst = 0;
 
-    // Cycle 2: PC = 4
+    top->PCNext = 4;
     runSimulation(1);
     EXPECT_EQ(top->out, 4);
 
     // Cycle 3: PC = 8
+    top->PCNext = 8;
     runSimulation(1);
     EXPECT_EQ(top->out, 8);
 
     // Cycle 4: PC = 12
+    top->PCNext = 12;
     runSimulation(1);
     EXPECT_EQ(top->out, 12);
 }
 
-TEST_F(PCTestbench, BranchTest)
+
+TEST_F(PCTestbench, JumpTest)
 {
-
-    top->pcsrc = 1;
-    top->immOP = 8;
-
+    top->rst = 0;
+    top->PCNext = 100;
     runSimulation(1);
-    EXPECT_EQ(top->out, 8);
+    EXPECT_EQ(top->out, 100);
 }
 
-TEST_F(PCTestbench, MixedBranchAndIncrement)
+TEST_F(PCTestbench, SequentialUpdates)
 {
     top->rst = 0;
 
-    // branch
-    top->pcsrc = 1;
-    top->immOP = 12;
+    top->PCNext = 10;
     runSimulation(1);
-    EXPECT_EQ(top->out, 12);
+    EXPECT_EQ(top->out, 10);
 
-    // normal increment
-    top->pcsrc = 0;
+    top->PCNext = 20;
     runSimulation(1);
-    EXPECT_EQ(top->out, 16);
+    EXPECT_EQ(top->out, 20);
+
+    top->PCNext = 21;
+    runSimulation(1);
+    EXPECT_EQ(top->out, 21);
 }
-
-TEST_F(PCTestbench, UpdateOnClockEdge)
-{
-    top->rst = 0;
-
-    top->pcsrc = 0;
-    runSimulation(1);
-    EXPECT_EQ(top->out, 4);
-
-    top->pcsrc = 1;
-    top->immOP = 20;
-
-    // No eval yet → still 4
-    EXPECT_EQ(top->out, 4);
-
-    runSimulation(1);
-    EXPECT_EQ(top->out, 24);
-}
-
 
 int main(int argc, char **argv)
 {
@@ -108,7 +90,7 @@ int main(int argc, char **argv)
     tfp->open("waveform.vcd");
 
     testing::InitGoogleTest(&argc, argv);
-    auto res = RUN_ALL_TESTS();
+    int res = RUN_ALL_TESTS();
 
     top->final();
     tfp->close();
