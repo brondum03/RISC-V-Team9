@@ -3,6 +3,8 @@ Ezekiel
 decode_top.sv
 */
 
+// start pipelining decode
+
 `include "../rtl/decode/register.sv"
 `include "../rtl/decode/signExtend.sv"
 `include "../rtl/decode/controlUnit.sv"
