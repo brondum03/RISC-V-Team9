@@ -1,9 +1,10 @@
 module datamemory #(
     parameter DATA_WIDTH = 32,
-    parameter BYTE_WIDTH = 8
+    parameter BYTE_WIDTH = 8,
+    parameter ADDR_WIDTH = 17
 )(    
     input   logic [DATA_WIDTH-1:0]  write_data,
-    input   logic [16:0]            address,
+    input   logic [ADDR_WIDTH-1:0]  address,
     input   logic                   addr_mode,  //0 for word, 1 for byte
     input   logic                   write_enable,
     input   logic                   clk,
@@ -19,22 +20,25 @@ module datamemory #(
 
     always_comb begin
         if(addr_mode) begin //byte addressing
-            read_data = {24'b0, memory[address[16:0]]}; //extends the 8 bits(byte) to 32 bits with 0
+            read_data = {24'b0, memory[address]}; //extends the 8 bits(byte) to 32 bits with 0
         end else begin
-            read_data = {memory[address[16:0]+3], memory[address[16:0]+2], memory[address[16:0]+1], memory[address[16:0]]};
+            read_data = { memory[address+3], 
+                          memory[address+2], 
+                          memory[address+1], 
+                          memory[address] };
         end
     end
 
     always_ff @(posedge clk) begin
         if (write_enable) begin
             if (addr_mode) begin //byte mode
-                memory[address[16:0]] <= write_data[7:0];
+                memory[address] <= write_data[7:0];
             end
             else begin
-                memory[address[16:0]] <= write_data[7:0];
-                memory[address[16:0]+1] <= write_data[15:8];
-                memory[address[16:0]+2] <= write_data[23:16];
-                memory[address[16:0]+3] <= write_data[31:24];
+                memory[address] <= write_data[7:0];
+                memory[address+1] <= write_data[15:8];
+                memory[address+2] <= write_data[23:16];
+                memory[address+3] <= write_data[31:24];
             end
         end 
     end
