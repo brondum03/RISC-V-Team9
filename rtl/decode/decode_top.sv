@@ -10,7 +10,6 @@ module decode_top #(
     parameter ADDR_WIDTH = 5
 )(
     input logic                     clk,
-    input logic                     stall,
     input logic                     rst,
     input logic [DATA_WIDTH-1:0]    InstrD,
     input logic [DATA_WIDTH-1:0]    PCD,
@@ -109,7 +108,6 @@ module decode_top #(
         // input
         .clk(clk),
         .clear(PCSrcE | rst),
-        .en(~stall),
         .RegWriteD(RegWriteD),
         .ResultSrcD(ResultSrcD),
         .MemWriteD(MemWriteD),

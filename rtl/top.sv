@@ -5,7 +5,8 @@
 
 
 module top #(
-    parameter DATA_WIDTH = 32
+    parameter DATA_WIDTH = 32,
+    parameter ADDR_WIDTH = 5
 )(
     input   logic                       clk,
     input   logic                       rst,
@@ -18,26 +19,24 @@ module top #(
     logic [DATA_WIDTH-1:0] PCPlus4D;
     logic [DATA_WIDTH-1:0] PCD;
 
-    /*decode*/
-    // control unit inputs
-    logic                   Zero;
-    logic                   Negative;
-    logic                   MemWrite;
-    logic                   ALUSrc;
-    logic                   AddressingMode;
-    logic [1:0]             ResultSrc;
-    logic [3:0]             ALUControl;
-
-    // Register file wires
-    logic [DATA_WIDTH-1:0]  Result;
-    logic [DATA_WIDTH-1:0]  RD1; 
-    logic [DATA_WIDTH-1:0]  RD2; 
-    logic [DATA_WIDTH-1:0]  ImmExt; 
-
-    // execute
-    logic [1:0] PCSrcE; // -> connected to mux which selects PCNext
-    logic [DATA_WIDTH-1:0] ALUResult; 
-    logic [DATA_WIDTH-1:0] WriteData;
+    // decode  --> all inputs into execute stage (BRANDON)
+    logic                   PCSrcE;
+    logic                   RegWriteE;
+    logic [1:0]             ResultSrcE;
+    logic                   MemWriteE;
+    logic [1:0]             JumpE;
+    logic [2:0]             BranchE;
+    logic [3:0]             ALUControlE;
+    logic                   ALUSrcE;
+    logic [2:0]             AddressingModeE;
+    logic [DATA_WIDTH-1:0]  RD1E;
+    logic [DATA_WIDTH-1:0]  RD2E;
+    logic [DATA_WIDTH-1:0]  PCE;
+    logic [ADDR_WIDTH-1:0]  Rs1E;
+    logic [ADDR_WIDTH-1:0]  Rs2E;
+    logic [ADDR_WIDTH-1:0]  RdE;
+    logic [DATA_WIDTH-1:0]  PCPlus4E;
+    logic [DATA_WIDTH-1:0]  ImmExtE;
     
     // memory outputs 
     logic [DATA_WIDTH-1:0] ResultW;
@@ -66,26 +65,36 @@ module top #(
     ); 
     
     // complete decode_top
-    decode_top decode (
+    decode_top #(
+        DATA_WIDTH, ADDR_WIDTH
+    ) decode (
         // input
         .clk(clk),
         .rst(rst),
-        .stall(trigger),
-        .Instr(Instr),
-        .WD3(Result),
-        .Zero(Zero),   
-        .negative(Negative),     
-        
+        .InstrD(InstrD),
+        .PCD(PCD),
+        .PCPlus4D(PCPlus4D),
+        .RegWriteW(RegWriteW),
+        .ResultW(ResultW),
+        .RdW(RdW),
+        .PCSrcE(PCSrcE),
         // output
-        .PCSrc(PCSrc),      // selects mux for PCNext
-        .ResultSrc(ResultSrc),       // selects mux for ResultSrc
-        .MemWrite(MemWrite),        // WE in data memory
-        .ALUControl(ALUControl),      // input to ALU
-        .ALUSrc(ALUSrc),          // selects mux for SrcB
-        .AddressingMode(AddressingMode),
-        .RD1(RD1),             // SrcA
-        .RD2(RD2),             // 0 for mux that outputs SrcB
-        .ImmExt(ImmExt),          // goes into PCTarget
+        .RegWriteE(RegWriteE),
+        .ResultSrcE(ResultSrcE),
+        .MemWriteE(MemWriteE),
+        .JumpE(JumpE),
+        .BranchE(BranchE),
+        .ALUControlE(ALUControlE),
+        .ALUSrcE(ALUSrcE),
+        .AddressingModeE(AddressingModeE),
+        .RD1E(RD1E),
+        .RD2E(RD2E),
+        .PCE(PCE),
+        .Rs1E(Rs1E),
+        .Rs2E(Rs2E),
+        .RdE(RdE),
+        .PCPlus4E(PCPlus4E),
+        .ImmExtE(ImmExtE),
         .a0(a0)
     );
 

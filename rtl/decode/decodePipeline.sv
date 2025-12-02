@@ -4,7 +4,6 @@ module decodePipeline #(
 )(
     input logic     clk,
     input logic     clear,
-    input logic     en,
 
     // output from control unit
     input logic        RegWriteD,
@@ -50,7 +49,7 @@ module decodePipeline #(
 );
 
     always_ff @ (posedge clk) begin 
-        if(en && !clear) begin 
+        if(!clear) begin 
             RegWriteE       <= RegWriteD;
             ResultSrcE      <= ResultSrcD;
             MemWriteE       <= MemWriteD;
