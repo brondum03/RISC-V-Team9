@@ -14,9 +14,9 @@ module top #(
 );
 
     //fetch
-    logic [1:0] PCSrc; // -> connected to mux which selects PCNext
-    logic [DATA_WIDTH-1:0] Instr; //instruction from instruction memory
-    logic [DATA_WIDTH-1:0] PCPlus4;
+    logic [DATA_WIDTH-1:0] InstrD; //instruction from instruction memory
+    logic [DATA_WIDTH-1:0] PCPlus4D;
+    logic [DATA_WIDTH-1:0] PCD;
 
     /*decode*/
     // control unit inputs
@@ -27,6 +27,7 @@ module top #(
     logic                   AddressingMode;
     logic [1:0]             ResultSrc;
     logic [3:0]             ALUControl;
+
     // Register file wires
     logic [DATA_WIDTH-1:0]  Result;
     logic [DATA_WIDTH-1:0]  RD1; 
@@ -34,17 +35,34 @@ module top #(
     logic [DATA_WIDTH-1:0]  ImmExt; 
 
     // execute
+    logic [1:0] PCSrcE; // -> connected to mux which selects PCNext
     logic [DATA_WIDTH-1:0] ALUResult; 
     logic [DATA_WIDTH-1:0] WriteData;
     
+    // memory outputs 
+    logic [DATA_WIDTH-1:0] ResultW;
+    logic                  RegWriteW;
+    logic [4:0]            RdW;
+
+    // memory inputs 
+    logic [DATA_WIDTH-1:0] PCPlus4M;
+    logic [4:0]            RdM;
+    logic                  RegWriteM;
+    logic [1:0]            AddressingModeM;
+    logic [DATA_WIDTH-1:0] ALUResultM;
+    logic [DATA_WIDTH-1:0] WriteDataM;
+    logic [1:0]            ResultSrcM;
+    logic                  MemWriteM;
+
     fetch_top fetch (
         .clk(clk),
         .rst(rst),
-        .PCsrc(PCSrc),
-        .ImmExt(ImmExt),
-        .ALUResult(ALUResult),
-        .Instr(Instr),
-        .PCPlus4(PCPlus4)
+        .stall(trigger),
+        .PCsrcE(PCSrcE),
+        .PCTargetE(ALUResult),
+        .InstrD(InstrD),
+        .PCD(PCD),
+        .PCPlus4D(PCPlus4D)
     ); 
     
     // complete decode_top
@@ -85,14 +103,17 @@ module top #(
 
     memory_top memory (
         .clk(clk),
-        .AddressingMode(AddressingMode),
-        .ALUResult(ALUResult),
-        .ImmExt(ImmExt),
-        .PCPlus4(PCPlus4),
-        .ResultSrc(ResultSrc),
-        .WriteData(WriteData),
-        .MemWrite(MemWrite),
-        .Result(Result)
+        .ALUResultM(ALUResult),
+        .WriteDataM(WriteData),
+        .PCPlus4M(PCPlus4M),
+        .RdM(RdM), 
+        .RegWriteM(RegWriteM), 
+        .ResultSrcM(ResultSrc),
+        .MemWriteM(MemWriteM),
+        .AddressingModeM(AddressingModeM),
+        .ResultW(ResultW),
+        .RegWriteW(RegWriteW),    
+        .RdW(RdW)
     );
 
 endmodule
