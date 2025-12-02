@@ -72,7 +72,7 @@ module execute_top #(
         .AddressingModeM(AddressingModeM)
     );
     
-    mux4 RD1_mux(
+    mux4 Forward_mux_A(
         .in0(RD1E),
         .in1(ResultW),
         .in2(ALUResultM),
@@ -81,7 +81,7 @@ module execute_top #(
         .out(SrcAE)
     );
 
-    mux4 RD2_mux(
+    mux4 Forward_mux_B(
         .in0(RD2E),
         .in1(ResultW),
         .in2(ALUResultM),
