@@ -1,4 +1,4 @@
-// `include "../rtl/mux4.sv"
+`include "../rtl/mux4.sv"
 `include "../rtl/memory/datamemory.sv"
 
 module memory_top #(
@@ -18,34 +18,58 @@ module memory_top #(
     input   logic                     MemWriteM,
     input   logic                     AddressingModeM,
     
-    // outputs to MEM/WB pipeline register
-    output logic                      RegWrite_outM,
-    output logic [1:0]                ResultSrc_outM,
-    output logic [DATA_WIDTH-1:0]     ALUResult_outM,
-    output logic [DATA_WIDTH-1:0]     ReadData_outM,
-    output logic [4:0]                Rd_outM,
-    output logic [DATA_WIDTH-1:0]     PCPlus4_outM
+    // from to MEM/WB pipeline register
+    output logic  [DATA_WIDTH-1:0]    ResultW,
+    output logic                      RegWriteW,    
+    output logic [4:0]                RdW
 );
-    
-    // data memory access 
-    datamemory #(
-        .DATA_WIDTH(DATA_WIDTH),
-        .BYTE_WIDTH(BYTE_WIDTH),
-        .ADDR_WIDTH(ADDR_WIDTH)
-    ) Data_Memory (
-        .clk(clk),
-        .write_enable(MemWriteM),
-        .write_data(WriteDataM),
-        .address(ALUResultM[ADDR_WIDTH-1:0]),
-        .addr_mode(AddressingModeM),
-        .read_data(ReadData_outM)
-    );
+// wires to pipeline register
+logic [1:0]                ResultSrcW;
+logic [DATA_WIDTH-1:0]     ALUResultW;
+logic [4:0]                Rd_outM;
+logic [DATA_WIDTH-1:0]     PCPlus4M;
 
-    // passing signals to MEM/WB pipeline register
-    assign RegWrite_outM       = RegWriteM;
-    assign ResultSrc_outM      = ResultSrcM;
-    assign ALUResult_outM      = ALUResultM;
-    assign Rd_outM             = RdM;
-    assign PCPlus4_outM        = PCPlus4M;
+// data memory access 
+datamemory #(
+    .DATA_WIDTH(DATA_WIDTH),
+    .BYTE_WIDTH(BYTE_WIDTH),
+    .ADDR_WIDTH(ADDR_WIDTH)
+) Data_Memory (
+    .clk(clk),
+    .write_enable(MemWriteM),
+    .write_data(WriteDataM),
+    .address(ALUResultM[ADDR_WIDTH-1:0]),
+    .addr_mode(AddressingModeM),
+    .read_data(ReadData_outM)
+);
+
+memory_pipeline_register #(
+    .DATA_WIDTH(DATA_WIDTH)
+) memory_pipeline_register(
+    .clk(clk),
+    .RegWriteM(RegWriteM),
+    .ResultSrcM(ResultSrcM),
+    .ALUResultM(ALUResultM),
+    .ReadDataM(ReadData_outM),
+    .RdM(RdM),
+    .PCPlus4M(PCPlus4M),
+    .RegWriteW(RegWriteW),
+    .ResultSrcW(ResultSrcW),
+    .ALUResultW(ALUResultW),
+    .ReadDataW(ReadDataW),
+    .RdW(RdW),
+    .PCPlus4W(PCPlus4W)
+)
+
+mux4 #(
+    .DATA_WIDTH(DATA_WIDTH)
+) result_mux (
+    .sel(ResultSrcW),
+    .in0(ALUResultW),
+    .in1(ReadDataW),
+    .in2(PCPlus4W),
+    .in3('0),
+    .out(ResultW)
+);
 
 endmodule

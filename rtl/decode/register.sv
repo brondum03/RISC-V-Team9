@@ -21,7 +21,7 @@ module register #(
     logic [DATA_WIDTH-1:0] regfile [2**ADDR_WIDTH-1:0];   //32 registers in this case
 
     //write port of the register must be synchronous
-    always_ff @(posedge clk) begin
+    always_ff @(negedge clk) begin
             if(WE3 == 1'b1 && AD3 != {ADDR_WIDTH{1'b0}}) begin
                 regfile[AD3] <= WD3;
             end
