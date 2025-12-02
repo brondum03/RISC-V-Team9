@@ -3,14 +3,13 @@ module execute_pipeline #(
     parameter ADDR_WIDTH = 5
 )(
     input   logic                       clk,
-    input   logic                       rst,
-    input   logic                       clear,
+    input   logic                       flush,
     
     // inputs from decode stage 
     input   logic [DATA_WIDTH-1:0]      ALUResultE,
     input   logic [DATA_WIDTH-1:0]      WriteDataE,
     input   logic [DATA_WIDTH-1:0]      PCPlus4E,
-    input   logic [ADDR_WIDTH-1:0]      RdE,
+    input   logic [4:0]                 RdE,
     
     // control signals from decode stage
     input   logic                       RegWriteE,
@@ -22,7 +21,7 @@ module execute_pipeline #(
     output  logic [DATA_WIDTH-1:0]      ALUResultM,
     output  logic [DATA_WIDTH-1:0]      WriteDataM,
     output  logic [DATA_WIDTH-1:0]      PCPlus4M,
-    output  logic [ADDR_WIDTH-1:0]      RdM,
+    output  logic [4:0]                 RdM,
     
     // control signals to memory stage
     output  logic                       RegWriteM,
@@ -31,9 +30,10 @@ module execute_pipeline #(
     output  logic [2:0]                 AddressingModeM
 );
 
-    always_ff @(posedge clk or posedge rst) begin
-        if (rst || clear) begin
-            // flush pipeline registers
+    always_ff @(negedge clk) begin
+        
+        if (flush) begin // flush pipeline registers
+            //data paths
             ALUResultM <= '0;
             WriteDataM <= '0;
             PCPlus4M <= '0;
@@ -44,6 +44,7 @@ module execute_pipeline #(
             ResultSrcM <= 2'b00;
             MemWriteM <= 1'b0;
             AddressingModeM <= 3'b000;
+        
         end else begin
             // data paths
             ALUResultM <= ALUResultE;
