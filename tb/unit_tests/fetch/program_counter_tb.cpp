@@ -2,7 +2,7 @@
  *  Verifies the results of the program counter module.
  */
 
-#include "testbench.h"
+#include "../testbench.h"
 
 Vdut *top;
 VerilatedVcdC *tfp;

@@ -8,47 +8,58 @@ module fetch_top#(
 )(
     input   logic                          clk,
     input   logic                          rst,
-    input   logic [1:0]                    PCsrc,
-    input   logic [DATA_WIDTH-1:0]         ImmExt,
-    input   logic [DATA_WIDTH-1:0]         ALUResult,
-    output  logic [DATA_WIDTH-1:0]         Instr,
-    output  logic [DATA_WIDTH-1:0]         PCPlus4
+    input   logic                          stall,
+
+    input   logic [1:0]                    PCsrcE,
+    input   logic [DATA_WIDTH-1:0]         PCTargetE,
+
+    output  logic [DATA_WIDTH-1:0]         InstrD,
+    output  logic [DATA_WIDTH-1:0]         PCD,
+    output  logic [DATA_WIDTH-1:0]         PCPlus4D
 );
-logic [DATA_WIDTH-1:0]          PC;
-logic [DATA_WIDTH-1:0]          PCTarget; 
+
 logic [DATA_WIDTH-1:0]          PCNext;  
+logic [DATA_WIDTH-1:0]          PCF,
+logic [DATA_WIDTH-1:0]          PCPlus4F,
+logic [DATA_WIDTH-1:0]          InstrF,
 
 mux4 pcmux(
-    .in0(PCPlus4),
-    .in1(PCTarget),
-    .in2(ALUResult),
-    .in3(PC),
-    .sel(PCsrc),
+    .in0(PCPlus4F),
+    .in1(PCTargetE),
+    .sel(PCsrcE),
     .out(PCNext)
 );
 
-adder adder_branch(
-    .in0(PC),
-    .in1(ImmExt),
-    .out(PCTarget)
-);
-
 adder adder_plus4(
-    .in0(PC),
+    .in0(PCF),
     .in1(4),
-    .out(PCPlus4)
+    .out(PCPlus4F)
 );
 
 program_counter ProgramCounter(
     .clk(clk),
     .rst(rst),
+    .stall(stall),
     .PCNext(PCNext),
-    .out(PC)
+    .out(PCF)
 );
 
 instruction_memory Instruction_Memory(
-    .in(PC),
-    .out(Instr)
+    .in(PCF),
+    .out(InstrF)
 );
+
+fetch_pipeline Fetch_Pipeline(
+    .clk(clk),
+    .clear(rst),
+    .stall(stall),
+    .InstrF(InstrF),
+    .PCF(PCF),
+    .PCPLus4F(PCPlus4F),
+    .InstrD(InstrD),
+    .PCD(PCD),
+    .PCPlus4D(PCPlus4D)
+);
+
 
 endmodule

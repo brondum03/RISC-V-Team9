@@ -96,7 +96,7 @@ module controlUnit(
                     3'd7:
                         ALUControlD = 4'b0010; // AND
                     3'd1:
-                        ALUControlD = 4'b0101 // shift logical left
+                        ALUControlD = 4'b0101; // shift logical left
                     3'd5:
                         case(funct7)
                             1'b0 : ALUControlD = 4'b0110; // shift right logical
@@ -130,7 +130,7 @@ module controlUnit(
                     3'd7:
                         ALUControlD = 4'b0010; // AND
                     3'd1:
-                        ALUControlD = 4'b0101 // shift logical left
+                        ALUControlD = 4'b0101; // shift logical left
                     3'd5:
                         case(funct7)
                             1'b0 : ALUControlD = 4'b0110; // shift right logical

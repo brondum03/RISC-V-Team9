@@ -24,7 +24,7 @@ module memory_top #(
     output logic [DATA_WIDTH-1:0]     ALUResult_outM,
     output logic [DATA_WIDTH-1:0]     ReadData_outM,
     output logic [4:0]                Rd_outM,
-    output logic [DATA_WIDTH-1:0]     PCPlus4_outM,
+    output logic [DATA_WIDTH-1:0]     PCPlus4_outM
 );
     
     // data memory access 
@@ -38,7 +38,7 @@ module memory_top #(
         .write_data(WriteDataM),
         .address(ALUResultM[ADDR_WIDTH-1:0]),
         .addr_mode(AddressingModeM),
-        .read_data(ReadDataM)
+        .read_data(ReadData_outM)
     );
 
     // passing signals to MEM/WB pipeline register
@@ -47,5 +47,5 @@ module memory_top #(
     assign ALUResult_outM      = ALUResultM;
     assign Rd_outM             = RdM;
     assign PCPlus4_outM        = PCPlus4M;
-    
+
 endmodule

@@ -2,7 +2,7 @@
  *  Verifies the results of the ALU module.
  */
 
-#include "base_testbench.h"
+#include "../base_testbench.h"
 
 Vdut *top;
 VerilatedVcdC *tfp;
