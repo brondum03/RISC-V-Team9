@@ -53,23 +53,18 @@ module top #(
     logic                   RegWriteM;
     logic                   MemWriteM;
     logic [DATA_WIDTH-1:0]  PCTargetE;
-    logic                   PCSrcE;
     logic                   StallF;
     logic                   StallD;
     logic                   FlushD;
     logic                   FlushE;
     
-    // memory > writeback 
-    logic [DATA_WIDTH-1:0]  ResultW;
-    logic                   RegWriteW;
-    logic [4:0]             RdW;
 
     fetch_top fetch (
         .clk(clk),
         .rst(rst),
         .stall(trigger),
         .PCsrcE(PCSrcE),
-        .PCTargetE(ALUResult),
+        .PCTargetE(PCTargetE),
         .InstrD(InstrD),
         .PCD(PCD),
         .PCPlus4D(PCPlus4D)
@@ -152,8 +147,8 @@ module top #(
 
     memory_top memory (
         .clk(clk),
-        .ALUResultM(ALUResult),
-        .WriteDataM(WriteData),
+        .ALUResultM(ALUResultM),
+        .WriteDataM(WriteDataM),
         .PCPlus4M(PCPlus4M),
         .RdM(RdM), 
         .RegWriteM(RegWriteM), 

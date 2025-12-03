@@ -5,6 +5,12 @@ decode_top.sv
 
 // start pipelining decode
 
+`include "../rtl/decode/controlUnit.sv"
+`include "../rtl/decode/register.sv"
+`include "../rtl/decode/signExtend.sv"
+`include "../rtl/decode/decodePipeline.sv"
+
+
 module decode_top #(
     parameter DATA_WIDTH = 32,
     parameter ADDR_WIDTH = 5

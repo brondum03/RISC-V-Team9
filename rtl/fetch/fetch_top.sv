@@ -1,7 +1,8 @@
-// `include "../rtl/mux4.sv"
-// `include "../rtl/adder.sv"
+`include "../rtl/mux4.sv"
+`include "../rtl/adder.sv"
 `include "../rtl/fetch/program_counter.sv"
 `include "../rtl/fetch/instruction_memory.sv"
+`include "../rtl/fetch/fetch_pipeline.sv"
 
 module fetch_top#(
     parameter DATA_WIDTH = 32
@@ -19,9 +20,9 @@ module fetch_top#(
 );
 
 logic [DATA_WIDTH-1:0]          PCNext;  
-logic [DATA_WIDTH-1:0]          PCF,
-logic [DATA_WIDTH-1:0]          PCPlus4F,
-logic [DATA_WIDTH-1:0]          InstrF,
+logic [DATA_WIDTH-1:0]          PCF;
+logic [DATA_WIDTH-1:0]          PCPlus4F;
+logic [DATA_WIDTH-1:0]          InstrF;
 
 mux2 pcmux(
     .in0(PCPlus4F),
@@ -55,7 +56,7 @@ fetch_pipeline Fetch_Pipeline(
     .stall(stall),
     .InstrF(InstrF),
     .PCF(PCF),
-    .PCPLus4F(PCPlus4F),
+    .PCPlus4F(PCPlus4F),
     .InstrD(InstrD),
     .PCD(PCD),
     .PCPlus4D(PCPlus4D)

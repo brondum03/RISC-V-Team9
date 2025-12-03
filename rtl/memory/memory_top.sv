@@ -1,5 +1,6 @@
-`include "../rtl/mux4.sv"
+// `include "../rtl/mux4.sv"
 `include "../rtl/memory/datamemory.sv"
+`include "../rtl/memory/memory_pipeline_register.sv"
 
 module memory_top #(
     parameter DATA_WIDTH = 32,
@@ -26,8 +27,9 @@ module memory_top #(
 // wires to pipeline register
 logic [1:0]                ResultSrcW;
 logic [DATA_WIDTH-1:0]     ALUResultW;
-logic [4:0]                Rd_outM;
-logic [DATA_WIDTH-1:0]     PCPlus4M;
+logic [DATA_WIDTH-1:0]     Read_data_out;
+logic [DATA_WIDTH-1:0]     PCPlus4W;
+logic [DATA_WIDTH-1:0]     ReadDataW;
 
 // data memory access 
 datamemory #(
@@ -40,7 +42,7 @@ datamemory #(
     .write_data(WriteDataM),
     .address(ALUResultM[ADDR_WIDTH-1:0]),
     .addr_mode(AddressingModeM),
-    .read_data(ReadData_outM)
+    .read_data(Read_data_out)
 );
 
 memory_pipeline_register #(
@@ -50,7 +52,7 @@ memory_pipeline_register #(
     .RegWriteM(RegWriteM),
     .ResultSrcM(ResultSrcM),
     .ALUResultM(ALUResultM),
-    .ReadDataM(ReadData_outM),
+    .ReadDataM(Read_data_out),
     .RdM(RdM),
     .PCPlus4M(PCPlus4M),
     .RegWriteW(RegWriteW),
@@ -59,7 +61,7 @@ memory_pipeline_register #(
     .ReadDataW(ReadDataW),
     .RdW(RdW),
     .PCPlus4W(PCPlus4W)
-)
+);
 
 mux4 #(
     .DATA_WIDTH(DATA_WIDTH)
