@@ -41,11 +41,11 @@ module execute_top #(
     output  logic                   RegWriteM,
     output  logic                   MemWriteM,
 
-    output  logic [DATA_WIDTH-1:0]  PCTargetE,
-    output  logic [1:0]             PCSrcE,
-    output  logic                   ZeroE,
-    output  logic                   NegativeE
-    
+    output  logic [DATA_WIDTH-1:0]  PCTargetE, 
+    output  logic [1:0]             PCSrcE, 
+    output  logic                   ZeroE, // these will need to be internal logic
+    output  logic                   NegativeE // these will need to be internal logic
+    output  logic                   less_unsignedE // these will need to be internal logic
 );
 
     logic [DATA_WIDTH-1:0]  SrcAE;    
@@ -64,7 +64,8 @@ module execute_top #(
         .ALUctrl(ALUControlE),
         .ALUout(ALUResultE),
         .Zero(ZeroE),
-        .Negative(NegativeE)
+        .Negative(NegativeE),
+        .less_unsigned(less_unsignedE)
     );
 
     execute_pipeline_register #(

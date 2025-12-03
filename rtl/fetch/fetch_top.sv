@@ -10,7 +10,7 @@ module fetch_top#(
     input   logic                          rst,
     input   logic                          stall,
 
-    input   logic [1:0]                    PCsrcE,
+    input   logic                          PCsrcE,
     input   logic [DATA_WIDTH-1:0]         PCTargetE,
 
     output  logic [DATA_WIDTH-1:0]         InstrD,
@@ -23,7 +23,7 @@ logic [DATA_WIDTH-1:0]          PCF,
 logic [DATA_WIDTH-1:0]          PCPlus4F,
 logic [DATA_WIDTH-1:0]          InstrF,
 
-mux4 pcmux(
+mux2 pcmux(
     .in0(PCPlus4F),
     .in1(PCTargetE),
     .sel(PCsrcE),
