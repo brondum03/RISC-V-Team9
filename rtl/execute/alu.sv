@@ -20,7 +20,7 @@ module alu#(
     output  logic [DATA_WIDTH-1:0]  ALUout,
     output  logic                   Zero,
     output  logic                   Negative,
-    output  logic                   less_unsigned
+    output  logic                   Less_unsigned
 );
 
     always_comb begin
@@ -43,5 +43,5 @@ module alu#(
     //after subtraction, if ALUout = 0, meaning both inputs are the same, then EQ will output 1
     assign Zero = (ALUout == {DATA_WIDTH{1'b0}}); 
     assign Negative = (ALUout[DATA_WIDTH-1] == 1); //flag high if negative
-    assign less_unsigned = $unsigned(ALUop1) < $unsigned(ALUop2);
+    assign Less_unsigned = $unsigned(ALUop1) < $unsigned(ALUop2);
 endmodule

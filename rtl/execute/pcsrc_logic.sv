@@ -2,25 +2,25 @@ module pcsrc_logic (
     input   logic           ZeroE,
     input   logic [2:0]     BranchE,
     input   logic           JumpE,
-    input  logic           NegativeE,
-    input  logic           less_unsignedE,
+    input   logic           NegativeE,
+    input   logic           Less_unsignedE,
     output  logic           PCSrcE
 );
 
-    logic   branch;
+    logic   Branch;
 
     always_comb begin
         // determine if branch is taken
         case (BranchE)
-            3'b001: branch = ZeroE;           // beq
-            3'b010: branch = ~ZeroE;           // bne
-            3'b011: branch = NegativeE;        // blt
-            3'b100: branch = ~NegativeE;      // bge
-            3'b101: branch = less_unsignedE;   // BLTU 
-            3'b110: branch = ~less_unsignedE;  // BGEU 
-            default: branch = 0;
+            3'b001: Branch = ZeroE;             // beq
+            3'b010: Branch = ~ZeroE;            // bne
+            3'b011: Branch = NegativeE;         // blt
+            3'b100: Branch = ~NegativeE;        // bge
+            3'b101: Branch = Less_unsignedE;    // bltu 
+            3'b110: Branch = ~Less_unsignedE;   // bgeu 
+            default: Branch = 0;
         endcase
-        PCSrcE = JumpE | branch;
+        PCSrcE = JumpE | Branch;
 
     end
 

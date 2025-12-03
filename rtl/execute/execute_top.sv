@@ -9,27 +9,35 @@ module execute_top #(
     input   logic                   clk,
     input   logic                   rst,                   
 
+    // alu
     input   logic [DATA_WIDTH-1:0]  RD1E,
     input   logic [DATA_WIDTH-1:0]  RD2E,
+    input   logic [DATA_WIDTH-1:0]  ResultW,
+    input   logic [3:0]             ALUControlE,
+    input   logic                   ALUSrcE,
+
+    // adder
     input   logic [DATA_WIDTH-1:0]  PCE, 
     input   logic [DATA_WIDTH-1:0]  ImmExtE,
     input   logic [DATA_WIDTH-1:0]  PCPlus4E,
     input   logic [4:0]             RdE,
-    input   logic [3:0]             ALUControlE,
-    input   logic                   ALUSrcE,
     
-    input   logic [DATA_WIDTH-1:0]  ResultW,
+    // control signals
     input   logic [2:0]             AddressingModeE,
     input   logic [1:0]             ResultSrcE,
     input   logic                   RegWriteE,
     input   logic                   MemWriteE,
 
+    // hazard unit 
     input   logic [4:0]             Rs1E,
     input   logic [4:0]             Rs2E,
     input   logic [4:0]             RdW,
     input   logic                   RegWriteW,
+    input   logic [4:0]             Rs1D,
+    input   logic [4:0]             Rs2D,
 
-    input   logic                   BranchE,
+    // pc source
+    input   logic [2:0]             BranchE,
     input   logic                   JumpE,  
         
     output  logic [DATA_WIDTH-1:0]  ALUResultM,
@@ -42,17 +50,27 @@ module execute_top #(
     output  logic                   MemWriteM,
 
     output  logic [DATA_WIDTH-1:0]  PCTargetE, 
-    output  logic [1:0]             PCSrcE, 
-    output  logic                   ZeroE, // these will need to be internal logic
-    output  logic                   NegativeE // these will need to be internal logic
-    output  logic                   less_unsignedE // these will need to be internal logic
+    output  logic                   PCSrcE, 
+
+    output logic                    StallF,
+    output logic                    StallD,
+    output logic                    FlushD,
+    output logic                    FlushE
 );
 
+    logic [DATA_WIDTH-1:0]  ALUResultE;
+
+    // pc source internal logic
+    logic                   ZeroE;
+    logic                   NegativeE;
+    logic                   Less_unsignedE;
+    
+    // alu operand internal logic
     logic [DATA_WIDTH-1:0]  SrcAE;    
     logic [DATA_WIDTH-1:0]  SrcBE;
     logic [DATA_WIDTH-1:0]  Forward_mux_B_result;
-    logic [DATA_WIDTH-1:0]  ALUResultE;
 
+    // forwarding internal logic
     logic [1:0]             ForwardAE;
     logic [1:0]             ForwardBE;
     
@@ -65,7 +83,7 @@ module execute_top #(
         .ALUout(ALUResultE),
         .Zero(ZeroE),
         .Negative(NegativeE),
-        .less_unsigned(less_unsignedE)
+        .Less_unsigned(Less_unsignedE)
     );
 
     execute_pipeline_register #(
@@ -118,9 +136,9 @@ module execute_top #(
     );
 
     adder PC_adder(
-        .a(PCE),
-        .b(ImmExtE),
-        .sum(PCTargetE)
+        .in0(PCE),
+        .in1(ImmExtE),
+        .out(PCTargetE)
     );
 
     hazard_unit hazard_unit(
@@ -130,14 +148,25 @@ module execute_top #(
         .RdW(RdW),
         .RegWriteM(RegWriteM),
         .RegWriteW(RegWriteW),
+        .ResultSrcE(ResultSrcE),
+        .RdE(RdE),
+        .Rs1D(Rs1D),
+        .Rs2D(Rs2D),
+        .PCSrcE(PCSrcE),
         .ForwardAE(ForwardAE),
-        .ForwardBE(ForwardBE)
+        .ForwardBE(ForwardBE),
+        .StallF(StallF),
+        .StallD(StallD),
+        .FlushD(FlushD),
+        .FlushE(FlushE)
     );
 
     pcsrc_logic pcsrc_logic(
         .ZeroE(ZeroE),
         .BranchE(BranchE), 
-        .JumpE(JumpE),   
+        .JumpE(JumpE),
+        .NegativeE(NegativeE),
+        .Less_unsignedE(Less_unsignedE),   
         .PCSrcE(PCSrcE)
     );
 
