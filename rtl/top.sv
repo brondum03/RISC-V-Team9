@@ -14,44 +14,55 @@ module top #(
     output  logic [DATA_WIDTH-1:0]      a0
 );
 
-    //fetch
-    logic [DATA_WIDTH-1:0] InstrD; //instruction from instruction memory
-    logic [DATA_WIDTH-1:0] PCPlus4D;
-    logic [DATA_WIDTH-1:0] PCD;
+    //fetch > decode
+    logic [DATA_WIDTH-1:0]  InstrD;     // instruction from instruction memory
+    logic [DATA_WIDTH-1:0]  PCPlus4D;
+    logic [DATA_WIDTH-1:0]  PCD;
 
-    // decode  --> all inputs into execute stage (BRANDON)
-    logic                   PCSrcE;
-    logic                   RegWriteE;
-    logic [1:0]             ResultSrcE;
-    logic                   MemWriteE;
-    logic [1:0]             JumpE;
-    logic [2:0]             BranchE;
-    logic [3:0]             ALUControlE;
-    logic                   ALUSrcE;
-    logic [2:0]             AddressingModeE;
+    // decode > execute
     logic [DATA_WIDTH-1:0]  RD1E;
     logic [DATA_WIDTH-1:0]  RD2E;
+    logic [DATA_WIDTH-1:0]  ResultW;
+    logic [3:0]             ALUControlE;
+    logic                   ALUSrcE;
     logic [DATA_WIDTH-1:0]  PCE;
+    logic [DATA_WIDTH-1:0]  ImmExtE;
+    logic [DATA_WIDTH-1:0]  PCPlus4E;
+    logic [ADDR_WIDTH-1:0]  RdE;
+    logic [2:0]             AddressingModeE;
+    logic [1:0]             ResultSrcE;
+    logic                   RegWriteE;
+    logic                   MemWriteE;
+    logic                   PCSrcE;
     logic [ADDR_WIDTH-1:0]  Rs1E;
     logic [ADDR_WIDTH-1:0]  Rs2E;
-    logic [ADDR_WIDTH-1:0]  RdE;
-    logic [DATA_WIDTH-1:0]  PCPlus4E;
-    logic [DATA_WIDTH-1:0]  ImmExtE;
+    logic [4:0]             RdW;
+    logic                   RegWriteW;
+    logic [4:0]             Rs1D;
+    logic [4:0]             Rs2D;
+    logic [2:0]             BranchE;
+    logic [1:0]             JumpE; 
     
-    // memory outputs 
-    logic [DATA_WIDTH-1:0] ResultW;
-    logic                  RegWriteW;
-    logic [4:0]            RdW;
-
-    // memory inputs 
-    logic [DATA_WIDTH-1:0] PCPlus4M;
-    logic [4:0]            RdM;
-    logic                  RegWriteM;
-    logic [1:0]            AddressingModeM;
-    logic [DATA_WIDTH-1:0] ALUResultM;
-    logic [DATA_WIDTH-1:0] WriteDataM;
-    logic [1:0]            ResultSrcM;
-    logic                  MemWriteM;
+    // execute > memory
+    logic [DATA_WIDTH-1:0]  ALUResultM;
+    logic [DATA_WIDTH-1:0]  WriteDataM;
+    logic [DATA_WIDTH-1:0]  PCPlus4M;
+    logic [4:0]             RdM;
+    logic [1:0]             AddressingModeM;
+    logic [1:0]             ResultSrcM;
+    logic                   RegWriteM;
+    logic                   MemWriteM;
+    logic [DATA_WIDTH-1:0]  PCTargetE;
+    logic                   PCSrcE;
+    logic                   StallF;
+    logic                   StallD;
+    logic                   FlushD;
+    logic                   FlushE;
+    
+    // memory > writeback 
+    logic [DATA_WIDTH-1:0]  ResultW;
+    logic                   RegWriteW;
+    logic [4:0]             RdW;
 
     fetch_top fetch (
         .clk(clk),
@@ -64,7 +75,6 @@ module top #(
         .PCPlus4D(PCPlus4D)
     ); 
     
-    // complete decode_top
     decode_top #(
         DATA_WIDTH, ADDR_WIDTH
     ) decode (
@@ -99,15 +109,45 @@ module top #(
     );
 
     execute_top execute (
-        .RD1(RD1),   
-        .RD2(RD2), 
-        .ImmExt(ImmExt),
-        .ALUControl(ALUControl),
-        .ALUSrc(ALUSrc),
-        .ALUResult(ALUResult), 
-        .Zero(Zero), 
-        .WriteData(WriteData),
-        .Negative(Negative)
+        // input
+        .clk(clk),
+        .rst(rst),
+        .RD1E(RD1E),   
+        .RD2E(RD2E), 
+        .ResultW(ResultW),
+        .ALUControlE(ALUControlE),
+        .ALUSrcE(ALUSrcE),
+        .PCE(PCE),
+        .ImmExtE(ImmExtE),
+        .PCPlus4E(PCPlus4E),
+        .RdE(RdE),
+        .AddressingModeE(AddressingModeE),
+        .ResultSrcE(ResultSrcE),
+        .RegWriteE(RegWriteE),
+        .MemWriteE(MemWriteE),
+        .Rs1E(Rs1E),
+        .Rs2E(Rs2E),
+        .RdW(RdW),
+        .RegWriteW(RegWriteW),
+        .Rs1D(Rs1D),
+        .Rs2D(Rs2D),
+        .BranchE(BranchE),
+        .JumpE(JumpE),
+        // output
+        .ALUResultM(ALUResultM), 
+        .WriteDataM(WriteDataM),
+        .PCPlus4M(PCPlus4M),
+        .RdM(RdM),
+        .AddressingModeM(AddressingModeM),
+        .ResultSrcM(ResultSrcM),
+        .RegWriteM(RegWriteM),
+        .MemWriteM(MemWriteM),
+        .PCTargetE(PCTargetE),
+        .PCSrcE(PCSrcE),
+        .StallF(StallF),
+        .StallD(StallD),
+        .FlushD(FlushD),
+        .FlushE(FlushE)
     );
 
     memory_top memory (
@@ -117,7 +157,7 @@ module top #(
         .PCPlus4M(PCPlus4M),
         .RdM(RdM), 
         .RegWriteM(RegWriteM), 
-        .ResultSrcM(ResultSrc),
+        .ResultSrcM(ResultSrcM),
         .MemWriteM(MemWriteM),
         .AddressingModeM(AddressingModeM),
         .ResultW(ResultW),
