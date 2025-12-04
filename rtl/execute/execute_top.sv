@@ -1,4 +1,4 @@
-// `include "../rtl/mux2.sv"
+`include "../rtl/mux2.sv"
 `include "../rtl/execute/alu.sv"
 
 module execute_top #(

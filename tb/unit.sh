@@ -5,7 +5,7 @@
 
 # Constants
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
-TEST_FOLDER=$(realpath "$SCRIPT_DIR/tests")
+TEST_FOLDER=$(realpath "$SCRIPT_DIR/unit_tests")
 RTL_FOLDER=$(realpath "$SCRIPT_DIR/../rtl")
 GREEN=$(tput setaf 2)
 RED=$(tput setaf 1)
@@ -19,19 +19,26 @@ fails=0
 if [[ $# -eq 0 ]]; then
     # If no arguments provided, run all tests
     files=(${TEST_FOLDER}/*.cpp)
+
 else
     # If arguments provided, use them as input files
     files=("$@")
 fi
 
-cd $SCRIPT_DIR
+# Cleanup
+rm -rf obj_dir
 
-# Wipe previous test output
-rm -rf test_out/*
+cd $SCRIPT_DIR
 
 # Iterate through files
 for file in "${files[@]}"; do
     name=$(basename "$file" _tb.cpp | cut -f1 -d\-)
+    SVFILE=$(find "$RTL_FOLDER" -name "${name}.sv" | head -n 1)
+
+    if [[ ! -f "$SVFILE" ]]; then
+    echo "ERROR: Could not find module file for $name"
+    exit 1
+    fi
 
     # If verify.cpp -> we are testing the top module
     if [ $name == "verify.cpp" ]; then
@@ -40,29 +47,34 @@ for file in "${files[@]}"; do
 
     # Translate Verilog -> C++ including testbench
     verilator   -Wall --trace \
-                -cc ${RTL_FOLDER}/${name}.sv \
-                --exe ${file} \
-                -y ${RTL_FOLDER} \
+                -cc "$SVFILE" \
+                --exe $(realpath "$file") \
                 --prefix "Vdut" \
                 -o Vdut \
-                -CFLAGS "-std=c++17 -isystem /opt/homebrew/Cellar/googletest/1.17.0/include"\
-                -LDFLAGS "-lgtest -lgtest_main -lpthread"
-                # -LDFLAGS "-L/opt/homebrew/Cellar/googletest/1.17.0/lib -lgtest -lgtest_main -lpthread"
+                -CFLAGS "-isystem /opt/homebrew/Cellar/googletest/1.17.0/include"\
+                -LDFLAGS "-L/opt/homebrew/Cellar/googletest/1.17.0/lib -lgtest -lgtest_main -lpthread" \
 
     # Build C++ project with automatically generated Makefile
     make -j -C obj_dir/ -f Vdut.mk
-
+    
     # Run executable simulation file
     ./obj_dir/Vdut
-
+    
     # Check if the test succeeded or not
     if [ $? -eq 0 ]; then
         ((passes++))
     else
         ((fails++))
     fi
-
+    
 done
 
-# Save obj_dir in test_out
-mv obj_dir test_out/
+# Exit as a pass or fail (for CI purposes)
+if [ $fails -eq 0 ]; then
+    echo "${GREEN}Success! All ${passes} test(s) passed!"
+    exit 0
+else
+    total=$((passes + fails))
+    echo "${RED}Failure! Only ${passes} test(s) passed out of ${total}."
+    exit 1
+fi
