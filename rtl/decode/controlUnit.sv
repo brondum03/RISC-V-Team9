@@ -224,7 +224,7 @@ module controlUnit(
                 AddressingModeD = 3'b000;
             end
             // opcode 0110111 --> lui
-            7'b1100111: begin 
+            7'b0110111: begin 
                 RegWriteD = 1;
                 ResultSrcD = 2'b00; // ALUResultM
                 MemWriteD = 0;
@@ -236,7 +236,7 @@ module controlUnit(
                 AddressingModeD = 3'b000;
             end
             // opcode 0010111 --> auipc
-            7'b1100111: begin 
+            7'b0010111: begin 
                 RegWriteD = 1;
                 ResultSrcD = 2'b00; // ALUResultM
                 MemWriteD = 0;

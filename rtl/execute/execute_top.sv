@@ -42,7 +42,7 @@ module execute_top #(
 
     // pc source
     input   logic [2:0]             BranchE,
-    input   logic                   JumpE,  
+    input   logic [1:0]             JumpE,  
         
     output  logic [DATA_WIDTH-1:0]  ALUResultM,
     output  logic [DATA_WIDTH-1:0]  WriteDataM,

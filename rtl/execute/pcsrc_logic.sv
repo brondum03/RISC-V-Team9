@@ -1,7 +1,7 @@
 module pcsrc_logic (
     input   logic           ZeroE,
     input   logic [2:0]     BranchE,
-    input   logic           JumpE,
+    input   logic [1:0]     JumpE,
     input   logic           NegativeE,
     input   logic           Less_unsignedE,
     output  logic           PCSrcE
@@ -20,7 +20,7 @@ module pcsrc_logic (
             3'b110: Branch = ~Less_unsignedE;   // bgeu 
             default: Branch = 0;
         endcase
-        PCSrcE = JumpE | Branch;
+        PCSrcE = (|JumpE) | Branch;
 
     end
 

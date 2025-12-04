@@ -17,7 +17,7 @@ module memory_top #(
     input   logic                     RegWriteM,
     input   logic [1:0]               ResultSrcM,
     input   logic                     MemWriteM,
-    input   logic                     AddressingModeM,
+    input   logic [2:0]               AddressingModeM,
     
     // from to MEM/WB pipeline register
     output logic  [DATA_WIDTH-1:0]    ResultW,

@@ -48,7 +48,7 @@ module top #(
     logic [DATA_WIDTH-1:0]  WriteDataM;
     logic [DATA_WIDTH-1:0]  PCPlus4M;
     logic [4:0]             RdM;
-    logic [1:0]             AddressingModeM;
+    logic [2:0]             AddressingModeM;
     logic [1:0]             ResultSrcM;
     logic                   RegWriteM;
     logic                   MemWriteM;
