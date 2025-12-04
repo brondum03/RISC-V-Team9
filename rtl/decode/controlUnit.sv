@@ -160,6 +160,7 @@ module controlUnit(
                     3'd2: AddressingModeD = 3'b010; // lw
                     3'd4: AddressingModeD = 3'b011; // lbu
                     3'd5: AddressingModeD = 3'b100; // lhu
+                    default : AddressingModeD = 3'b000;
                 endcase
             end
             // opcode = 0100011
@@ -176,6 +177,7 @@ module controlUnit(
                     3'd0: AddressingModeD = 3'b000; // sb
                     3'd1: AddressingModeD = 3'b001; // sh
                     3'd2: AddressingModeD = 3'b010; // sw
+                    default : AddressingModeD = 3'b000;
                 endcase
             end
             // opcode = 1100011 --> branch instructions

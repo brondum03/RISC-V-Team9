@@ -4,7 +4,7 @@ module program_counter #(
   // interface signals
   input  logic             clk,       
   input  logic             rst,
-  input  logic             stall,
+  input  logic             StallF,
   input  logic [DATA_WIDTH-1:0] PCNext,
   output logic [DATA_WIDTH-1:0] out   
 );
@@ -14,7 +14,7 @@ logic [DATA_WIDTH-1:0] pc;
 always_ff @(posedge clk) begin
     if (rst)
         pc <= 0;
-    else if (!stall)
+    else if (!StallF)
         pc <= PCNext;
 end
 

@@ -31,6 +31,8 @@ module hazard_unit(
 );
     
     logic lwStall;
+    // unused bit
+    logic unused = ResultSrcE[1];
 
     always_comb begin
 

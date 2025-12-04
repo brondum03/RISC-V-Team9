@@ -8,7 +8,7 @@ module execute_pipeline_register #(
     input   logic [DATA_WIDTH-1:0]      ALUResultE,
     input   logic [DATA_WIDTH-1:0]      WriteDataE,
     input   logic [DATA_WIDTH-1:0]      PCPlus4E,
-    input   logic [4:0]                 RdE,
+    input   logic [ADDR_WIDTH-1:0]      RdE,
     
     // control signals from decode stage
     input   logic                       RegWriteE,
@@ -20,7 +20,7 @@ module execute_pipeline_register #(
     output  logic [DATA_WIDTH-1:0]      ALUResultM,
     output  logic [DATA_WIDTH-1:0]      WriteDataM,
     output  logic [DATA_WIDTH-1:0]      PCPlus4M,
-    output  logic [4:0]                 RdM,
+    output  logic [ADDR_WIDTH-1:0]      RdM,
     
     // control signals to memory stage
     output  logic                       RegWriteM,

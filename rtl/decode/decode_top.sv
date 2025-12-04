@@ -26,7 +26,7 @@ module decode_top #(
     input logic [4:0]               RdW, // AD3
 
     // PCSrcE indicates if there is a jump or branch 
-    input logic                     PCSrcE, // FlushE = lwStall | PCSrcE
+    input logic                     FlushE, // FlushE = lwStall | PCSrcE
     // used to drive the flush. if PCSrc = 1 then the next instr is invalid bc jump was taken
 
     // output from control unit
@@ -43,6 +43,8 @@ module decode_top #(
     output  logic [DATA_WIDTH-1:0] RD2E,  //read data from address 2
     // output from previous pipeline
     output logic [DATA_WIDTH-1:0]    PCE,
+    output logic [ADDR_WIDTH-1:0]    Rs1D_o,
+    output logic [ADDR_WIDTH-1:0]    Rs2D_o,
     output logic [ADDR_WIDTH-1:0]    Rs1E,
     output logic [ADDR_WIDTH-1:0]    Rs2E,
     output logic [ADDR_WIDTH-1:0]    RdE,
@@ -113,7 +115,7 @@ module decode_top #(
     decodePipeline decode_pipeline(
         // input
         .clk(clk),
-        .clear(PCSrcE | rst),
+        .FlushE(FlushE | rst),
         .RegWriteD(RegWriteD),
         .ResultSrcD(ResultSrcD),
         .MemWriteD(MemWriteD),
@@ -149,5 +151,8 @@ module decode_top #(
         .PCPlus4E(PCPlus4E),
         .ImmExtE(ImmExtE)
     );
+
+    assign Rs1D_o = InstrD[19:15];
+    assign Rs2D_o = InstrD[24:20];
 
 endmodule

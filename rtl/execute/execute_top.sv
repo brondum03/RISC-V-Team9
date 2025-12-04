@@ -11,7 +11,7 @@ module execute_top #(
     parameter ADDR_WIDTH = 5
 )(
     input   logic                   clk,
-    input   logic                   rst,                   
+    //input   logic                   rst,                   
 
     // alu
     input   logic [DATA_WIDTH-1:0]  RD1E,

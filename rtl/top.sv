@@ -60,11 +60,15 @@ module top #(
     
 
     fetch_top fetch (
+        // input
         .clk(clk),
         .rst(rst),
-        .stall(trigger),
+        .StallF(StallF | trigger),
+        .StallD(StallD | trigger),
+        .FlushD(FlushD),
         .PCsrcE(PCSrcE),
         .PCTargetE(PCTargetE),
+        // output
         .InstrD(InstrD),
         .PCD(PCD),
         .PCPlus4D(PCPlus4D)
@@ -82,7 +86,7 @@ module top #(
         .RegWriteW(RegWriteW),
         .ResultW(ResultW),
         .RdW(RdW),
-        .PCSrcE(PCSrcE),
+        .FlushE(FlushE),
         // output
         .RegWriteE(RegWriteE),
         .ResultSrcE(ResultSrcE),
@@ -95,6 +99,8 @@ module top #(
         .RD1E(RD1E),
         .RD2E(RD2E),
         .PCE(PCE),
+        .Rs1D_o(Rs1D),
+        .Rs2D_o(Rs2D),
         .Rs1E(Rs1E),
         .Rs2E(Rs2E),
         .RdE(RdE),
@@ -106,7 +112,7 @@ module top #(
     execute_top execute (
         // input
         .clk(clk),
-        .rst(rst),
+        //.rst(rst),
         .RD1E(RD1E),   
         .RD2E(RD2E), 
         .ResultW(ResultW),

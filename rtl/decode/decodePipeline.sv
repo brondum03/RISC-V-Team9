@@ -3,7 +3,7 @@ module decodePipeline #(
     parameter ADDR_WIDTH = 5
 )(
     input logic     clk,
-    input logic     clear,
+    input logic     FlushE,
 
     // output from control unit
     input logic        RegWriteD,
@@ -49,7 +49,7 @@ module decodePipeline #(
 );
 
     always_ff @ (posedge clk) begin 
-        if(!clear) begin 
+        if(!FlushE) begin 
             RegWriteE       <= RegWriteD;
             ResultSrcE      <= ResultSrcD;
             MemWriteE       <= MemWriteD;
@@ -67,7 +67,7 @@ module decodePipeline #(
             PCPlus4E   <= PCPlus4D;
             ImmExtE    <= ImmExtD;
         end
-        else if(clear) begin 
+        else if(FlushE) begin 
             // Flush pipeline — set everything to 0
             RegWriteE       <= 1'b0;
             ResultSrcE      <= 2'b00;
