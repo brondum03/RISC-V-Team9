@@ -43,6 +43,10 @@ for file in "${files[@]}"; do
                 -cc ${RTL_FOLDER}/${name}.sv \
                 --exe ${file} \
                 -y ${RTL_FOLDER} \
+                -y ${RTL_FOLDER}/fetch \
+                -y ${RTL_FOLDER}/decode \
+                -y ${RTL_FOLDER}/execute \
+                -y ${RTL_FOLDER}/memory \
                 --prefix "Vdut" \
                 -o Vdut \
                 -CFLAGS "-std=c++17 -isystem /opt/homebrew/Cellar/googletest/1.17.0/include"\
