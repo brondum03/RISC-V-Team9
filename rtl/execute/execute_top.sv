@@ -1,11 +1,3 @@
-`include "../rtl/mux2.sv"
-// `include "../rtl/mux4.sv"
-`include "../rtl/execute/alu.sv"
-`include "../rtl/execute/execute_pipeline_register.sv"
-`include "../rtl/execute/pcsrc_logic.sv"
-`include "../rtl/execute/hazard_unit.sv"
-// `include "../rtl/adder.sv"
-
 module execute_top #(
     parameter DATA_WIDTH = 32,
     parameter ADDR_WIDTH = 5

@@ -7,21 +7,22 @@ module pcsrc_logic (
     output  logic           PCSrcE
 );
 
-    logic   Branch;
-
-    always_comb begin
-        // determine if branch is taken
-        case (BranchE)
-            3'b001: Branch = ZeroE;             // beq
-            3'b010: Branch = ~ZeroE;            // bne
-            3'b011: Branch = NegativeE;         // blt
-            3'b100: Branch = ~NegativeE;        // bge
-            3'b101: Branch = Less_unsignedE;    // bltu 
-            3'b110: Branch = ~Less_unsignedE;   // bgeu 
-            default: Branch = 0;
+    always_comb begin   // check for jump instructions 
+        case (JumpE)
+            2'b01: PCSrcE = 1'b1;   // JAL 
+            2'b10: PCSrcE = 1'b1;   // JALR
+        default: begin  // then check for branch conditions
+            case (BranchE)
+                3'b001: PCSrcE = ZeroE;             // BEQ
+                3'b010: PCSrcE = ~ZeroE;            // BNE
+                3'b011: PCSrcE = NegativeE;         // BLT
+                3'b100: PCSrcE = ~NegativeE;        // BGE
+                3'b101: PCSrcE = Less_unsignedE;    // BLTU 
+                3'b110: PCSrcE = ~Less_unsignedE;   // BGEU 
+                default: PCSrcE = 1'b0;
+            endcase
+        end 
         endcase
-        PCSrcE = (|JumpE) | Branch;
-
     end
 
 endmodule
