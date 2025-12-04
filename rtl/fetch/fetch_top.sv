@@ -9,6 +9,7 @@ module fetch_top#(
 )(
     input   logic                          clk,
     input   logic                          rst,
+    input   logic                          trigger,
     input   logic                          StallF,
     input   logic                          StallD,
     input   logic                          FlushD,
@@ -43,6 +44,7 @@ program_counter ProgramCounter(
     .clk(clk),
     .rst(rst),
     .StallF(StallF),
+    .trigger(trigger),
     .PCNext(PCNext),
     .out(PCF)
 );
@@ -54,8 +56,10 @@ instruction_memory Instruction_Memory(
 
 fetch_pipeline Fetch_Pipeline(
     .clk(clk),
-    .FlushD(FlushD | rst),
+    .FlushD(FlushD),
+    .rst(rst),
     .StallD(StallD),
+    .trigger(trigger),
     .InstrF(InstrF),
     .PCF(PCF),
     .PCPlus4F(PCPlus4F),

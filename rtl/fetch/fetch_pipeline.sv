@@ -2,6 +2,8 @@ module fetch_pipeline #(
     parameter DATA_WIDTH = 32
 )(
     input  logic                 clk,
+    input  logic                 rst,
+    input  logic                 trigger,
     input  logic                 FlushD,      // flush
     input  logic                 StallD,      // stall
 
@@ -15,12 +17,12 @@ module fetch_pipeline #(
 );
 
     always_ff @(posedge clk) begin
-        if (FlushD) begin
+        if (FlushD | rst) begin
             InstrD      <= '0;
             PCD         <= '0;
             PCPlus4D    <= '0;
         end
-        else if (StallD) begin
+        else if (StallD | trigger) begin
             InstrD      <= InstrD;
             PCD         <= PCD;
             PCPlus4D    <= PCPlus4D;

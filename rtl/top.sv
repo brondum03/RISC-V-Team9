@@ -63,8 +63,9 @@ module top #(
         // input
         .clk(clk),
         .rst(rst),
-        .StallF(StallF | trigger),
-        .StallD(StallD | trigger),
+        .trigger(trigger),
+        .StallF(StallF),
+        .StallD(StallD),
         .FlushD(FlushD),
         .PCsrcE(PCSrcE),
         .PCTargetE(PCTargetE),
@@ -80,6 +81,7 @@ module top #(
         // input
         .clk(clk),
         .rst(rst),
+        .trigger(trigger),
         .InstrD(InstrD),
         .PCD(PCD),
         .PCPlus4D(PCPlus4D),
@@ -112,7 +114,8 @@ module top #(
     execute_top execute (
         // input
         .clk(clk),
-        //.rst(rst),
+        .rst(rst),
+        .trigger(trigger),
         .RD1E(RD1E),   
         .RD2E(RD2E), 
         .ResultW(ResultW),
@@ -153,6 +156,8 @@ module top #(
 
     memory_top memory (
         .clk(clk),
+        .rst(rst),
+        .trigger(trigger),
         .ALUResultM(ALUResultM),
         .WriteDataM(WriteDataM),
         .PCPlus4M(PCPlus4M),

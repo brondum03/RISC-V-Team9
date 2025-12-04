@@ -2,6 +2,8 @@ module memory_pipeline_register #(
     parameter DATA_WIDTH = 32
 )(
     input logic clk,
+    input logic rst,
+    input logic trigger,
 
     // input from previous pipeline
     input logic                     RegWriteM,
@@ -21,12 +23,22 @@ module memory_pipeline_register #(
 );
 
     always_ff @ (posedge clk) begin 
-        RegWriteW       <= RegWriteM;
-        ResultSrcW      <= ResultSrcM;
-        ALUResultW      <= ALUResultM;
-        ReadDataW       <= ReadDataM;
-        RdW             <= RdM;
-        PCPlus4W        <= PCPlus4M;
+        if(rst) begin
+            RegWriteW       <= 0;
+            ResultSrcW      <= 0;
+            ALUResultW      <= 0;
+            ReadDataW       <= 0;
+            RdW             <= 0;
+            PCPlus4W        <= 0;
+        end
+        else if(!trigger) begin 
+            RegWriteW       <= RegWriteM;
+            ResultSrcW      <= ResultSrcM;
+            ALUResultW      <= ALUResultM;
+            ReadDataW       <= ReadDataM;
+            RdW             <= RdM;
+            PCPlus4W        <= PCPlus4M;
+        end
     end
 
 endmodule

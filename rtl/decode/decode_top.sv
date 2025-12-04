@@ -17,6 +17,7 @@ module decode_top #(
 )(
     input logic                     clk,
     input logic                     rst,
+    input logic                     trigger,
     input logic [DATA_WIDTH-1:0]    InstrD,
     input logic [DATA_WIDTH-1:0]    PCD,
     input logic [DATA_WIDTH-1:0]    PCPlus4D,
@@ -115,7 +116,9 @@ module decode_top #(
     decodePipeline decode_pipeline(
         // input
         .clk(clk),
-        .FlushE(FlushE | rst),
+        .FlushE(FlushE),
+        .rst(rst),
+        .trigger(trigger),
         .RegWriteD(RegWriteD),
         .ResultSrcD(ResultSrcD),
         .MemWriteD(MemWriteD),

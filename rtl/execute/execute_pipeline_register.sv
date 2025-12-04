@@ -3,6 +3,8 @@ module execute_pipeline_register #(
     parameter ADDR_WIDTH = 5
 )(
     input   logic                       clk,
+    input   logic                       rst,
+    input   logic                       trigger,
     
     // inputs from decode stage 
     input   logic [DATA_WIDTH-1:0]      ALUResultE,
@@ -30,18 +32,33 @@ module execute_pipeline_register #(
 );
 
     always_ff @(negedge clk) begin
-            
-        // data paths
-        ALUResultM <= ALUResultE;
-        WriteDataM <= WriteDataE;
-        PCPlus4M <= PCPlus4E;
-        RdM <= RdE;
-            
-        // control signals
-        RegWriteM <= RegWriteE;
-        ResultSrcM <= ResultSrcE;
-        MemWriteM <= MemWriteE;
-        AddressingModeM <= AddressingModeE;
+        
+        if(rst) begin 
+            // data paths
+            ALUResultM <= 0;
+            WriteDataM <= 0;
+            PCPlus4M <= 0;
+            RdM <= 0;
+                
+            // control signals
+            RegWriteM <= 0;
+            ResultSrcM <= 0;
+            MemWriteM <= 0;
+            AddressingModeM <= 0;
+        end
+        else if(!trigger) begin 
+            // data paths
+            ALUResultM <= ALUResultE;
+            WriteDataM <= WriteDataE;
+            PCPlus4M <= PCPlus4E;
+            RdM <= RdE;
+                
+            // control signals
+            RegWriteM <= RegWriteE;
+            ResultSrcM <= ResultSrcE;
+            MemWriteM <= MemWriteE;
+            AddressingModeM <= AddressingModeE;
+        end
     end
 
 endmodule

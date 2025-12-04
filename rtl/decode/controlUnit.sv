@@ -40,6 +40,7 @@ JumpD
 */
 
 /*
+FUNCT3
 (000) --> I type, immediate
 
 (001) --> S type, store instructions

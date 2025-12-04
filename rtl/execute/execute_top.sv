@@ -11,7 +11,8 @@ module execute_top #(
     parameter ADDR_WIDTH = 5
 )(
     input   logic                   clk,
-    //input   logic                   rst,                   
+    input   logic                   rst,   
+    input   logic                   trigger,                
 
     // alu
     input   logic [DATA_WIDTH-1:0]  RD1E,
@@ -95,6 +96,8 @@ module execute_top #(
         .ADDR_WIDTH(ADDR_WIDTH)
     ) pipeline_register (
         .clk(clk),
+        .rst(rst),
+        .trigger(trigger),
         .ALUResultE(ALUResultE),
         .WriteDataE(Forward_mux_B_result),
         .PCPlus4E(PCPlus4E),

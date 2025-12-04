@@ -8,6 +8,8 @@ module memory_top #(
     parameter ADDR_WIDTH = 17
 )(
     input   logic                   clk,
+    input   logic                   rst,
+    input   logic                   trigger,
     
     // inputs from EX/MEM pipeline register
     input   logic [DATA_WIDTH-1:0]    ALUResultM,
@@ -49,6 +51,8 @@ memory_pipeline_register #(
     .DATA_WIDTH(DATA_WIDTH)
 ) memory_pipeline_register(
     .clk(clk),
+    .rst(rst),
+    .trigger(trigger),
     .RegWriteM(RegWriteM),
     .ResultSrcM(ResultSrcM),
     .ALUResultM(ALUResultM),
