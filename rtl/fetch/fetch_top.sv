@@ -1,4 +1,4 @@
-`include "../rtl/mux4.sv"
+`include "../rtl/mux2.sv"
 `include "../rtl/adder.sv"
 `include "../rtl/fetch/program_counter.sv"
 `include "../rtl/fetch/instruction_memory.sv"
