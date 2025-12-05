@@ -1,7 +1,7 @@
 `include "../rtl/execute/alu.sv"
 `include "../rtl/execute/execute_pipeline_register.sv"
 `include "../rtl/mux4.sv"
-`include "../rtl/mux2.sv"
+// `include "../rtl/mux2.sv"
 `include "../rtl/execute/pcsrc_logic.sv"
 `include "../rtl/execute/hazard_unit.sv"
 

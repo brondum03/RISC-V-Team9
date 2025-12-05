@@ -1,4 +1,4 @@
-`include "../rtl/mux4.sv"
+// `include "../rtl/mux4.sv"
 `include "../rtl/memory/datamemory.sv"
 `include "../rtl/memory/memory_pipeline_register.sv"
 
