@@ -4,7 +4,7 @@ rm -rf obj_dir
 rm -f waveform.vcd
 rm -f program.hex
 
-../assemble.sh ../asm/5_pdf.s
+../assemble.sh ../reference/pdf.s
 
 cp ../program.hex .
 
