@@ -1,184 +1,180 @@
+/*
+ *  Verifies the behaviour of decode_top.sv.
+ */
+
+#include "../testbench.h"
 #include "gtest/gtest.h"
-#include "Vdut.h"
-#include "verilated.h"
-#include "verilated_vcd_c.h"
 
-class decode_topTest : public ::testing::Test {
-public:
-    Vdut* dut;
+Vdut *top;
+VerilatedVcdC *tfp;
+unsigned int ticks = 0;
 
+class DecodeTestbench : public Testbench
+{
 protected:
-    virtual void SetUp() override {
-        dut = new Vdut;
+    void initializeInputs() override
+    {
+        top->clk = 0;
+        top->rst = 0;
 
-        Verilated::traceEverOn(true);
-        auto tfp = new VerilatedVcdC;
-        dut->trace(tfp, 99);
-        tfp->open("waveform.vcd");
+        top->trigger = 0;
+        top->InstrD = 0;
+        top->PCD = 0;
+        top->PCPlus4D = 0;
 
-        dut->rst = 1;
-        dut->clk = 0;
-        dut->Instr = 0;
-        dut->WD3 = 0;
-        dut->Zero = 0;
-        dut->negative = 0;
-        evaluate();
-        clockTick();
-        dut->rst = 0;
-        evaluate();
+        top->FlushD = 0;
+        top->FlushE = 0;
+
+        top->RegWriteW = 0;
+        top->ResultW = 0;
+        top->RdW = 0;
     }
 
-    virtual void TearDown() override {
-        delete dut;
-    }
+    void loadInstr(uint32_t instr)
+    {
+        top->InstrD = instr;
 
-    void evaluate() {
-        dut->eval();
-    }
+        top->trigger = 0;
 
-    void clockTick() {
-        dut->clk = 1;
-        evaluate();
-        dut->clk = 0;
-        evaluate();
+        runSimulation(1);
     }
 };
 
-TEST_F(decode_topTest, ResetTest) {
-    dut->rst = 1;
-    clockTick();
-    dut->rst = 0;
+TEST_F(DecodeTestbench, ResetPipeline)
+{
+    top->rst = 1;
+    runSimulation(1);
+    top->rst = 0;
+    runSimulation(1);
 
-    EXPECT_EQ(dut->PCSrc, 0);
-    EXPECT_EQ(dut->ResultSrc, 0);
-    EXPECT_EQ(dut->MemWrite, 0);
-    EXPECT_EQ(dut->ALUControl, 0);
-    EXPECT_EQ(dut->ALUSrc, 0);
-    EXPECT_EQ(dut->RD1, 0);
-    EXPECT_EQ(dut->RD2, 0);
-    EXPECT_EQ(dut->ImmExt, 0);
+    EXPECT_EQ(top->RegWriteE, 0);
+    EXPECT_EQ(top->MemWriteE, 0);
+    EXPECT_EQ(top->ALUControlE, 0);
+    EXPECT_EQ(top->RD1E, 0);
+    EXPECT_EQ(top->RD2E, 0);
+    EXPECT_EQ(top->ImmExtE, 0);
 }
 
-TEST_F(decode_topTest, InstructionDecoding) {
-    dut->Instr = 0x001000B3;  // add x1, x0, x1
-    evaluate();
+// R-type add instruction
+TEST_F(DecodeTestbench, DecodeAddInstruction)
+{
+    uint32_t add_instr = 0b0000000'00011'00010'000'00001'0110011; // add x1, x2, x3
+    loadInstr(add_instr);
 
-    EXPECT_EQ(dut->ALUSrc, 0);
-    EXPECT_EQ(dut->MemWrite, 0);
+    EXPECT_EQ(top->ALUSrcE, 0);
+    EXPECT_EQ(top->MemWriteE, 0);
+    EXPECT_EQ(top->JumpE, 0);
+    EXPECT_EQ(top->BranchE, 0);
 }
 
-TEST_F(decode_topTest, ImmediateExtension) {
-    dut->Instr = 0x00500113;  // addi x1, x0, 5
-    evaluate();
+// I-type addi instruction 
+TEST_F(DecodeTestbench, DecodeImmediateADDI)
+{
+    loadInstr(0x00500113); // addi x1, x0, 5
 
-    EXPECT_EQ(dut->ImmExt, 0x5);
+    EXPECT_EQ(top->ImmExtE, 5); // immediate value
+    EXPECT_EQ(top->ALUSrcE, 1); // R1 + immediate
 }
 
-TEST_F(decode_topTest, ALUOperations) {
-    dut->Instr = 0x004000B3; // add x1, x0, x1 (x1 = 0 + 0)
-    dut->WD3 = 0;
-    evaluate();
-    clockTick();
+// register writeback test
+TEST_F(DecodeTestbench, RegisterWriteback)
+{
+    // write x1 = 0x12345678
+    top->RegWriteW = 1;
+    top->RdW = 1;
+    top->ResultW = 0x12345678;
+    runSimulation(2);
 
-    dut->Instr = 0x40410133; // sub x2, x2, x1 (x2 = 0 - 0)
-    dut->WD3 = 0;
-    evaluate();
-    clockTick();
+    top->RegWriteW = 0;
 
-    dut->Instr = 0x0011A193; // xori x3, x3, 1 (x3 = x3 ^ 1)
-    dut->WD3 = 1;
-    evaluate();
-    clockTick();
+    runSimulation(1);
+    
+    loadInstr(0x00008033); // add x0, x1, x0, reads x1 as rs1
 
-    dut->Instr = 0x0021A213; // ori x4, x4, 2 (x4 = x4 | 2)
-    dut->WD3 = 2;
-    evaluate();
-    clockTick();
-
-    dut->Instr = 0x0031A393; // andi x5, x5, 3 (x5 = x5 & 3)
-    dut->WD3 = 3;
-    evaluate();
-    clockTick();
-
-    EXPECT_EQ(dut->RD1, 3);
+    EXPECT_EQ(top->RD1E, 0x12345678);
 }
 
-TEST_F(decode_topTest, MemoryAccessOperations) {
-    dut->Instr = 0x00002003; // lb x4, 0(x0) (load byte from memory at x0+0 into x4)
-    dut->WD3 = 0xFF; // Assume memory[0] = 0xFF
-    evaluate();
-    clockTick();
+// flush decode pipeline
+TEST_F(DecodeTestbench, FlushDecodeStage)
+{
+    loadInstr(0x00500113); // addi
 
-    dut->Instr = 0x00412023; // sb x4, 4(x2) (store byte x4 at memory[x2+4])
-    evaluate();
-    clockTick();
+    // flush
+    top->FlushD = 1;
+    runSimulation(1);
+    top->FlushD = 0;
 
-    EXPECT_EQ(dut->RD1, 0xFF);
-    EXPECT_EQ(dut->MemWrite, 1);
+    EXPECT_EQ(top->RegWriteE, 0);
+    EXPECT_EQ(top->MemWriteE, 0);
+    EXPECT_EQ(top->ALUSrcE, 0);
 }
 
-TEST_F(decode_topTest, BranchInstructions) {
-    dut->Instr = 0x00018663; // beq x3, x0, offset=12 (branch if x3 == x0)
-    dut->Zero = 1; // Assume x3 == x0
-    evaluate();
-    EXPECT_EQ(dut->PCSrc, 1);
+// flushE
+TEST_F(DecodeTestbench, FlushExecuteStage)
+{
+    top->FlushE = 1;
+    
+    loadInstr(0x000000B3); // add
 
-    dut->Instr = 0x0011C063; // bne x3, x1, offset=16 (branch if x3 != x1)
-    dut->Zero = 0; // Assume x3 != x1
-    evaluate();
-    EXPECT_EQ(dut->PCSrc, 1);
+    top->FlushE = 0;
+
+    EXPECT_EQ(top->RegWriteE, 0);
+    EXPECT_EQ(top->MemWriteE, 0);
+    EXPECT_EQ(top->ALUControlE, 0);
 }
 
-TEST_F(decode_topTest, ImmediateInstructions) {
-    dut->Instr = 0x000000B7; // lui x1, 0x1 (load upper immediate into x1)
-    dut->WD3 = 0x1000;
-    evaluate();
-    clockTick();
+// beq branch 
+TEST_F(DecodeTestbench, DecodeBranchBEQ)
+{
+    loadInstr(0b0000000'00010'00001'000'00010'1100011);
 
-    dut->Instr = 0x00100197; // auipc x3, 0x1 (x3 = PC + 0x1000)
-    dut->WD3 = 0x1000; 
-    evaluate();
-    clockTick();
-
-    EXPECT_EQ(dut->RD1, 0x1000);
+    EXPECT_EQ(top->BranchE, 0b001);
 }
 
-TEST_F(decode_topTest, ShiftOperations) {
-    dut->Instr = 0x001081B3; // sll x3, x1, x2 (x3 = x1 << x2)
-    dut->WD3 = 0;
-    evaluate();
-    clockTick();
+// jal instruction
+TEST_F(DecodeTestbench, DecodeJAL)
+{
+    loadInstr(0x000000EF); // jal x1, 0
 
-    dut->Instr = 0x0010A1B3; // srl x3, x1, x2 (x3 = x1 >> x2)
-    dut->WD3 = 0;
-    evaluate();
-    clockTick();
-
-    dut->Instr = 0x4010A1B3; // sra x3, x1, x2 (x3 = x1 >>> x2)
-    dut->WD3 = 0;
-    evaluate();
-    clockTick();
-
-    EXPECT_EQ(dut->RD1, 0);
+    EXPECT_EQ(top->JumpE, 1);
 }
 
-TEST_F(decode_topTest, ComprehensiveControlUnitVerification) {
-    dut->Instr = 0x00400093; // addi x1, x0, 4
-    dut->WD3 = 4;
-    evaluate();
-    clockTick();
+// lw instruction
+TEST_F(DecodeTestbench, DecodeLW)
+{
+    loadInstr(0x00002083); // lw x1, 0(x0)
 
-    EXPECT_EQ(dut->ALUControl, 0x0); // ALU should perform addition
-    EXPECT_EQ(dut->ALUSrc, 1);       // Immediate value should be selected
-
-    dut->Instr = 0x00018663; // beq x3, x0, offset=12
-    dut->Zero = 1;
-    evaluate();
-
-    EXPECT_EQ(dut->PCSrc, 1);
+    EXPECT_EQ(top->ResultSrcE, 1); // load selects memory
+    EXPECT_EQ(top->ALUSrcE, 1); // immediate offset
 }
 
-int main(int argc, char **argv) {
+// sw instruction
+TEST_F(DecodeTestbench, DecodeSW)
+{
+    loadInstr(0x00102023); // sw x1, 0(x0)
+
+    EXPECT_EQ(top->MemWriteE, 1);
+    EXPECT_EQ(top->ALUSrcE, 1);
+}
+
+
+int main(int argc, char **argv)
+{
+    top = new Vdut;
+    tfp = new VerilatedVcdC;
+
+    Verilated::traceEverOn(true);
+    top->trace(tfp, 99);
+    tfp->open("waveform.vcd");
+
     testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+    int res = RUN_ALL_TESTS();
+
+    top->final();
+    tfp->close();
+
+    delete top;
+    delete tfp;
+
+    return res;
 }

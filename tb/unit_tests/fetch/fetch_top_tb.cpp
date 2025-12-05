@@ -1,134 +1,155 @@
-#include "base_testbench.h"
-#include "Vdut.h"
-#include "verilated_vcd_c.h"
+/*
+ * Verifies behaviour of fetch_top.sv 
+ */
 
-Vdut* top;
-VerilatedVcdC* tfp;
+#include "../testbench.h"
+#include "Vdut.h"
+#include <fstream>
+#include <vector>
+#include <stdexcept>
+
+Vdut *top;
+VerilatedVcdC *tfp;
 unsigned int ticks = 0;
 
-class FetchTB : public ::testing::Test {
-protected:
-    void SetUp() override {
-        initializeInputs();
-        runReset();
+static std::vector<uint32_t> load_hex_program(const std::string &path)
+{
+    std::ifstream f(path);
+    if (!f.is_open())
+        throw std::runtime_error("Cannot open hex file: " + path);
+
+    std::vector<uint8_t> bytes;
+    std::string byteStr;
+
+    while (f >> byteStr)
+    {
+        uint8_t b = std::stoi(byteStr, nullptr, 16);
+        bytes.push_back(b);
     }
 
-    void initializeInputs() {
+    std::vector<uint32_t> instr;
+    for (size_t i = 0; i + 3 < bytes.size(); i += 4)
+    {
+        uint32_t w = bytes[i] | (bytes[i+1] << 8) | (bytes[i+2] << 16) | (bytes[i+3] << 24);
+
+        instr.push_back(w);
+    }
+    return instr;
+}
+class FetchTestbench : public Testbench {
+protected:
+    void initializeInputs() override
+    {
         top->clk = 0;
         top->rst = 0;
-        top->PCsrc = 0;
-        top->ImmExt = 5;   // same as original
-        top->ALUResult = 7;   // ALUALUResult
+        top->trigger = 0;
+
+        top->StallF = 0;
+        top->StallD = 0;
+        top->FlushD = 0;
+
+        top->PCsrcE = 0;
+        top->PCTargetE = 0;
     }
 
-    void runReset() {
+    void resetPipeline()
+    {
         top->rst = 1;
-        runSimulation();
+        runSimulation(1);
         top->rst = 0;
-    }
-
-    void runSimulation() {
-        for (int clk = 0; clk < 2; clk++) {
-            top->eval();
-            tfp->dump(2 * ticks + clk);
-            top->clk = !top->clk;
-        }
-        ticks++;
-
-        if (Verilated::gotFinish())
-            exit(0);
+        runSimulation(1);
     }
 };
 
-// ===================== TESTS ==========================
 
-TEST_F(FetchTB, ResetStartsAtZero) {
-    top->rst=1;
-    top->eval();
-    EXPECT_EQ(top->Instr, 0x11111111);
-}
+static const std::vector<uint32_t> INSTR = load_hex_program("reference/pdf.hex");
 
-TEST_F(FetchTB, SequentialFetch) {
-    top->PCsrc = 0;
-    runReset();
-    runSimulation();
-    EXPECT_EQ(top->Instr, 0x22222222);
+const int INSTR_COUNT = INSTR.size();
 
-    runSimulation();
-    EXPECT_EQ(top->Instr, 0x33333333);
-}
-
-TEST_F(FetchTB, BranchTest) {
-    top->PCsrc = 1;
-    top->ImmExt = 8;
-    runSimulation();
-    EXPECT_EQ(top->Instr, 0x33333333);
-}
-
-TEST_F(FetchTB, JumpTest) {
-    top->PCsrc = 2;
-    top->ALUResult = 16;
-    runSimulation();
-    EXPECT_EQ(top->Instr, 0x55555555);
-}
-
-TEST_F(FetchTB, JumpBackwards) {
-    top->PCsrc = 2;
-    top->ALUResult = 0;
-    runSimulation();
-    EXPECT_EQ(top->Instr, 0x11111111);
-}
-
-TEST_F(FetchTB, ALUALUResultIgnoredWhenPCsrcNotTwo) {
-    top->PCsrc = 0;
-    top->ALUResult = 100;
-    runSimulation();
-    EXPECT_NE(top->Instr, 0x00000000);
-}
-
-TEST_F(FetchTB, MisalignedALUALUResult) {
-    top->PCsrc = 2;
-    top->ALUResult = 6;       // byte address 6 → word index 1
-    runSimulation();
-    EXPECT_EQ(top->Instr, 0x33332222);
-}
-
-TEST_F(FetchTB, ConsecutiveJumps) {
-    top->PCsrc = 2;
-    top->ALUResult = 8;
-    runSimulation();
-    EXPECT_EQ(top->Instr, 0x33333333);
-
-    top->ALUResult = 16;
-    runSimulation();
-    EXPECT_EQ(top->Instr, 0x55555555);
-}
-
-TEST_F(FetchTB, HoldPC) {
-    top->PCsrc = 3;        // hold state
-    runSimulation();
-    EXPECT_EQ(top->Instr, 0x11111111);
-}
-
-
-int main(int argc, char** argv)
+TEST_F(FetchTestbench, FirstInstructionAfterReset)
 {
-    system("cp ../rtl/fetch/program.hex ./program.hex");
+    resetPipeline();
+    EXPECT_EQ(top->InstrD, INSTR[0]);
+}
 
+TEST_F(FetchTestbench, SequentialPC)
+{
+    resetPipeline();
+
+    for (int i = 0; i < INSTR.size(); i++)
+    {
+        EXPECT_EQ(top->InstrD, INSTR[i]);
+
+        runSimulation(1); 
+    }
+}
+
+
+TEST_F(FetchTestbench, BranchRedirectionBehaviour)
+{
+    std::vector<int> jumps = {6, 2, 10, 1, 12};
+
+    resetPipeline();
+    runSimulation(1);
+
+    top->PCsrcE = 1;
+
+    // first jump
+    top->PCTargetE = jumps[0] * 4;
+    runSimulation(1);
+
+    // subsequent jumps
+    for (int i = 1; i < jumps.size(); i++)
+    {
+        top->PCTargetE = jumps[i] * 4;
+        runSimulation(1);
+
+        EXPECT_EQ(top->InstrD, INSTR[jumps[i - 1]]);
+    }
+}
+
+TEST_F(FetchTestbench, FetchStageStall)
+{
+    int index1 = 7;
+
+    resetPipeline();
+
+    // jump to firstIndex
+    top->PCsrcE = 1;
+    top->PCTargetE = index1 * 4;
+    runSimulation(2);
+
+    EXPECT_EQ(top->InstrD, INSTR[index1]);
+
+    // stall → nothing should move
+    top->StallF = 1;
+    top->StallD = 1;
+    runSimulation(1);
+
+    EXPECT_EQ(top->InstrD, INSTR[index1]);
+}
+
+
+int main(int argc, char **argv)
+{
+    std::ignore = system("rm -f program.hex");
+    std::ignore = system("cp reference/pdf.hex program.hex");    
+    
     top = new Vdut;
     tfp = new VerilatedVcdC;
 
     Verilated::traceEverOn(true);
     top->trace(tfp, 99);
-    tfp->open("fetch.vcd");
+    tfp->open("waveform.vcd");
 
     testing::InitGoogleTest(&argc, argv);
     int res = RUN_ALL_TESTS();
 
     top->final();
     tfp->close();
+
     delete top;
     delete tfp;
-
+    std::ignore = system("rm -f program.hex");
     return res;
 }
