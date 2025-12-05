@@ -1,0 +1,34 @@
+
+a.out.reloc:     file format elf32-littleriscv
+architecture: riscv:rv32, flags 0x00000112:
+EXEC_P, HAS_SYMS, D_PAGED
+start address 0xbfc00000
+
+
+Disassembly of section .text:
+
+bfc00000 <main>:
+bfc00000:	10000393          	li	t2,256
+bfc00004:	87654337          	lui	t1,0x87654
+bfc00008:	32130313          	addi	t1,t1,801 # 87654321 <__global_pointer$+0xc7a52ad1>
+bfc0000c:	0063a023          	sw	t1,0(t2)
+bfc00010:	00038503          	lb	a0,0(t2)
+bfc00014:	02100e13          	li	t3,33
+bfc00018:	03c51863          	bne	a0,t3,bfc00048 <fail>
+bfc0001c:	00138503          	lb	a0,1(t2)
+bfc00020:	04300e13          	li	t3,67
+bfc00024:	03c51263          	bne	a0,t3,bfc00048 <fail>
+bfc00028:	00238503          	lb	a0,2(t2)
+bfc0002c:	06500e13          	li	t3,101
+bfc00030:	01c51c63          	bne	a0,t3,bfc00048 <fail>
+bfc00034:	00338503          	lb	a0,3(t2)
+bfc00038:	f8700e13          	li	t3,-121
+bfc0003c:	01c51663          	bne	a0,t3,bfc00048 <fail>
+bfc00040:	00100513          	li	a0,1
+bfc00044:	0080006f          	j	bfc0004c <end>
+
+bfc00048 <fail>:
+bfc00048:	00200513          	li	a0,2
+
+bfc0004c <end>:
+bfc0004c:	0000006f          	j	bfc0004c <end>
