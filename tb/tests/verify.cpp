@@ -46,6 +46,44 @@ TEST_F(CpuTestbench, TestPdf)
     EXPECT_EQ(top_->a0, 15363);
 }
 
+TEST_F(CpuTestbench, TestAllLogical)
+{
+    setupTest("6_all_logical");
+    initSimulation();
+    runSimulation(CYCLES);
+    EXPECT_EQ(top_->a0, 0);
+}
+
+TEST_F(CpuTestbench, TestAllImm)
+{
+    setupTest("7_all_imm");
+    initSimulation();
+    runSimulation(CYCLES);
+    EXPECT_EQ(top_->a0, 0);
+}
+
+TEST_F(CpuTestbench, TestAllLoad)
+{
+    setupTest("8_all_load");
+    initSimulation();
+    runSimulation(CYCLES);
+    EXPECT_EQ(top_->a0, 0);
+}
+
+TEST_F(CpuTestbench, TestSrai)
+{
+    setupTest("13_srai");
+    initSimulation();
+    runSimulation(CYCLES);
+
+    // Debug output
+    std::cout << "a0 value (hex): 0x" << std::hex << top_->a0 << std::dec << std::endl;
+    std::cout << "a0 value (signed): " << (int32_t)top_->a0 << std::endl;
+    std::cout << "a0 value (unsigned): " << top_->a0 << std::endl;
+    
+    EXPECT_EQ(top_->a0, -16);
+}
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);
