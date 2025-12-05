@@ -31,7 +31,7 @@ module execute_pipeline_register #(
     output  logic [2:0]                 AddressingModeM
 );
 
-    always_ff @(negedge clk) begin
+    always_ff @(posedge clk) begin
         
         if(rst) begin 
             // data paths

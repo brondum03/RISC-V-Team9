@@ -70,7 +70,7 @@ module decodePipeline #(
             ImmExtE    <= ImmExtD;
         end
         else if(FlushE || rst) begin 
-            // Flush pipeline — set everything to 0
+            // // Flush pipeline — set everything to 0
             RegWriteE       <= 1'b0;
             ResultSrcE      <= 2'b00;
             MemWriteE       <= 1'b0;

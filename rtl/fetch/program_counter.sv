@@ -6,6 +6,7 @@ module program_counter #(
   input  logic             rst,
   input  logic             trigger,
   input  logic             StallF,
+  input  logic             PCsrcE,
   input  logic [DATA_WIDTH-1:0] PCNext,
   output logic [DATA_WIDTH-1:0] out   
 );
@@ -15,7 +16,7 @@ logic [DATA_WIDTH-1:0] pc;
 always_ff @(posedge clk) begin
     if (rst)
         pc <= 0;
-    else if (!StallF && !trigger)
+    else if (PCsrcE ||(!StallF && !trigger))
         pc <= PCNext;
 end
 

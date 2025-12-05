@@ -43,6 +43,7 @@ adder adder_plus4(
 program_counter ProgramCounter(
     .clk(clk),
     .rst(rst),
+    .PCsrcE(PCsrcE),
     .StallF(StallF),
     .trigger(trigger),
     .PCNext(PCNext),

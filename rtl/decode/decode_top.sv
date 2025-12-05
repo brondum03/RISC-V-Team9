@@ -21,6 +21,7 @@ module decode_top #(
     input logic [DATA_WIDTH-1:0]    InstrD,
     input logic [DATA_WIDTH-1:0]    PCD,
     input logic [DATA_WIDTH-1:0]    PCPlus4D,
+    input logic                     FlushD,
 
     input logic                     RegWriteW, // WE3
     input logic [DATA_WIDTH-1:0]    ResultW, // WD3
@@ -71,23 +72,51 @@ module decode_top #(
 
     logic [DATA_WIDTH-1:0] ImmExtD;
     
+    // custom logic to handle flushing decode signals. 
+    logic RegWriteD_out;
+    logic MemWriteD_out;
+    logic [2:0] BranchD_out;
+    logic [1:0] JumpD_out;
+    logic ALUSrcD_out;
+    logic [3:0] ALUControlD_out;
+    logic [1:0] ResultSrcD_out;
+    logic [2:0] AddressingModeD_out;
     // controlUnit.sv
     controlUnit control_unit(
-        // input
         .op(InstrD[6:0]),
         .funct3(InstrD[14:12]),
         .funct7(InstrD[30]),
-        // output
-        .RegWriteD(RegWriteD),
-        .ResultSrcD(ResultSrcD),
-        .MemWriteD(MemWriteD),
-        .JumpD(JumpD),
-        .BranchD(BranchD),
-        .ALUControlD(ALUControlD),
-        .ALUSrcD(ALUSrcD), // ALU register or Imm source
-        .ImmSrcD(ImmSrcD), // immsrc for signExtendsv
-        .AddressingModeD(AddressingModeD)
+        .RegWriteD(RegWriteD_out),
+        .ResultSrcD(ResultSrcD_out),
+        .MemWriteD(MemWriteD_out),
+        .JumpD(JumpD_out),
+        .BranchD(BranchD_out),
+        .ALUControlD(ALUControlD_out),
+        .ALUSrcD(ALUSrcD_out),
+        .ImmSrcD(ImmSrcD),
+        .AddressingModeD(AddressingModeD_out)
     );
+always_comb begin
+    if (FlushD) begin
+        RegWriteD       = 0;
+        ResultSrcD      = 0;
+        MemWriteD       = 0;
+        JumpD           = 0;
+        BranchD         = 0;
+        ALUControlD     = 4'b0000;
+        ALUSrcD         = 0;
+        AddressingModeD = 0;
+    end else begin
+        RegWriteD       = RegWriteD_out;
+        ResultSrcD      = ResultSrcD_out;
+        MemWriteD       = MemWriteD_out;
+        JumpD           = JumpD_out;
+        BranchD         = BranchD_out;
+        ALUControlD     = ALUControlD_out;
+        ALUSrcD         = ALUSrcD_out;
+        AddressingModeD = AddressingModeD_out;
+    end
+end
 
     // register.sv
     register register_file (
@@ -157,5 +186,8 @@ module decode_top #(
 
     assign Rs1D_o = InstrD[19:15];
     assign Rs2D_o = InstrD[24:20];
+
+
+
 
 endmodule

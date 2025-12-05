@@ -89,6 +89,7 @@ module top #(
         .ResultW(ResultW),
         .RdW(RdW),
         .FlushE(FlushE),
+        .FlushD(FlushD),
         // output
         .RegWriteE(RegWriteE),
         .ResultSrcE(ResultSrcE),

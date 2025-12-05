@@ -1,0 +1,43 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Fri Dec  5 01:10:41 2025
+[*]
+[dumpfile] "/home/jerryzhang/RISC-V-Team9/tb/test_out/1_addi_bne/waveform.vcd"
+[dumpfile_mtime] "Fri Dec  5 00:15:05 2025"
+[dumpfile_size] 6328007
+[savefile] "/home/jerryzhang/RISC-V-Team9/myview.gtkw"
+[timestart] 22
+[size] 1908 1119
+[pos] 1956 -939
+*-2.000000 38 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.top.
+[treeopen] TOP.top.decode.
+[sst_width] 214
+[signals_width] 404
+[sst_expanded] 1
+[sst_vpaned_height] 334
+@24
+TOP.top.decode.register_file.regfile[6][31:0]
+TOP.top.decode.register_file.regfile[11][31:0]
+TOP.top.decode.register_file.a0[31:0]
+TOP.top.decode.control_unit.op[6:0]
+TOP.top.execute.RD2E[31:0]
+TOP.top.execute.RD1E[31:0]
+TOP.top.execute.SrcAE[31:0]
+TOP.top.execute.SrcBE[31:0]
+@28
+TOP.top.execute.ALUSrcE
+@24
+TOP.top.execute.ImmExtE[31:0]
+@22
+TOP.top.execute.ALUControlE[3:0]
+@24
+TOP.top.execute.ForwardAE[1:0]
+TOP.top.execute.ForwardBE[1:0]
+@28
+TOP.top.execute.StallD
+@29
+TOP.top.execute.FlushE
+[pattern_trace] 1
+[pattern_trace] 0

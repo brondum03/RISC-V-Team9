@@ -57,7 +57,7 @@ module hazard_unit(
     StallD = lwStall;
     
     //flush logic
-    FlushD = lwStall;
+    FlushD = PCSrcE;
     FlushE = lwStall | PCSrcE;  // flush execute stage on branch taken, or load-use hazard
 
     end

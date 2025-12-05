@@ -134,11 +134,25 @@ module execute_top #(
         .out(SrcBE)
     );
 
-    adder PC_adder(
-        .in0(PCE),
-        .in1(ImmExtE),
-        .out(PCTargetE)
-    );
+    logic [31:0] branch_target;
+    logic [31:0] jal_target;
+    logic [31:0] jalr_target;
+
+    // Branch anjd JAL use PC + imm
+    assign branch_target = PCE + ImmExtE;
+    assign jal_target    = PCE + ImmExtE;
+
+    // JALR uses (rs1 + imm), also clears lsb
+    assign jalr_target   = (ALUResultE & 32'hFFFFFFFE);
+
+    always_comb begin
+        case (JumpE)
+            2'b01: PCTargetE = jal_target;     // JAL
+            2'b10: PCTargetE = jalr_target;    // JALR
+            default: PCTargetE = branch_target; // Branch
+        endcase
+    end
+
 
     hazard_unit hazard_unit(
         .Rs1E(Rs1E),
