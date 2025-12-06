@@ -3,6 +3,7 @@ module cache #(
     parameter ADRR_WIDTH = 32,
     parameter CACHE_SIZE = 1024,    // 1024 byte cache = 256 words
     parameter BLOCK_SIZE = 16,      // 16 bytes = 4 words
+    parameter WORD_SIZE = 4,        // 4 bytes / word
     parameter ASSOCIATIVITY = 2     // 2-way set associative cache
 )(
     input logic                     clk,
@@ -27,17 +28,19 @@ module cache #(
     // (N) N-way set associative = 2
     // (S) no. of sets =  64/2 = 32 sets
     // 5 bits of set indexing, 
-    // 4 bits of offset (4 words x 4 bytes), 
+    // 4 bits of offset (2bits block offset, 2bits byte offset) 
     // remaining 23 bits for tag
-    localparam BLOCK_WORDS = BLOCK_SIZE / 4;           // 4 words per block
-    localparam NUM_SETS = CACHE_SIZE / (BLOCK_SIZE * ASSOCIATIVITY); // 32 sets
-    localparam INDEX_BITS = $clog2(NUM_SETS);          // 5 bits for index
-    localparam OFFSET_BITS = $clog2(BLOCK_SIZE);       // 4 bits for offset
-    localparam TAG_BITS = ADDR_WIDTH - INDEX_BITS - OFFSET_BITS; // 23 bits for tag
+    localparam BLOCK_WORDS = BLOCK_SIZE / 4;                            // 4 words per block
+    localparam NUM_SETS = CACHE_SIZE / (BLOCK_SIZE * ASSOCIATIVITY);    // 32 sets
+    localparam INDEX_BITS = $clog2(NUM_SETS);                           // 5 bits for index
+    localparam BYTE_OFFSET_BITS = $clog2(WORD_SIZE);                    // 2 bits byte offset
+    localparam BLOCK_OFFSET_BITS = $clog2(BLOCK_WORDS);                 // 2 bits block offset 
+    localparam TAG_BITS = ADDR_WIDTH - INDEX_BITS - OFFSET_BITS;        // 23 bits for tag
     
     logic [TAG_BITS-1:0]     tag;
     logic [INDEX_BITS-1:0]   set_index;
-    logic [OFFSET_BITS-1:0]  offset;
+    logic 
+    logic [OFFSET_BITS-1:0]  byte_offset;
 
     assign tag    = Address[ADDR_WIDTH-1 : INDEX_BITS+OFFSET_BITS];
     assign index  = Address[INDEX_BITS+OFFSET_BITS-1 : OFFSET_BITS];
