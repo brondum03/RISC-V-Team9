@@ -110,7 +110,7 @@ module cache_controller #(
         .in1(Way1_Data),
         .sel(Hit1),
         .out(Data)
-    ) 
+    ); 
 
     // use a FSM to manage the states of the controller for simplicity
     typedef enum logic [2:0] {
@@ -123,6 +123,12 @@ module cache_controller #(
 
     cache_state current_state, next_state;
     logic [1:0] refill_count;
+    logic [1:0] writeback_count;
+
+    logic                   evict_way;
+    logic                   evict_dirty;
+    logic [TAG_WIDTH-1:0]   evict_tag;
+
 
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
@@ -132,9 +138,14 @@ module cache_controller #(
             current_state <= next_state;
             
             if (current_state == REFILL && Mem_Ready)
-                refill_count <= refill_count + 1;
+                refill_count <= refill_count + 1;       // ensures all 4 words in the block are fetched
             else if (current_state == IDLE)
                 refill_count <= '0;
+
+            if (current_state == WRITE_BACK && Mem_Ready)
+                writeback_count <= writeback_count + 1; // ensures all 4 words in the block are written back
+            else if (current_state == ALLOCATE)
+                writeback_count <= '0;
         end
     end
 
@@ -142,16 +153,20 @@ module cache_controller #(
         // default state
         next_state = current_state; 
         CPU_Ready = 1'b0;
-        DataOut = {DATA_WIDTH}'0;
+        DataOut = '0;
 
         SRAM_WriteEnable = 1'b0;
         SRAM_WriteData = SetData;  
-        SRAM_WriteAddress = TargetSet;
+        SRAM_Address = TargetSet;
 
         Mem_ReadRequest = 1'b0;
         Mem_WriteEnable = 1'b0;
-        Mem_Address = {ADDR_WIDTH}'b0;
-        Mem_WriteData = {DATA_WIDTH}'b0;
+        Mem_Address = '0;
+        Mem_WriteData = '0;
+
+        evict_way = LRU_bit;    // checks LRU bit to determine which way to evict
+        evict_dirty = evict_way ? Dirty_bit_1 : Dirty_bit_0;    // checks dirty bit of the way to be evicted
+        evict_tag = evict_way ? Tag_1 : Tag_0;  // tag of the way to be evicted
 
         case(current_state)
             IDLE: begin
@@ -195,18 +210,94 @@ module cache_controller #(
 
                     next_state = IDLE;
                 end else begin  // cache miss
-                    next_state = ALLOCATEl
+                    next_state = ALLOCATE;
                 end
             end
 
-            
+            ALLOCATE: begin 
+                // this stage checks if the way to be evicted is dirty
+                // if dirty, writeback, if not just replace the block
+                if (evict_dirty) begin  
+                    next_state = WRITE_BACK;
+                end else begin
+                    next_state = REFILL;
+                end
+            end
 
-                 
+            WRITE_BACK: begin   // writeback to memory
+                Mem_WriteEnable = 1'b1;
+                Mem_Address = {evict_tag, TargetSet, writeback_count, 2'b00};   // writeback count ensures all 4 words are written back
 
+                if (evict_way) begin    // way 1
+                    case (writeback_count)
+                        2'd0: Mem_WriteData = Word0_1;
+                        2'd1: Mem_WriteData = Word1_1;
+                        2'd2: Mem_WriteData = Word2_1;
+                        2'd3: Mem_WriteData = Word3_1;
+                    endcase 
+                end else begin          // way 0
+                    case (writeback_count)
+                        2'd0: Mem_WriteData = Word0_0;
+                        2'd1: Mem_WriteData = Word1_0;
+                        2'd2: Mem_WriteData = Word2_0;
+                        2'd3: Mem_WriteData = Word3_0;
+                    endcase
+                end
 
-                
+                if (Mem_Ready && writeback_count == 2'd3) begin // writeback complete
+                    next_state = REFILL;
+                end
+            end
 
+            REFILL: begin   // fetch from memory
+                Mem_ReadRequest = 1'b1;
+                Mem_Address = {TargetTag, TargetSet, refill_count, 2'b00};   // refill count ensures all 4 words are fetched
 
+                if (Mem_Ready) begin
+                    SRAM_WriteEnable = 1'b1;
+                    SRAM_WriteData = SetData;  
+                    
+                    if (evict_way) begin    // way 1
+                        case (refill_count)
+                            2'd0: SRAM_WriteData[184:153] = Mem_ReadData;
+                            2'd1: SRAM_WriteData[216:185] = Mem_ReadData;
+                            2'd2: SRAM_WriteData[248:217] = Mem_ReadData;
+                            2'd3: SRAM_WriteData[280:249] = Mem_ReadData;
+                        endcase
+                        
+                        if (refill_count == 2'd3) begin // once all 4 words fetched
+                            SRAM_WriteData[304] = 1'b1;             // set way 1 valid bit
+                            SRAM_WriteData[305] = 1'b0;             // reset dirty bit
+                            SRAM_WriteData[303:281] = TargetTag;    // new tag
+                            SRAM_WriteData[306] = 1'b0;             // way 0 becomes LRU
+                        end
+                    
+                    end else begin  // way 0
+                        case (refill_count)
+                            2'd0: SRAM_WriteData[31:0] = Mem_ReadData;
+                            2'd1: SRAM_WriteData[63:32] = Mem_ReadData;
+                            2'd2: SRAM_WriteData[95:64] = Mem_ReadData;
+                            2'd3: SRAM_WriteData[127:96] = Mem_ReadData;
+                        endcase
 
+                        if (refill_count == 2'd3) begin
+                            SRAM_WriteData[151] = 1'b1;         
+                            SRAM_WriteData[152] = 1'b0;         
+                            SRAM_WriteData[150:128] = TargetTag; 
+                            SRAM_WriteData[306] = 1'b1;         
+                        end
+                    end
+
+                    if (refill_count == 2'd3) begin
+                        next_state = CHECK_TAG;
+                    end
+                end
+            end
+
+            default: begin
+                next_state = IDLE;
+            end
+        endcase
+    end
 
 endmodule
