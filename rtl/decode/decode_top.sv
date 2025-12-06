@@ -81,6 +81,7 @@ module decode_top #(
     logic [3:0] ALUControlD_out;
     logic [1:0] ResultSrcD_out;
     logic [2:0] AddressingModeD_out;
+    logic       shiftImmFlag;
     // controlUnit.sv
     controlUnit control_unit(
         .op(InstrD[6:0]),
@@ -94,7 +95,8 @@ module decode_top #(
         .ALUControlD(ALUControlD_out),
         .ALUSrcD(ALUSrcD_out),
         .ImmSrcD(ImmSrcD),
-        .AddressingModeD(AddressingModeD_out)
+        .AddressingModeD(AddressingModeD_out),
+        .shiftImmFlag(shiftImmFlag)
     );
 always_comb begin
     if (FlushD) begin
@@ -138,6 +140,7 @@ end
         // input
         .InstrD(InstrD[31:7]),
         .ImmSrcD(ImmSrcD),
+        .shiftImmFlag(shiftImmFlag),
         // output 
         .ImmExtD(ImmExtD)
     );
