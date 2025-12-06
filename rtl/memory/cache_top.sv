@@ -1,6 +1,6 @@
 module cache #(
     parameter DATA_WIDTH = 32,
-    parameter ADRR_WIDTH = 32,
+    parameter ADDR_WIDTH = 32,
     parameter CACHE_SIZE = 1024,    // 1024 byte cache = 256 words
     parameter BLOCK_SIZE = 16,      // 16 bytes = 4 words
     parameter WORD_SIZE = 4,        // 4 bytes / word
@@ -9,18 +9,25 @@ module cache #(
     input logic                     clk,
     input logic                     rst,
 
+    // from cpu
     input logic [2:0]               AddressingMode,        
     input logic                     CPU_WriteEnable,    // write enable (0=read, 1=write) 
-    input logic [ADDR_WIDTH-1:0]    CPU_Address,        // address from CPU
-    input logic [DATA_WIDTH-1:0]    CPU_WriteData,      // data from CPU
+    input logic [ADDR_WIDTH-1:0]    CPU_Address,       
+    input logic [DATA_WIDTH-1:0]    CPU_WriteData,      
 
-    input logic [DATA_WIDTH-1:0]    Read_from_RAM,      // read data from RAM
+    // from dram
+    input logic [DATA_WIDTH-1:0]    Mem_ReadData,      
+    input logic                     Mem_Ready,
 
-    output logic [DATA_WIDTH-1:0]   WriteData_to_RAM,   // word being evicted
-    output logic                    WriteEnable_to_RAM, // write enable = 1 when word is written back to RAM
-    output logic [ADDR_WIDTH-1:0]   Adress_to_RAM,      // evicted word address in RAM
+    // to cpu
+    output logic [DATA_WIDTH-1:0]   CPU_ReadData,
+    output logic                    CPU_Ready,
 
-    output logic [DATA_WIDTH-1:0]   ReadData            // read data 
+    // to dram
+    output logic [DATA_WIDTH-1:0]   Mem_WriteData,  
+    output logic [ADDR_WIDTH-1:0]   Mem_Address,
+    output logic                    Mem_WriteEnable,
+    output logic                    Mem_ReadRequest
 ); 
 
     // (b) block size = 4 words
@@ -34,18 +41,76 @@ module cache #(
     localparam NUM_SETS = CACHE_SIZE / (BLOCK_SIZE * ASSOCIATIVITY);    // 32 sets
     localparam INDEX_BITS = $clog2(NUM_SETS);                           // 5 bits for index
     localparam BYTE_OFFSET_BITS = $clog2(WORD_SIZE);                    // 2 bits byte offset
-    localparam BLOCK_OFFSET_BITS = $clog2(BLOCK_WORDS);                 // 2 bits block offset 
+    localparam BLOCK_OFFSET_BITS = $clog2(BLOCK_WORDS);                 // 2 bits block offset
+    localparam OFFSET_BITS = BYTE_OFFSET_BITS + BLOCK_OFFSET_BITS;                
     localparam TAG_BITS = ADDR_WIDTH - INDEX_BITS - OFFSET_BITS;        // 23 bits for tag
+    localparam SET_SIZE = 307;
     
-    logic [TAG_BITS-1:0]     tag;
-    logic [INDEX_BITS-1:0]   set_index;
-    logic 
-    logic [OFFSET_BITS-1:0]  byte_offset;
+    logic [TAG_BITS-1:0]            tag;
+    logic [INDEX_BITS-1:0]          set_index;
+    logic [BLOCK_OFFSET_BITS-1:0]   block_offset;
+    logic [BYTE_OFFSET_BITS-1:0]    byte_offset;
 
-    assign tag    = Address[ADDR_WIDTH-1 : INDEX_BITS+OFFSET_BITS];
-    assign index  = Address[INDEX_BITS+OFFSET_BITS-1 : OFFSET_BITS];
-    assign offset = Address[OFFSET_BITS-1 : 0];
+    assign tag           = CPU_Address[ADDR_WIDTH-1 : INDEX_BITS+OFFSET_BITS];
+    assign set_index     = CPU_Address[INDEX_BITS+OFFSET_BITS-1 : OFFSET_BITS];
+    assign block_offset  = CPU_Address[BLOCK_OFFSET_BITS+BYTE_OFFSET_BITS-1 : BYTE_OFFSET_BITS];
+    assign byte_offset   = CPU_Address[BYTE_OFFSET_BITS-1 : 0];
 
+    // sram signals
+    logic [SET_SIZE-1:0]            SRAM_DataOut;
+    logic [SET_SIZE-1:0]            SRAM_WriteData;
+    logic [INDEX_BITS-1:0]          SRAM_Address;
+    logic                           SRAM_WriteEnable;
+
+    // controller signals
+
+
+    cache_sram #(
+        .CACHE_ADDR_WIDTH(INDEX_BITS),
+        .SET_SIZE(SET_SIZE)
+    ) sram (
+        .clk(clk),
+        .Address(SRAM_Address),
+        .WriteData(SRAM_WriteData),
+        .WriteEnable(SRAM_WriteEnable),
+        .ReadEnable(1'b1),
+        .ReadData(SRAM_DataOut)
+    );
     
+    cache_controller #(
+        .SET_SIZE(SET_SIZE),
+        .DATA_WIDTH(DATA_WIDTH),
+        .ADDR_WIDTH(ADDR_WIDTH),
+        .CACHE_ADDR_WIDTH(INDEX_BITS),
+        .TAG_WIDTH(TAG_BITS),
+        .BLOCK_OFFSET_WIDTH(BLOCK_OFFSET_BITS)
+    ) cache_controller(
+        .clk(clk),
+        .rst(rst),
+        // from cpu
+        .WriteEnable(CPU_WriteEnable),
+        .WriteData(CPU_WriteData),
+        .TargetSet(set_index),
+        .TargetTag(tag),
+        .TargetBlockOffset(block_offset),
+        .addr_mode(AddressingMode),
+        // from sram
+        .SetData(SRAM_DataOut),
+        // from dram
+        .Mem_ReadData(Mem_ReadData),
+        .Mem_Ready(Mem_Ready),
+        // to cpu
+        .DataOut(CPU_ReadData),
+        .CPU_Ready(CPU_Ready),
+        // to sram
+        .SRAM_WriteData(SRAM_WriteData),
+        .SRAM_WriteEnable(SRAM_WriteEnable),
+        .SRAM_Address(SRAM_Address),
+        // to dram
+        .Mem_WriteData(Mem_WriteData),
+        .Mem_Address(Mem_Address),
+        .Mem_WriteEnable(Mem_WriteEnable),
+        .Mem_ReadRequest(Mem_ReadRequest)
+    );
 
 endmodule

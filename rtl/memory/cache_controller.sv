@@ -1,5 +1,3 @@
-// `include "../rtl/mux2.sv"
-
 module cache_controller #(
     parameter SET_SIZE = 307,
     parameter DATA_WIDTH = 32,
