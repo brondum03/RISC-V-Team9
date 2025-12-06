@@ -1,17 +1,18 @@
 
 module cache_sram #(
-    parameter CACHE_ADDR_WIDTH = 5  // 2^5 (32) sets
+    parameter CACHE_ADDR_WIDTH = 5,  // 2^5 (32) sets
     parameter SET_SIZE = 307        // 307 bits in a set - 1 bit LRU + 2 way * (1 dirty bit + 1 valid bit + 23 bit tag + 4*32bit data)
 )(
     input logic                     clk,
-    input logic                     Address,    
+    input logic [CACHE_ADDR_WIDTH]  Address,    
     input logic [DATA_WIDTH-1:0]    WriteData,
-    input logic                     WriteEnable,
+    input logic [SET_SIZE-1:0]      WriteEnable,
     input logic                     ReadEnable,
-    input logic                     ReadData
+    output logic [SET_SIZE-1:0]     ReadData
 );
     logic [SET_SIZE-1:0] set_array [2**CACHE_ADDR_WIDTH-1:0];   // 32 sets of 307 bits
 
+    // read logic - combinational
     always_comb begin
         if(ReadEnable) begin
             ReadData = set_array[Address];
@@ -20,6 +21,7 @@ module cache_sram #(
         end
     end
 
+    // write logic- synchronous
     always_ff @(posedge clk) begin
         if(WriteEnable) begin
             set_array[Address] <= WriteData;

@@ -1,23 +1,47 @@
-// `include "../rtl/mux4.sv"
+// `include "../rtl/mux2.sv"
 
 module cache_controller #(
     parameter SET_SIZE = 307,
     parameter DATA_WIDTH = 32,
-    parameter ADRR_WIDTH = 32,
+    parameter ADDR_WIDTH = 32,
     parameter CACHE_ADDR_WIDTH = 5,
     parameter TAG_WIDTH = 23,
     parameter BLOCK_OFFSET_WIDTH = 2
 )(
+    input logic                             clk,
+    input logic                             rst,
+    
+    // from CPU
     input logic                             WriteEnable,
     input logic [DATA_WIDTH-1:0]            WriteData,
     input logic [CACHE_ADDR_WIDTH-1:0]      TargetSet,
     input logic [TAG_WIDTH-1:0]             TargetTag,  
     input logic [BLOCK_OFFSET_WIDTH-1:0]    TargetBlockOffset,
-    input logic [2:0]                       addr_mode,                                  
+    input logic [2:0]                       addr_mode,                                   
 
-    input logic [SET_SIZE-1:0]          SetData, 
+    // from SRAM
+    input logic [SET_SIZE-1:0]              SetData,
+    
+    // from DRAM
+    input logic [DATA_WIDTH-1:0]            Mem_ReadData,
+    input logic                             Mem_Ready,
 
-    output logic                        DataOut,
+    // to CPU
+    output logic [DATA_WIDTH-1:0]           DataOut,
+    output logic                            CPU_Ready,
+    
+    // to SRAM
+    output logic [SET_SIZE-1:0]             SRAM_WriteData,
+    output logic                            SRAM_WriteEnable,
+    output logic [CACHE_ADDR_WIDTH-1:0]     SRAM_Address,
+
+    // to DRAM
+    output logic [DATA_WIDTH-1:0]           Mem_WriteData,
+    output logic [ADDR_WIDTH-1:0]           Mem_Address,
+    output logic                            Mem_WriteEnable,
+    output logic                            Mem_ReadRequest
+
+
 );
 
     logic                   LRU_bit;
@@ -64,23 +88,22 @@ module cache_controller #(
     assign Hit1 = (Valid_bit_1 && (Tag_1 == TargetTag));
     assign Hit = Hit0 || Hit1;
 
-    mux4 way0_mux(
-        .in0(Word0_0),
-        .in1(Word0_1),
-        .in2(Word0_2),
-        .in3(Word0_3),
-        .sel(TargetBlockOffset),
-        .out(Way0_Data)
-    )
-    
-    mux4 way1_mux(
-        .in0(Word1_0),
-        .in1(Word1_1),
-        .in2(Word1_2),
-        .in3(Word1_3),
-        .sel(TargetBlockOffset),
-        .out(Way1_Data)
-    )
+    // select word based on offset
+    always_comb begin
+        case (TargetBlockOffset)
+            2'd0: Way0_Data = Word0_0;
+            2'd1: Way0_Data = Word1_0;
+            2'd2: Way0_Data = Word2_0;
+            2'd3: Way0_Data = Word3_0;
+        endcase
+        
+        case (TargetBlockOffset)
+            2'd0: Way1_Data = Word0_1;
+            2'd1: Way1_Data = Word1_1;
+            2'd2: Way1_Data = Word2_1;
+            2'd3: Way1_Data = Word3_1;
+        endcase
+    end
 
     mux2 data_mux(
         .in0(Way0_Data),
@@ -89,14 +112,101 @@ module cache_controller #(
         .out(Data)
     ) 
 
-    always_comb begin
-        if (!WriteEnable) begin  // read 
-            if (Hit) begin  // if hit, read from cache
-                DataOut = Data;
-            end
-            else (!Hit) begin   //if miss, load from data memory
-                
+    // use a FSM to manage the states of the controller for simplicity
+    typedef enum logic [2:0] {
+        IDLE,
+        CHECK_TAG,
+        ALLOCATE,
+        REFILL,
+        WRITE_BACK
+    } cache_state;
+
+    cache_state current_state, next_state;
+    logic [1:0] refill_count;
+
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
+            current_state <= IDLE;
+            refill_count <= '0;
+        end else begin
+            current_state <= next_state;
+            
+            if (current_state == REFILL && Mem_Ready)
+                refill_count <= refill_count + 1;
+            else if (current_state == IDLE)
+                refill_count <= '0;
         end
     end
+
+    always_comb begin   
+        // default state
+        next_state = current_state; 
+        CPU_Ready = 1'b0;
+        DataOut = {DATA_WIDTH}'0;
+
+        SRAM_WriteEnable = 1'b0;
+        SRAM_WriteData = SetData;  
+        SRAM_WriteAddress = TargetSet;
+
+        Mem_ReadRequest = 1'b0;
+        Mem_WriteEnable = 1'b0;
+        Mem_Address = {ADDR_WIDTH}'b0;
+        Mem_WriteData = {DATA_WIDTH}'b0;
+
+        case(current_state)
+            IDLE: begin
+                next_state = CHECK_TAG;
+            end
+
+            CHECK_TAG: begin
+                if (Hit) begin  // cache hit
+                    CPU_Ready = 1'b1;
+                    DataOut = Data;
+
+                    if (WriteEnable) begin  // writing to cache
+                        SRAM_WriteEnable = 1'b1;
+                        SRAM_WriteData = SetData; // current data
+
+                        if (Hit0) begin     // way 0
+                            case (TargetBlockOffset)
+                                2'd0: SRAM_WriteData[31:0] = WriteData;
+                                2'd1: SRAM_WriteData[63:32] = WriteData;
+                                2'd2: SRAM_WriteData[95:64] = WriteData;
+                                2'd3: SRAM_WriteData[127:96] = WriteData;
+                            endcase
+                            SRAM_WriteData[152] = 1'b1;     // set dirty bit
+                            SRAM_WriteData[306] = 1'b1;     // way 1 becomes LRU
+                        end else if (Hit1) begin    // way 1
+                            case (TargetBlockOffset)
+                                2'd0: SRAM_WriteData[184:153] = WriteData;
+                                2'd1: SRAM_WriteData[216:185] = WriteData;
+                                2'd2: SRAM_WriteData[248:217] = WriteData;
+                                2'd3: SRAM_WriteData[280:249] = WriteData;
+                            endcase
+                            SRAM_WriteData[305] = 1'b1;     // set dirty bit
+                            SRAM_WriteData[306] = 1'b0;     // way 0 becomes LRU
+                        end
+                    
+                    end else begin  // just reading from cache
+                        SRAM_WriteEnable = 1'b1;
+                        SRAM_WriteData = SetData;   // no change to data
+                        SRAM_WriteData[306] = Hit0 ? 1'b1 : 1'b0;   // update LRU
+                    end
+
+                    next_state = IDLE;
+                end else begin  // cache miss
+                    next_state = ALLOCATEl
+                end
+            end
+
+            
+
+                 
+
+
+                
+
+
+
 
 endmodule
