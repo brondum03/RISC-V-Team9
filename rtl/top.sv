@@ -58,14 +58,15 @@ module top #(
     logic                   FlushD;
     logic                   FlushE;
     
+    logic                   Cache_Stall;
 
     fetch_top fetch (
         // input
         .clk(clk),
         .rst(rst),
         .trigger(trigger),
-        .StallF(StallF),
-        .StallD(StallD),
+        .StallF(StallF|Cache_Stall),
+        .StallD(StallD|Cache_Stall),
         .FlushD(FlushD),
         .PCsrcE(PCSrcE),
         .PCTargetE(PCTargetE),
@@ -90,6 +91,7 @@ module top #(
         .RdW(RdW),
         .FlushE(FlushE),
         .FlushD(FlushD),
+        .StallE(Cache_Stall),
         // output
         .RegWriteE(RegWriteE),
         .ResultSrcE(ResultSrcE),
@@ -138,6 +140,7 @@ module top #(
         .Rs2D(Rs2D),
         .BranchE(BranchE),
         .JumpE(JumpE),
+        .StallM(Cache_Stall),
         // output
         .ALUResultM(ALUResultM), 
         .WriteDataM(WriteDataM),
@@ -169,7 +172,8 @@ module top #(
         .AddressingModeM(AddressingModeM),
         .ResultW(ResultW),
         .RegWriteW(RegWriteW),    
-        .RdW(RdW)
+        .RdW(RdW),
+        .CPU_Ready(~Cache_Stall)
     );
 
 endmodule

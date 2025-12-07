@@ -1,4 +1,4 @@
-module cache #(
+module cache_top #(
     parameter DATA_WIDTH = 32,
     parameter ADDR_WIDTH = 32,
     parameter CACHE_SIZE = 1024,    // 1024 byte cache = 256 words
@@ -13,11 +13,9 @@ module cache #(
     input logic [2:0]               AddressingMode,        
     input logic                     CPU_WriteEnable,    // write enable (0=read, 1=write) 
     input logic [ADDR_WIDTH-1:0]    CPU_Address,       
-    input logic [DATA_WIDTH-1:0]    CPU_WriteData,      
+    input logic [DATA_WIDTH-1:0]    CPU_WriteData,   
 
-    // from dram
-    input logic [DATA_WIDTH-1:0]    Mem_ReadData,      
-    input logic                     Mem_Ready,
+    input logic [DATA_WIDTH-1:0]    Mem_ReadData,   
 
     // to cpu
     output logic [DATA_WIDTH-1:0]   CPU_ReadData,
@@ -98,7 +96,7 @@ module cache #(
         .SetData(SRAM_DataOut),
         // from dram
         .Mem_ReadData(Mem_ReadData),
-        .Mem_Ready(Mem_Ready),
+        .Mem_Ready(1'b1),   // asynchronous read - memory is always ready
         // to cpu
         .DataOut(CPU_ReadData),
         .CPU_Ready(CPU_Ready),

@@ -17,6 +17,8 @@ module execute_pipeline_register #(
     input   logic [1:0]                 ResultSrcE,
     input   logic                       MemWriteE,
     input   logic [2:0]                 AddressingModeE,
+
+    input   logic                       StallM,     // stall signal to be triggered if cache is not loaded  
     
     // output to memory stage
     output  logic [DATA_WIDTH-1:0]      ALUResultM,
@@ -46,7 +48,7 @@ module execute_pipeline_register #(
             MemWriteM <= 0;
             AddressingModeM <= 0;
         end
-        else if(!trigger) begin 
+        else if(!trigger && !StallM) begin 
             // data paths
             ALUResultM <= ALUResultE;
             WriteDataM <= WriteDataE;

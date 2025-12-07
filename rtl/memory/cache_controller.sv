@@ -128,7 +128,7 @@ module cache_controller #(
     logic [TAG_WIDTH-1:0]   evict_tag;
 
 
-    always_ff @(posedge clk or posedge rst) begin
+    always_ff @(posedge clk) begin
         if (rst) begin
             current_state <= IDLE;
             refill_count <= '0;
@@ -148,8 +148,8 @@ module cache_controller #(
     end
 
     always_comb begin   
-        // default state
-        next_state = current_state; 
+        // default parameters
+        next_state = current_state; // stay in the current state until next_state updated
         CPU_Ready = 1'b0;
         DataOut = '0;
 
@@ -173,7 +173,7 @@ module cache_controller #(
 
             CHECK_TAG: begin
                 if (Hit) begin  // cache hit
-                    CPU_Ready = 1'b1;
+                    CPU_Ready = 1'b1;   // cpu can continue once data is available in cache
                     DataOut = Data;
 
                     if (WriteEnable) begin  // writing to cache

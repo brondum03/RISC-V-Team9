@@ -22,16 +22,23 @@ module memory_top #(
     input   logic [2:0]               AddressingModeM,
     
     // from to MEM/WB pipeline register
-    output logic  [DATA_WIDTH-1:0]    ResultW,
+    output logic [DATA_WIDTH-1:0]     ResultW,
     output logic                      RegWriteW,    
-    output logic [4:0]                RdW
+    output logic [4:0]                RdW,
+    output logic                      CPU_Ready
 );
 // wires to pipeline register
-logic [1:0]                ResultSrcW;
-logic [DATA_WIDTH-1:0]     ALUResultW;
-logic [DATA_WIDTH-1:0]     Read_data_out;
-logic [DATA_WIDTH-1:0]     PCPlus4W;
-logic [DATA_WIDTH-1:0]     ReadDataW;
+logic [1:0]                 ResultSrcW;
+logic [DATA_WIDTH-1:0]      ALUResultW;
+logic [DATA_WIDTH-1:0]      PCPlus4W;
+logic [DATA_WIDTH-1:0]      ReadDataW;
+
+// wires between cache to dram
+logic [DATA_WIDTH-1:0]      Mem_ReadData;
+logic [ADDR_WIDTH-1:0]      Mem_Address;
+logic [DATA_WIDTH-1:0]      Mem_WriteData;
+logic                       Mem_WriteEnable;  
+logic                       Mem_ReadRequest;
 
 // data memory access 
 datamemory #(
@@ -40,11 +47,32 @@ datamemory #(
     .ADDR_WIDTH(ADDR_WIDTH)
 ) Data_Memory (
     .clk(clk),
-    .write_enable(MemWriteM),
-    .write_data(WriteDataM),
-    .address(ALUResultM[ADDR_WIDTH-1:0]),
-    .addr_mode(AddressingModeM),
-    .read_data(Read_data_out)
+    .write_enable(Mem_WriteEnable),
+    .write_data(Mem_WriteData),
+    .address(Mem_Address),
+    .addr_mode(AddressingModeM),    
+    .read_data(Mem_ReadData),
+    .Mem_ReadRequest(Mem_ReadRequest)
+);
+
+cache_top cache (
+    .clk(clk),
+    .rst(rst),
+    
+    .AddressingMode(AddressingModeM),   // need to implement (?)
+    .CPU_WriteEnable(MemWriteM),
+    .CPU_Address(ALUResultM[ADDR_WIDTH-1:0]),
+    .CPU_WriteData(WriteDataM),
+    
+    .Mem_ReadData(Mem_ReadData),
+    
+    .CPU_ReadData(ResultW),
+    .CPU_Ready(CPU_Ready),   // stall entire cpu if cpu is not ready
+    
+    .Mem_WriteData(Mem_WriteData),
+    .Mem_Address(Mem_Address),
+    .Mem_WriteEnable(Mem_WriteEnable),
+    .Mem_ReadRequest(Mem_ReadRequest)
 );
 
 memory_pipeline_register #(
@@ -59,6 +87,8 @@ memory_pipeline_register #(
     .ReadDataM(Read_data_out),
     .RdM(RdM),
     .PCPlus4M(PCPlus4M),
+    .StallW(~CPU_Ready),
+
     .RegWriteW(RegWriteW),
     .ResultSrcW(ResultSrcW),
     .ALUResultW(ALUResultW),

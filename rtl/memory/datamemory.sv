@@ -8,6 +8,7 @@ module datamemory #(
     input   logic [2:0]             addr_mode,
     input   logic                   write_enable,
     input   logic                   clk,
+    input   logic                   Mem_ReadRequest,
     output  logic [DATA_WIDTH-1:0]  read_data
     
     
@@ -20,15 +21,17 @@ module datamemory #(
 
     always_comb begin
         logic [31:0] word;
-        word = { memory[address+3], memory[address+2], memory[address+1], memory[address] };
-        case (addr_mode)
-            3'b000: read_data = {{24{memory[address][7]}}, memory[address]};                      // LB
-            3'b001: read_data = {{16{memory[address+1][7]}}, memory[address+1], memory[address]}; // LH
-            3'b010: read_data = word;                                                             // LW
-            3'b011: read_data = {24'b0, memory[address]};                                         // LBU
-            3'b100: read_data = {16'b0, memory[address+1], memory[address]};                      // LHU
-            default: read_data = word;
-        endcase
+        if(Mem_ReadRequest) begin
+            word = { memory[address+3], memory[address+2], memory[address+1], memory[address] };
+            case (addr_mode)
+                3'b000: read_data = {{24{memory[address][7]}}, memory[address]};                      // LB
+                3'b001: read_data = {{16{memory[address+1][7]}}, memory[address+1], memory[address]}; // LH
+                3'b010: read_data = word;                                                             // LW
+                3'b011: read_data = {24'b0, memory[address]};                                         // LBU
+                3'b100: read_data = {16'b0, memory[address+1], memory[address]};                      // LHU
+                default: read_data = word;
+            endcase
+        end
     end
 
     always_ff @(posedge clk) begin

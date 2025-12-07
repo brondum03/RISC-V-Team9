@@ -30,6 +30,8 @@ module decode_top #(
     // PCSrcE indicates if there is a jump or branch 
     input logic                     FlushE, // FlushE = lwStall | PCSrcE
     // used to drive the flush. if PCSrc = 1 then the next instr is invalid bc jump was taken
+    
+    input logic                     StallE,
 
     // output from control unit
     output logic        RegWriteE,
@@ -164,6 +166,7 @@ end
         .RdD(InstrD[11:7]),
         .PCPlus4D(PCPlus4D),
         .ImmExtD(ImmExtD),
+        .StallE(StallE),
 
         // output 
         .RegWriteE(RegWriteE),

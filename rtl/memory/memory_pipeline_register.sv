@@ -13,6 +13,8 @@ module memory_pipeline_register #(
     input logic [4:0]               RdM,
     input logic [DATA_WIDTH-1:0]    PCPlus4M,
 
+    input logic                     StallW,     // stall signal to be triggered if cache is not loaded
+
     // output to next pipeline
     output logic                     RegWriteW,
     output logic [1:0]               ResultSrcW, // selects mux, 00
@@ -31,7 +33,7 @@ module memory_pipeline_register #(
             RdW             <= 0;
             PCPlus4W        <= 0;
         end
-        else if(!trigger) begin 
+        else if(!trigger && !StallW) begin 
             RegWriteW       <= RegWriteM;
             ResultSrcW      <= ResultSrcM;
             ALUResultW      <= ALUResultM;
