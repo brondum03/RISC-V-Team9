@@ -1,7 +1,7 @@
 module cache_controller #(
-    parameter SET_SIZE = 307,
+    parameter SET_SIZE = 277,
     parameter DATA_WIDTH = 32,
-    parameter ADDR_WIDTH = 32,
+    parameter ADDR_WIDTH = 17,
     parameter CACHE_ADDR_WIDTH = 5,
     parameter TAG_WIDTH = 23,
     parameter BLOCK_OFFSET_WIDTH = 2
@@ -61,24 +61,24 @@ module cache_controller #(
     logic                   Hit;
     logic [DATA_WIDTH-1:0]  Data;                
 
-    assign LRU_bit = SetData[306];
+    assign LRU_bit = SetData[276];
     // way 0 
-    assign Dirty_bit_0 = SetData[152];
-    assign Valid_bit_0 = SetData[151];
-    assign Tag_0 = SetData[150:128];
+    assign Dirty_bit_0 = SetData[137];
+    assign Valid_bit_0 = SetData[136];
+    assign Tag_0 = SetData[135:128];
     assign Word3_0 = SetData[127:96];
     assign Word2_0 = SetData[95:64];
     assign Word1_0 = SetData[63:32];
     assign Word0_0 = SetData[31:0];
 
     //way 1
-    assign Dirty_bit_1 = SetData[305];
-    assign Valid_bit_1 = SetData[304];
-    assign Tag_1 = SetData[303:281];
-    assign Word3_1 = SetData[280:249];
-    assign Word2_1 = SetData[248:217];
-    assign Word1_1 = SetData[216:185];
-    assign Word0_1 = SetData[184:153];
+    assign Dirty_bit_1 = SetData[275];
+    assign Valid_bit_1 = SetData[274];
+    assign Tag_1       = SetData[273:266];  
+    assign Word3_1     = SetData[265:234];
+    assign Word2_1     = SetData[233:202];
+    assign Word1_1     = SetData[201:170];
+    assign Word0_1     = SetData[169:138];
 
     // hit logic
     assign Hit0 = (Valid_bit_0 && (Tag_0 == TargetTag));
@@ -187,23 +187,23 @@ module cache_controller #(
                                 2'd2: SRAM_WriteData[95:64] = WriteData;
                                 2'd3: SRAM_WriteData[127:96] = WriteData;
                             endcase
-                            SRAM_WriteData[152] = 1'b1;     // set dirty bit
-                            SRAM_WriteData[306] = 1'b1;     // way 1 becomes LRU
+                            SRAM_WriteData[137] = 1'b1;     // set dirty bit
+                            SRAM_WriteData[276] = 1'b1;     // way 1 becomes LRU
                         end else if (Hit1) begin    // way 1
                             case (TargetBlockOffset)
-                                2'd0: SRAM_WriteData[184:153] = WriteData;
-                                2'd1: SRAM_WriteData[216:185] = WriteData;
-                                2'd2: SRAM_WriteData[248:217] = WriteData;
-                                2'd3: SRAM_WriteData[280:249] = WriteData;
+                                2'd0: SRAM_WriteData[169:138] = WriteData;
+                                2'd1: SRAM_WriteData[201:170] = WriteData;
+                                2'd2: SRAM_WriteData[233:202] = WriteData;
+                                2'd3: SRAM_WriteData[265:234] = WriteData;
                             endcase
-                            SRAM_WriteData[305] = 1'b1;     // set dirty bit
-                            SRAM_WriteData[306] = 1'b0;     // way 0 becomes LRU
+                            SRAM_WriteData[275] = 1'b1;     // set dirty bit
+                            SRAM_WriteData[276] = 1'b0;     // way 0 becomes LRU
                         end
                     
                     end else begin  // just reading from cache
                         SRAM_WriteEnable = 1'b1;
                         SRAM_WriteData = SetData;   // no change to data
-                        SRAM_WriteData[306] = Hit0 ? 1'b1 : 1'b0;   // update LRU
+                        SRAM_WriteData[276] = Hit0 ? 1'b1 : 1'b0;   // update LRU
                     end
 
                     next_state = IDLE;
@@ -257,17 +257,17 @@ module cache_controller #(
                     
                     if (evict_way) begin    // way 1
                         case (refill_count)
-                            2'd0: SRAM_WriteData[184:153] = Mem_ReadData;
-                            2'd1: SRAM_WriteData[216:185] = Mem_ReadData;
-                            2'd2: SRAM_WriteData[248:217] = Mem_ReadData;
-                            2'd3: SRAM_WriteData[280:249] = Mem_ReadData;
+                            2'd0: SRAM_WriteData[169:138] = Mem_ReadData;
+                            2'd1: SRAM_WriteData[201:170] = Mem_ReadData;
+                            2'd2: SRAM_WriteData[233:202] = Mem_ReadData;
+                            2'd3: SRAM_WriteData[265:234] = Mem_ReadData;
                         endcase
                         
                         if (refill_count == 2'd3) begin // once all 4 words fetched
-                            SRAM_WriteData[304] = 1'b1;             // set way 1 valid bit
-                            SRAM_WriteData[305] = 1'b0;             // reset dirty bit
-                            SRAM_WriteData[303:281] = TargetTag;    // new tag
-                            SRAM_WriteData[306] = 1'b0;             // way 0 becomes LRU
+                            SRAM_WriteData[274] = 1'b1;             // set way 1 valid bit
+                            SRAM_WriteData[275] = 1'b0;             // reset dirty bit
+                            SRAM_WriteData[273:266] = TargetTag;    // new tag
+                            SRAM_WriteData[276] = 1'b0;             // way 0 becomes LRU
                         end
                     
                     end else begin  // way 0
@@ -279,10 +279,10 @@ module cache_controller #(
                         endcase
 
                         if (refill_count == 2'd3) begin
-                            SRAM_WriteData[151] = 1'b1;         
-                            SRAM_WriteData[152] = 1'b0;         
-                            SRAM_WriteData[150:128] = TargetTag; 
-                            SRAM_WriteData[306] = 1'b1;         
+                            SRAM_WriteData[136] = 1'b1;         
+                            SRAM_WriteData[137] = 1'b0;         
+                            SRAM_WriteData[135:128] = TargetTag; 
+                            SRAM_WriteData[276] = 1'b1;         
                         end
                     end
 

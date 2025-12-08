@@ -1,6 +1,6 @@
 module cache_top #(
     parameter DATA_WIDTH = 32,
-    parameter ADDR_WIDTH = 32,
+    parameter ADDR_WIDTH = 17,
     parameter CACHE_SIZE = 1024,    // 1024 byte cache = 256 words
     parameter BLOCK_SIZE = 16,      // 16 bytes = 4 words
     parameter WORD_SIZE = 4,        // 4 bytes / word
@@ -41,8 +41,8 @@ module cache_top #(
     localparam BYTE_OFFSET_BITS = $clog2(WORD_SIZE);                    // 2 bits byte offset
     localparam BLOCK_OFFSET_BITS = $clog2(BLOCK_WORDS);                 // 2 bits block offset
     localparam OFFSET_BITS = BYTE_OFFSET_BITS + BLOCK_OFFSET_BITS;                
-    localparam TAG_BITS = ADDR_WIDTH - INDEX_BITS - OFFSET_BITS;        // 23 bits for tag
-    localparam SET_SIZE = 307;
+    localparam TAG_BITS = ADDR_WIDTH - INDEX_BITS - OFFSET_BITS;        // 8 bits for tag
+    localparam SET_SIZE = 277;
     
     logic [TAG_BITS-1:0]            tag;
     logic [INDEX_BITS-1:0]          set_index;

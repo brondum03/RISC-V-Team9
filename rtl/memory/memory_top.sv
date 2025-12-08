@@ -51,7 +51,7 @@ datamemory #(
     .clk(clk),
     .write_enable(Mem_WriteEnable),
     .write_data(Mem_WriteData),
-    .address(Mem_Address[16:0]),
+    .address(Mem_Address),
     .addr_mode(AddressingModeM),    
     .read_data(Mem_ReadData),
     .Mem_ReadRequest(Mem_ReadRequest)
@@ -63,7 +63,7 @@ cache_top cache (
     
     .AddressingMode(AddressingModeM),   // need to implement (?)
     .CPU_WriteEnable(MemWriteM),
-    .CPU_Address(ALUResultM),
+    .CPU_Address(ALUResultM[16:0]),
     .CPU_WriteData(WriteDataM),
     
     .Mem_ReadData(Mem_ReadData),
