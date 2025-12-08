@@ -40,6 +40,8 @@ logic [DATA_WIDTH-1:0]      Mem_WriteData;
 logic                       Mem_WriteEnable;  
 logic                       Mem_ReadRequest;
 
+logic [DATA_WIDTH-1:0]      ReadDataM;
+
 // data memory access 
 datamemory #(
     .DATA_WIDTH(DATA_WIDTH),
@@ -49,7 +51,7 @@ datamemory #(
     .clk(clk),
     .write_enable(Mem_WriteEnable),
     .write_data(Mem_WriteData),
-    .address(Mem_Address),
+    .address(Mem_Address[16:0]),
     .addr_mode(AddressingModeM),    
     .read_data(Mem_ReadData),
     .Mem_ReadRequest(Mem_ReadRequest)
@@ -61,12 +63,12 @@ cache_top cache (
     
     .AddressingMode(AddressingModeM),   // need to implement (?)
     .CPU_WriteEnable(MemWriteM),
-    .CPU_Address(ALUResultM[ADDR_WIDTH-1:0]),
+    .CPU_Address(ALUResultM),
     .CPU_WriteData(WriteDataM),
     
     .Mem_ReadData(Mem_ReadData),
     
-    .CPU_ReadData(ResultW),
+    .CPU_ReadData(ReadDataM),
     .CPU_Ready(CPU_Ready),   // stall entire cpu if cpu is not ready
     
     .Mem_WriteData(Mem_WriteData),
@@ -84,7 +86,7 @@ memory_pipeline_register #(
     .RegWriteM(RegWriteM),
     .ResultSrcM(ResultSrcM),
     .ALUResultM(ALUResultM),
-    .ReadDataM(Read_data_out),
+    .ReadDataM(ReadDataM),
     .RdM(RdM),
     .PCPlus4M(PCPlus4M),
     .StallW(~CPU_Ready),

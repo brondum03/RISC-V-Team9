@@ -39,7 +39,6 @@ module cache_controller #(
     output logic                            Mem_WriteEnable,
     output logic                            Mem_ReadRequest
 
-
 );
 
     logic                   LRU_bit;
@@ -132,6 +131,7 @@ module cache_controller #(
         if (rst) begin
             current_state <= IDLE;
             refill_count <= '0;
+            writeback_count <= '0;
         end else begin
             current_state <= next_state;
             
