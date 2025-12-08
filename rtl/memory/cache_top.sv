@@ -47,7 +47,6 @@ module cache_top #(
     logic [TAG_BITS-1:0]            tag;
     logic [INDEX_BITS-1:0]          set_index;
     logic [BLOCK_OFFSET_BITS-1:0]   block_offset;
-    logic [BYTE_OFFSET_BITS-1:0]    byte_offset;
 
     assign tag           = CPU_Address[ADDR_WIDTH-1 : INDEX_BITS+OFFSET_BITS];
     assign set_index     = CPU_Address[INDEX_BITS+OFFSET_BITS-1 : OFFSET_BITS];
