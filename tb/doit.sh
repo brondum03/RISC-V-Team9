@@ -46,8 +46,7 @@ for file in "${files[@]}"; do
                 --prefix "Vdut" \
                 -o Vdut \
                 -CFLAGS "-std=c++17 -isystem /opt/homebrew/Cellar/googletest/1.17.0/include"\
-                -LDFLAGS "-lgtest -lgtest_main -lpthread"
-                # -LDFLAGS "-L/opt/homebrew/Cellar/googletest/1.17.0/lib -lgtest -lgtest_main -lpthread"
+                -LDFLAGS "-L/opt/homebrew/Cellar/googletest/1.17.0/lib -lgtest -lgtest_main -lpthread"
 
     # Build C++ project with automatically generated Makefile
     make -j -C obj_dir/ -f Vdut.mk
