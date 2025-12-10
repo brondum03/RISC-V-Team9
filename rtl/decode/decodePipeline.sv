@@ -28,8 +28,6 @@ module decodePipeline #(
     //input from signExtend
     input logic [DATA_WIDTH-1:0]    ImmExtD,
 
-    input logic                     StallE, // stall signal to be triggered if cache is not loaded
-
     // output from control unit
     output logic        RegWriteE,
     output logic [1:0]  ResultSrcE, // selects mux, 00 -> ALUResultM, 01 -> ReaEEataW, 10 -> PCPlus4
@@ -53,7 +51,7 @@ module decodePipeline #(
 );
 
     always_ff @ (posedge clk) begin 
-        if(!FlushE && !rst && !trigger && !StallE) begin 
+        if(!FlushE && !rst && !trigger) begin 
             RegWriteE       <= RegWriteD;
             ResultSrcE      <= ResultSrcD;
             MemWriteE       <= MemWriteD;

@@ -30,8 +30,6 @@ module decode_top #(
     // PCSrcE indicates if there is a jump or branch 
     input logic                     FlushE, // FlushE = lwStall | PCSrcE
     // used to drive the flush. if PCSrc = 1 then the next instr is invalid bc jump was taken
-    
-    input logic                     StallE,
 
     // output from control unit
     output logic        RegWriteE,
@@ -83,6 +81,7 @@ module decode_top #(
     logic [3:0] ALUControlD_out;
     logic [1:0] ResultSrcD_out;
     logic [2:0] AddressingModeD_out;
+    logic       shiftImmFlag;
     // controlUnit.sv
     controlUnit control_unit(
         .op(InstrD[6:0]),
@@ -96,7 +95,8 @@ module decode_top #(
         .ALUControlD(ALUControlD_out),
         .ALUSrcD(ALUSrcD_out),
         .ImmSrcD(ImmSrcD),
-        .AddressingModeD(AddressingModeD_out)
+        .AddressingModeD(AddressingModeD_out),
+        .shiftImmFlag(shiftImmFlag)
     );
 always_comb begin
     if (FlushD) begin
@@ -140,6 +140,7 @@ end
         // input
         .InstrD(InstrD[31:7]),
         .ImmSrcD(ImmSrcD),
+        .shiftImmFlag(shiftImmFlag),
         // output 
         .ImmExtD(ImmExtD)
     );
@@ -166,7 +167,6 @@ end
         .RdD(InstrD[11:7]),
         .PCPlus4D(PCPlus4D),
         .ImmExtD(ImmExtD),
-        .StallE(StallE),
 
         // output 
         .RegWriteE(RegWriteE),

@@ -68,7 +68,8 @@ module controlUnit(
     output logic [3:0]  ALUControlD,
     output logic        ALUSrcD, // ALU register or Imm source
     output logic [2:0]  ImmSrcD, // immsrc for signExtendsv
-    output logic [2:0]  AddressingModeD
+    output logic [2:0]  AddressingModeD,
+    output logic        shiftImmFlag
 );
 
     always_comb begin 
@@ -84,6 +85,7 @@ module controlUnit(
                 ALUSrcD = 0;
                 ImmSrcD = 3'b000;
                 AddressingModeD = 3'b000;
+                shiftImmFlag = 0;
                 case(funct3) 
                     3'd0:
                         case(funct7) 
@@ -122,26 +124,45 @@ module controlUnit(
                 ImmSrcD = 3'b000; // signExtend the immediate way
                 AddressingModeD = 3'b000;
                 case(funct3) 
-                    3'd0:
-                        ALUControlD = 4'b0000; // ADD
-                    3'd4:
-                        ALUControlD = 4'b0100; // XOR
-                    3'd6:
-                        ALUControlD = 4'b0011; //OR
-                    3'd7:
-                        ALUControlD = 4'b0010; // AND
-                    3'd1:
-                        ALUControlD = 4'b0101; // shift logical left
-                    3'd5:
+                    3'd0: begin
+                        shiftImmFlag = 0;
+                        ALUControlD = 4'b0000; // ADDI
+                    end
+                    3'd4: begin
+                        shiftImmFlag = 0;
+                        ALUControlD = 4'b0100; // XORI
+                    end
+                    3'd6: begin
+                        shiftImmFlag = 0;
+                        ALUControlD = 4'b0011; //ORI
+                    end
+                    3'd7: begin
+                        shiftImmFlag = 0;
+                        ALUControlD = 4'b0010; // ANDI
+                    end
+                    3'd1: begin
+                        shiftImmFlag = 1;
+                        ALUControlD = 4'b0101; // shift logical leftI
+                    end
+                    3'd5: begin
+                        shiftImmFlag = 1;
                         case(funct7)
-                            1'b0 : ALUControlD = 4'b0110; // shift right logical
-                            1'b1 : ALUControlD = 4'b0111; // shift right arith
+                            1'b0 : ALUControlD = 4'b0110; // shift right logicalI
+                            1'b1 : ALUControlD = 4'b0111; // shift right arithI
                         endcase
-                    3'd2:
-                        ALUControlD = 4'b1000; // shift less than
-                    3'd3:
-                        ALUControlD = 4'b1001; // shift less than (U)
-                    default : ALUControlD = 4'b0000;
+                    end
+                    3'd2: begin
+                        shiftImmFlag = 0;
+                        ALUControlD = 4'b1000; // shift less thanI
+                    end
+                    3'd3: begin
+                        shiftImmFlag = 0;
+                        ALUControlD = 4'b1001; // shift less than (U)I
+                    end
+                    default : begin
+                        shiftImmFlag = 0;
+                        ALUControlD = 4'b0000;
+                    end
                 endcase
             end
             // opcode = 0000011 --> ld,lh,lw,lbu,lhu ...
@@ -155,6 +176,7 @@ module controlUnit(
                 ALUControlD = 4'b0000; // add for M[rs1 + imm]
                 ALUSrcD = 1; // takes Imm 
                 ImmSrcD = 3'b000; // signExtend the immediate way
+                shiftImmFlag = 0;
                 case(funct3) 
                     3'd0: AddressingModeD = 3'b000; // lb
                     3'd1: AddressingModeD = 3'b001; // lh
@@ -174,6 +196,7 @@ module controlUnit(
                 ALUControlD = 4'b0000; // add for M[rs1 + imm]
                 ALUSrcD = 1; // takes Imm 
                 ImmSrcD = 3'b001; // signExtend the store way
+                shiftImmFlag = 0;
                 case(funct3) 
                     3'd0: AddressingModeD = 3'b000; // sb
                     3'd1: AddressingModeD = 3'b001; // sh
@@ -192,6 +215,7 @@ module controlUnit(
                 ALUSrcD = 0; // takes compares registers
                 ImmSrcD = 3'b010; // signExtend the branch way
                 AddressingModeD = 3'b000;
+                shiftImmFlag = 0;
                 case(funct3) 
                     3'd0: BranchD = 3'b001; // beq
                     3'd1: BranchD = 3'b010; // bne
@@ -213,6 +237,7 @@ module controlUnit(
                 ALUSrcD = 0; 
                 ImmSrcD = 3'b100; // signExtend the jump way
                 AddressingModeD = 3'b000;
+                shiftImmFlag = 0;
             end
             // opcode 1100111 --> JALR
             7'b1100111: begin 
@@ -225,6 +250,7 @@ module controlUnit(
                 ALUSrcD = 0; 
                 ImmSrcD = 3'b100; // signExtend the jump way
                 AddressingModeD = 3'b000;
+                shiftImmFlag = 0;
             end
             // opcode 0110111 --> lui
             7'b0110111: begin 
@@ -237,6 +263,7 @@ module controlUnit(
                 ALUSrcD = 1; 
                 ImmSrcD = 3'b011; // signExtend the jump way
                 AddressingModeD = 3'b000;
+                shiftImmFlag = 0;
             end
             // opcode 0010111 --> auipc
             7'b0010111: begin 
@@ -249,6 +276,7 @@ module controlUnit(
                 ALUSrcD = 1; 
                 ImmSrcD = 3'b011; // signExtend the jump way
                 AddressingModeD = 3'b000;
+                shiftImmFlag = 0;
             end
 
             default : begin 
@@ -261,6 +289,7 @@ module controlUnit(
                 ALUSrcD     = 0;
                 ImmSrcD     = 0;
                 AddressingModeD = 0;
+                shiftImmFlag = 0;
             end
         endcase
     end
