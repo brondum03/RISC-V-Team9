@@ -92,6 +92,7 @@ module cache_top #(
         .TargetSet(set_index),
         .TargetTag(tag),
         .TargetBlockOffset(block_offset),
+        .TargetByteOffset(byte_offset),
         .addr_mode(AddressingMode),
         // from sram
         .SetData(SRAM_DataOut),

@@ -4,7 +4,8 @@ module cache_controller #(
     parameter ADDR_WIDTH = 17,
     parameter CACHE_ADDR_WIDTH = 5,
     parameter TAG_WIDTH = 8,
-    parameter BLOCK_OFFSET_WIDTH = 2
+    parameter BLOCK_OFFSET_WIDTH = 2,
+    parameter BYTE_OFFSET_BITS = 2
 )(
     input logic                             clk,
     input logic                             rst,
@@ -15,6 +16,7 @@ module cache_controller #(
     input logic [CACHE_ADDR_WIDTH-1:0]      TargetSet,
     input logic [TAG_WIDTH-1:0]             TargetTag,  
     input logic [BLOCK_OFFSET_WIDTH-1:0]    TargetBlockOffset,
+    input logic [BYTE_OFFSET_BITS-1:0]      TargetByteOffset,
     input logic [2:0]                       addr_mode,                                   
 
     // from SRAM
@@ -56,8 +58,6 @@ module cache_controller #(
     logic [TAG_WIDTH-1:0]   Tag_1; 
     logic [DATA_WIDTH-1:0]  Way1_Data;
 
-    (* verilator public *)
-    logic [2:0]             current_state_enc; // for debugging
     // hit logic
     logic                   Hit0;
     logic                   Hit1;     
@@ -82,9 +82,9 @@ module cache_controller #(
     assign Tag_1       = SetData[273:266];      // 8-bit tag
 
     assign Word3_1     = SetData[265:234];
-    assign Word2_1     = SetData[248:217];
-    assign Word1_1     = SetData[216:185];
-    assign Word0_1     = SetData[184:153];
+    assign Word2_1     = SetData[233:202];
+    assign Word1_1     = SetData[201:170];
+    assign Word0_1     = SetData[169:138];
 
 
     // hit logic
@@ -116,6 +116,22 @@ module cache_controller #(
         .out(Data)
     ); 
 
+    logic [31:0] write_mask, shifted_wdata, merged;
+    always_comb begin
+        unique case (addr_mode)
+            3'b000,3'b011: write_mask = 32'h000000FF << (8*TargetByteOffset);        // SB
+            3'b001,3'b100: write_mask = 32'h0000FFFF << (8*TargetByteOffset[1]);     // SH
+            3'b010:        write_mask = 32'hFFFFFFFF;                                // SW
+            default:       write_mask = 32'h0;
+        endcase
+        unique case (addr_mode)
+            3'b000,3'b011: shifted_wdata = WriteData << (8*TargetByteOffset);
+            3'b001,3'b100: shifted_wdata = WriteData << (16*TargetByteOffset[1]);
+            default:       shifted_wdata = WriteData;
+        endcase
+    end
+
+
     // use a FSM to manage the states of the controller for simplicity
     typedef enum logic [2:0] {
         IDLE,
@@ -126,8 +142,6 @@ module cache_controller #(
     } cache_state;
 
     cache_state current_state, next_state;
-    assign current_state_enc = current_state;
-
 
     logic [1:0] refill_count;
     logic [1:0] writeback_count;
@@ -194,20 +208,22 @@ module cache_controller #(
                         SRAM_WriteData = SetData; // current data
 
                         if (Hit0) begin     // way 0
+                            merged = (Way0_Data & ~write_mask) | (shifted_wdata & write_mask);
                             case (TargetBlockOffset)
-                                2'd0: SRAM_WriteData[31:0] = WriteData;
-                                2'd1: SRAM_WriteData[63:32] = WriteData;
-                                2'd2: SRAM_WriteData[95:64] = WriteData;
-                                2'd3: SRAM_WriteData[127:96] = WriteData;
+                                2'd0: SRAM_WriteData[31:0] = merged;
+                                2'd1: SRAM_WriteData[63:32] = merged;
+                                2'd2: SRAM_WriteData[95:64] = merged;
+                                2'd3: SRAM_WriteData[127:96] = merged;
                             endcase
                             SRAM_WriteData[137] = 1'b1;     // set dirty bit
                             SRAM_WriteData[276] = 1'b1;     // way 1 becomes LRU
                         end else if (Hit1) begin    // way 1
+                            merged = (Way1_Data & ~write_mask) | (shifted_wdata & write_mask);
                             case (TargetBlockOffset)
-                                2'd0: SRAM_WriteData[169:138] = WriteData;
-                                2'd1: SRAM_WriteData[201:170] = WriteData;
-                                2'd2: SRAM_WriteData[233:202] = WriteData;
-                                2'd3: SRAM_WriteData[265:234] = WriteData;
+                                2'd0: SRAM_WriteData[169:138] = merged;
+                                2'd1: SRAM_WriteData[201:170] = merged;
+                                2'd2: SRAM_WriteData[233:202] = merged;
+                                2'd3: SRAM_WriteData[265:234] = merged;
                             endcase
                             SRAM_WriteData[275] = 1'b1;     // set dirty bit
                             SRAM_WriteData[276] = 1'b0;     // way 0 becomes LRU
