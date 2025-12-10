@@ -131,6 +131,22 @@ module cache_controller #(
         endcase
     end
 
+    logic [7:0]  sel_byte;
+    logic [15:0] sel_half;
+    logic [31:0] load_data;
+
+    always_comb begin
+        sel_byte = Data >> (8*TargetByteOffset);
+        sel_half = Data >> (16*TargetByteOffset[1]);
+        unique case (addr_mode)
+            3'b000: load_data = {{24{sel_byte[7]}}, sel_byte};   // LB
+            3'b100: load_data = {24'h0, sel_byte};               // LBU
+            3'b001: load_data = {{16{sel_half[15]}}, sel_half};  // LH
+            3'b101: load_data = {16'h0, sel_half};               // LHU
+            default: load_data = Data;                           // LW or others
+        endcase
+    end
+
 
     // use a FSM to manage the states of the controller for simplicity
     typedef enum logic [2:0] {
@@ -201,7 +217,7 @@ module cache_controller #(
             CHECK_TAG: begin
                 if (Hit) begin  // cache hit
                     cache_ready = 1'b1;   // cpu can continue once data is available in cache
-                    DataOut = Data;
+                    DataOut = load_data;
 
                     if (WriteEnable) begin  // writing to cache
                         SRAM_WriteEnable = 1'b1;

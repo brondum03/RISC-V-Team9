@@ -10,7 +10,7 @@ module cache_sram #(
     input logic                         ReadEnable,
     output logic [SET_SIZE-1:0]         ReadData
 );
-    logic [SET_SIZE-1:0] set_array [2**CACHE_ADDR_WIDTH-1:0];   // 32 sets of 307 bits
+    logic [SET_SIZE-1:0] set_array [2**CACHE_ADDR_WIDTH-1:0];   // 32 sets of 277 bits
 
     always_comb begin
         if(ReadEnable) begin
