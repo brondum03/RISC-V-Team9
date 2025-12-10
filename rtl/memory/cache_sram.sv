@@ -11,7 +11,10 @@ module cache_sram #(
     output logic [SET_SIZE-1:0]         ReadData
 );
     logic [SET_SIZE-1:0] set_array [2**CACHE_ADDR_WIDTH-1:0];   // 32 sets of 307 bits
-
+    (* verilator public *) logic [31:0] debug_word0;
+    (* verilator public *) logic [31:0] debug_word1;
+    assign debug_word0 = set_array[0][0 +:32];
+    assign debug_word1 = set_array[0][32 +:32];
     always_comb begin
         if(ReadEnable) begin
             ReadData = set_array[Address];
@@ -19,6 +22,8 @@ module cache_sram #(
             ReadData = {SET_SIZE{1'b0}};
         end
     end
+
+
 
     always_ff @(posedge clk) begin
         if(WriteEnable) begin

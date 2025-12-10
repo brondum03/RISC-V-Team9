@@ -1,0 +1,98 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Wed Dec 10 20:14:36 2025
+[*]
+[dumpfile] "/home/jerryzhang/RISC-V-Team9/tb/test_out/3_lbu_sb/waveform.vcd"
+[dumpfile_mtime] "Wed Dec 10 19:47:04 2025"
+[dumpfile_size] 11925548
+[savefile] "/home/jerryzhang/RISC-V-Team9/lbu_sb_view.gtkw"
+[timestart] 14
+[size] 3828 2055
+[pos] -248 -1339
+*-2.000000 41 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.top.
+[treeopen] TOP.top.decode.
+[treeopen] TOP.top.execute.
+[treeopen] TOP.top.memory.
+[treeopen] TOP.top.memory.cache.
+[sst_width] 214
+[signals_width] 771
+[sst_expanded] 1
+[sst_vpaned_height] 1397
+@24
+TOP.top.memory.cache.cache_controller.current_state_enc[2:0]
+TOP.top.memory.cache.cache_controller.DataOut[31:0]
+TOP.top.memory.cache.cache_controller.Hit1
+TOP.top.memory.cache.cache_controller.Way0_Data[31:0]
+TOP.top.memory.cache.cache_controller.Word0_0[31:0]
+TOP.top.memory.cache.cache_controller.Word1_0[31:0]
+@200
+-
+@24
+TOP.top.execute.StallM
+TOP.top.fetch.StallD
+TOP.top.fetch.StallF
+TOP.top.memory.mem_used
+TOP.top.execute.StallM
+TOP.top.memory.mem_stall
+@200
+-
+@24
+TOP.top.memory.cache.cache_controller.TargetBlockOffset[1:0]
+TOP.top.memory.cache.cache_controller.TargetSet[4:0]
+TOP.top.memory.cache.cache_controller.TargetTag[7:0]
+@200
+-
+@22
+TOP.top.decode.InstrD[31:0]
+@24
+TOP.top.execute.ALUResultE[31:0]
+@28
+TOP.top.execute.ALUSrcE
+@c00024
+TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+@28
+(0)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(1)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(2)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(3)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(4)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(5)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(6)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(7)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(8)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(9)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(10)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(11)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(12)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(13)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(14)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(15)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(16)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(17)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(18)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(19)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(20)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(21)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(22)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(23)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(24)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(25)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(26)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(27)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(28)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(29)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(30)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+(31)TOP.top.memory.memory_pipeline_register.ALUResultM[31:0]
+@1401204
+-group_end
+@200
+-
+@24
+TOP.top.decode.register_file.regfile[6][31:0]
+TOP.top.decode.register_file.regfile[7][31:0]
+@25
+TOP.top.memory.ReadDataM[31:0]
+[pattern_trace] 1
+[pattern_trace] 0

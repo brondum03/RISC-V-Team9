@@ -77,14 +77,16 @@ module cache_controller #(
     assign Word0_0     = SetData[31:0];
 
     // WAY 1
+// WAY 1  (bits 275:138)
     assign Dirty_bit_1 = SetData[275];
     assign Valid_bit_1 = SetData[274];
     assign Tag_1       = SetData[273:266];      // 8-bit tag
 
     assign Word3_1     = SetData[265:234];
-    assign Word2_1     = SetData[248:217];
-    assign Word1_1     = SetData[216:185];
-    assign Word0_1     = SetData[184:153];
+    assign Word2_1     = SetData[233:202];
+    assign Word1_1     = SetData[201:170];
+    assign Word0_1     = SetData[169:138];
+
 
 
     // hit logic
@@ -137,6 +139,7 @@ module cache_controller #(
     logic [TAG_WIDTH-1:0]   evict_tag;
 
 
+
     always_ff @(posedge clk) begin
         if (rst) begin
             current_state <= IDLE;
@@ -156,6 +159,32 @@ module cache_controller #(
                 writeback_count <= '0;
         end
     end
+
+    //     // Registered cache outputs
+    // logic [31:0] DataOut_r;
+    // logic        cache_ready_r;
+
+    // assign DataOut     = DataOut_r;
+    // assign cache_ready = cache_ready_r;
+
+    // always_ff @(posedge clk) begin
+    //     if (rst) begin
+    //         DataOut_r     <= 32'b0;
+    //         cache_ready_r <= 1'b0;
+    //     end else begin
+    //         // default: not ready
+    //         cache_ready_r <= 1'b0;
+
+    //         // latch data when hitting in CHECK_TAG
+    //         if (current_state == CHECK_TAG && Hit) begin
+    //             DataOut_r     <= Data;   // the selected word from cache
+    //             cache_ready_r <= 1'b1;   // 1-cycle pulse
+    //         end
+    //     end
+    // end
+
+
+    
 
     always_comb begin   
         // default parameters

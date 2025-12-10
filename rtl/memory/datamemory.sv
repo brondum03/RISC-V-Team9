@@ -13,9 +13,13 @@ module datamemory #(
     
     
 );
-    (*verilator public_flat_rw*)
     logic [BYTE_WIDTH-1:0] memory [0:32'h0001FFFF]; 
-    
+    logic [7:0] debug_byte0;
+    logic [7:0] debug_byte1;
+
+    assign debug_byte0 = memory[32'h00010000];
+    assign debug_byte1 = memory[32'h00010001];
+
     initial begin
         $readmemh("data.hex", memory, 32'h00010000); 
     end
