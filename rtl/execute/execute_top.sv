@@ -31,6 +31,8 @@ module execute_top #(
     input   logic [1:0]             ResultSrcE,
     input   logic                   RegWriteE,
     input   logic                   MemWriteE,
+    input   logic                   MemReadE,
+
 
     // hazard unit 
     input   logic [4:0]             Rs1E,
@@ -54,6 +56,7 @@ module execute_top #(
     output  logic [1:0]             ResultSrcM,
     output  logic                   RegWriteM,
     output  logic                   MemWriteM,
+    output  logic                   MemReadM,
 
     output  logic [DATA_WIDTH-1:0]  PCTargetE, 
     output  logic                   PCSrcE, 
@@ -106,6 +109,7 @@ module execute_top #(
         .RegWriteE(RegWriteE),
         .ResultSrcE(ResultSrcE),
         .MemWriteE(MemWriteE),
+        .MemReadE(MemReadE),
         .AddressingModeE(AddressingModeE),
         .StallM(StallM),
 
@@ -116,6 +120,7 @@ module execute_top #(
         .RegWriteM(RegWriteM),
         .ResultSrcM(ResultSrcM),
         .MemWriteM(MemWriteM),
+        .MemReadM(MemReadM),
         .AddressingModeM(AddressingModeM)
     );
     

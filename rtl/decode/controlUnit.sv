@@ -63,6 +63,7 @@ module controlUnit(
     output logic        RegWriteD,
     output logic [1:0]  ResultSrcD, // selects mux, 00 -> ALUResultM, 01 -> ReadDataW, 10 -> PCPlus4
     output logic        MemWriteD,
+    output logic        MemReadD,
     output logic [1:0]  JumpD, // -> 00 for noJump, 01 for JAL, 10 for JALR
     output logic [2:0]  BranchD,
     output logic [3:0]  ALUControlD,
@@ -78,6 +79,7 @@ module controlUnit(
                 RegWriteD = 1;
                 ResultSrcD = 2'b00;
                 MemWriteD = 0;
+                MemReadD = 0;
                 JumpD = 2'b00;
                 BranchD = 3'b000;
                 // ALUControlD decided below
@@ -115,6 +117,7 @@ module controlUnit(
                 RegWriteD = 1;
                 ResultSrcD = 2'b00;
                 MemWriteD = 0;
+                MemReadD = 0;
                 JumpD = 2'b00;
                 BranchD = 3'b000;
                 // ALUControlD decided below
@@ -150,6 +153,7 @@ module controlUnit(
                 RegWriteD = 1;
                 ResultSrcD = 2'b01;
                 MemWriteD = 0;
+                MemReadD = 1;
                 JumpD = 2'b00;
                 BranchD = 3'b000;
                 ALUControlD = 4'b0000; // add for M[rs1 + imm]
@@ -169,6 +173,7 @@ module controlUnit(
                 RegWriteD = 0;
                 ResultSrcD = 2'b00;
                 MemWriteD = 1;
+                MemReadD = 0;
                 JumpD = 2'b00;
                 BranchD = 3'b000;
                 ALUControlD = 4'b0000; // add for M[rs1 + imm]
@@ -186,6 +191,7 @@ module controlUnit(
                 RegWriteD = 0;
                 ResultSrcD = 2'b00; // no writeback dont care
                 MemWriteD = 0;
+                MemReadD = 0;
                 JumpD = 2'b00;
                 // BranchD decided below
                 ALUControlD = 4'b0001; // sub for branch
@@ -207,6 +213,7 @@ module controlUnit(
                 RegWriteD = 1;
                 ResultSrcD = 2'b10; // PCPlus4W to be selected
                 MemWriteD = 0;
+                MemReadD = 0;
                 JumpD = 2'b01; 
                 BranchD = 3'b000;
                 ALUControlD = 4'b0000;
@@ -219,6 +226,7 @@ module controlUnit(
                 RegWriteD = 1;
                 ResultSrcD = 2'b10; // PCPlus4W to be selected
                 MemWriteD = 0;
+                MemReadD = 0;
                 JumpD = 2'b10; 
                 BranchD = 3'b000;
                 ALUControlD = 4'b0000;
@@ -231,6 +239,7 @@ module controlUnit(
                 RegWriteD = 1;
                 ResultSrcD = 2'b00; // ALUResultM
                 MemWriteD = 0;
+                MemReadD = 0;
                 JumpD = 2'b00; 
                 BranchD = 3'b000;
                 ALUControlD = 4'b0000;
@@ -243,6 +252,7 @@ module controlUnit(
                 RegWriteD = 1;
                 ResultSrcD = 2'b00; // ALUResultM
                 MemWriteD = 0;
+                MemReadD = 0;
                 JumpD = 2'b00; 
                 BranchD = 3'b000;
                 ALUControlD = 4'b0000;
@@ -255,6 +265,7 @@ module controlUnit(
                 RegWriteD   = 0;
                 ResultSrcD  = 0;
                 MemWriteD   = 0;
+                MemReadD    = 0;
                 JumpD       = 0;
                 BranchD     = 0;
                 ALUControlD = 0;

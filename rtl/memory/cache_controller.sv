@@ -207,10 +207,12 @@ module cache_controller #(
 
         case(current_state)
             IDLE: begin
+                cache_ready = 1'b0;
                 if (mem_used)    // only proceed if memory is being used (read or write)    
                     next_state = CHECK_TAG;
                 else
                     next_state = IDLE;
+
             end
 
             CHECK_TAG: begin
@@ -250,6 +252,7 @@ module cache_controller #(
 
                     next_state = IDLE;
                 end else begin  // cache miss
+                    cache_ready = 1'b0;   // cpu has to wait
                     next_state = ALLOCATE;
                 end
             end
@@ -265,6 +268,7 @@ module cache_controller #(
             end
 
             WRITE_BACK: begin   // writeback to memory
+                cache_ready = 1'b0;   // cpu has to wait
                 Mem_WriteEnable = 1'b1;
                 Mem_Address = {evict_tag, TargetSet, writeback_count, 2'b00};   // writeback count ensures all 4 words are written back
 
@@ -290,6 +294,7 @@ module cache_controller #(
             end
 
             REFILL: begin   // fetch from memory
+                cache_ready = 1'b0;   // cpu has to wait
                 Mem_ReadRequest = 1'b1;
                 Mem_Address = {TargetTag, TargetSet, refill_count, 2'b00};   // refill count ensures all 4 words are fetched
 

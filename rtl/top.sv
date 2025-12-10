@@ -33,6 +33,7 @@ module top #(
     logic [1:0]             ResultSrcE;
     logic                   RegWriteE;
     logic                   MemWriteE;
+    logic                   MemReadE;    
     logic                   PCSrcE;
     logic [ADDR_WIDTH-1:0]  Rs1E;
     logic [ADDR_WIDTH-1:0]  Rs2E;
@@ -52,6 +53,7 @@ module top #(
     logic [1:0]             ResultSrcM;
     logic                   RegWriteM;
     logic                   MemWriteM;
+    logic                   MemReadM;
     logic [DATA_WIDTH-1:0]  PCTargetE;
     logic                   StallF;
     logic                   StallD;
@@ -96,6 +98,7 @@ module top #(
         .RegWriteE(RegWriteE),
         .ResultSrcE(ResultSrcE),
         .MemWriteE(MemWriteE),
+        .MemReadE(MemReadE),
         .JumpE(JumpE),
         .BranchE(BranchE),
         .ALUControlE(ALUControlE),
@@ -132,6 +135,7 @@ module top #(
         .ResultSrcE(ResultSrcE),
         .RegWriteE(RegWriteE),
         .MemWriteE(MemWriteE),
+        .MemReadE(MemReadE),
         .Rs1E(Rs1E),
         .Rs2E(Rs2E),
         .RdW(RdW),
@@ -150,6 +154,7 @@ module top #(
         .ResultSrcM(ResultSrcM),
         .RegWriteM(RegWriteM),
         .MemWriteM(MemWriteM),
+        .MemReadM(MemReadM),
         .PCTargetE(PCTargetE),
         .PCSrcE(PCSrcE),
         .StallF(StallF),
@@ -169,6 +174,7 @@ module top #(
         .RegWriteM(RegWriteM), 
         .ResultSrcM(ResultSrcM),
         .MemWriteM(MemWriteM),
+        .MemReadM(MemReadM),
         .AddressingModeM(AddressingModeM),
         .ResultW(ResultW),
         .RegWriteW(RegWriteW),    
