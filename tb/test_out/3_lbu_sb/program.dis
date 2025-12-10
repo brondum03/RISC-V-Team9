@@ -14,9 +14,10 @@ bfc00008:	00640023          	sb	t1,0(s0) # 10000 <main-0xbfbf0000>
 bfc0000c:	0c800393          	li	t2,200
 bfc00010:	00740223          	sb	t2,4(s0)
 bfc00014:	00444e83          	lbu	t4,4(s0)
-bfc00018:	00044e03          	lbu	t3,0(s0)
-bfc0001c:	01de0533          	add	a0,t3,t4
-bfc00020:	00051263          	bnez	a0,bfc00024 <finish>
+bfc00018:	00000013          	nop
+bfc0001c:	00044e03          	lbu	t3,0(s0)
+bfc00020:	01de0533          	add	a0,t3,t4
+bfc00024:	00051263          	bnez	a0,bfc00028 <finish>
 
-bfc00024 <finish>:
-bfc00024:	00051063          	bnez	a0,bfc00024 <finish>
+bfc00028 <finish>:
+bfc00028:	00051063          	bnez	a0,bfc00028 <finish>

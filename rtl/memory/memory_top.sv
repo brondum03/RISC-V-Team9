@@ -46,7 +46,7 @@ logic                       Cache_Ready;
 logic                       mem_used;
 
 assign mem_used = MemReadM || MemWriteM;
-assign mem_stall = mem_used && !Cache_Ready;
+assign mem_stall = !Cache_Ready;
 
 
 // data memory access 

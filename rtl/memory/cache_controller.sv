@@ -207,7 +207,7 @@ module cache_controller #(
 
         case(current_state)
             IDLE: begin
-                cache_ready = 1'b0;
+                cache_ready = 1'b1;
                 if (mem_used)    // only proceed if memory is being used (read or write)    
                     next_state = CHECK_TAG;
                 else
@@ -258,6 +258,7 @@ module cache_controller #(
             end
 
             ALLOCATE: begin 
+                cache_ready = 1'b0;   // cpu has to wait
                 // this stage checks if the way to be evicted is dirty
                 // if dirty, writeback, if not just replace the block
                 if (evict_dirty) begin  
