@@ -28,6 +28,8 @@ module decodePipeline #(
     //input from signExtend
     input logic [DATA_WIDTH-1:0]    ImmExtD,
 
+    input logic                     StallE,
+
     // output from control unit
     output logic        RegWriteE,
     output logic [1:0]  ResultSrcE, // selects mux, 00 -> ALUResultM, 01 -> ReaEEataW, 10 -> PCPlus4
@@ -51,7 +53,7 @@ module decodePipeline #(
 );
 
     always_ff @ (posedge clk) begin 
-        if(!FlushE && !rst && !trigger) begin 
+        if(!FlushE && !rst && !trigger && !StallE) begin 
             RegWriteE       <= RegWriteD;
             ResultSrcE      <= ResultSrcD;
             MemWriteE       <= MemWriteD;
