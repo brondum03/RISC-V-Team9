@@ -62,26 +62,76 @@ TEST_F(CpuTestbench, TestAllImm)
     EXPECT_EQ(top_->a0, 0);
 }
 
-TEST_F(CpuTestbench, TestAllLoad)
+TEST_F(CpuTestbench, TestLoadByte)
 {
-    setupTest("8_all_load");
+    setupTest("8_load_byte");
+    initSimulation();
+    runSimulation(CYCLES);
+    EXPECT_EQ(top_->a0, 1);
+}
+
+TEST_F(CpuTestbench, TestLoadHalf)
+{
+    setupTest("9_load_half");
+    initSimulation();
+    runSimulation(CYCLES);
+    EXPECT_EQ(top_->a0, 0x100);
+}
+
+TEST_F(CpuTestbench, TestLoadWord)
+{
+    setupTest("10_load_word");
+    initSimulation();
+    runSimulation(CYCLES);
+    EXPECT_EQ(top_->a0, 0x01007180);
+}
+
+TEST_F(CpuTestbench, TestLoadByteU)
+{
+    setupTest("11_load_byte_u");
+    initSimulation();
+    runSimulation(CYCLES);
+    EXPECT_EQ(top_->a0, 1);
+}
+
+TEST_F(CpuTestbench, TestStoreByte)
+{
+    setupTest("12_store_byte");
+    initSimulation();
+    runSimulation(CYCLES);
+    EXPECT_EQ(top_->a0, 1);
+}
+
+TEST_F(CpuTestbench, TestStoreHalf)
+{
+    setupTest("13_store_half");
+    initSimulation();
+    runSimulation(CYCLES);
+    EXPECT_EQ(top_->a0, 1);
+}
+
+TEST_F(CpuTestbench, TestSrai)
+{
+    setupTest("14_srai");
+    initSimulation();
+    runSimulation(CYCLES);
+    EXPECT_EQ(top_->a0, -16);
+}
+
+TEST_F(CpuTestbench, TestSltiu)
+{
+    setupTest("15_sltiu");
     initSimulation();
     runSimulation(CYCLES);
     EXPECT_EQ(top_->a0, 0);
 }
 
-TEST_F(CpuTestbench, TestSrai)
+TEST_F(CpuTestbench, TestBranch)
 {
-    setupTest("13_srai");
+    setupTest("16_branch");
     initSimulation();
     runSimulation(CYCLES);
-
-    // Debug output
-    std::cout << "a0 value (hex): 0x" << std::hex << top_->a0 << std::dec << std::endl;
-    std::cout << "a0 value (signed): " << (int32_t)top_->a0 << std::endl;
-    std::cout << "a0 value (unsigned): " << top_->a0 << std::endl;
-    
-    EXPECT_EQ(top_->a0, -16);
+    EXPECT_EQ(top_->a0, 1);
 }
 
 int main(int argc, char **argv)
