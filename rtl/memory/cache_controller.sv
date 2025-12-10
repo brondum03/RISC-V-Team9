@@ -140,9 +140,9 @@ module cache_controller #(
         sel_half = Data >> (16*TargetByteOffset[1]);
         unique case (addr_mode)
             3'b000: load_data = {{24{sel_byte[7]}}, sel_byte};   // LB
-            3'b100: load_data = {24'h0, sel_byte};               // LBU
+            3'b011: load_data = {24'b0, sel_byte};               // LBU
             3'b001: load_data = {{16{sel_half[15]}}, sel_half};  // LH
-            3'b101: load_data = {16'h0, sel_half};               // LHU
+            3'b100: load_data = {16'b0, sel_half};               // LHU
             default: load_data = Data;                           // LW or others
         endcase
     end
