@@ -29,21 +29,21 @@ static VerilatedVcdC* tfp = nullptr;
 //     EXPECT_EQ(top_->a0, 1000);
 // }
 
-// TEST_F(CpuTestbench, TestLbuSb)
-// {
-//     setupTest("3_lbu_sb");
-//     initSimulation();
-//     runSimulation(CYCLES);
-//     EXPECT_EQ(top_->a0, 300);
-// }
-
-TEST_F(CpuTestbench, TestJalRet)
+TEST_F(CpuTestbench, TestLbuSb)
 {
-    setupTest("4_jal_ret");
+    setupTest("3_lbu_sb");
     initSimulation();
     runSimulation(CYCLES);
-    EXPECT_EQ(top_->a0, 53);
+    EXPECT_EQ(top_->a0, 300);
 }
+
+// TEST_F(CpuTestbench, TestJalRet)
+// {
+//     setupTest("4_jal_ret");
+//     initSimulation();
+//     runSimulation(CYCLES);
+//     EXPECT_EQ(top_->a0, 53);
+// }
 
 // Uncomment these as needed—tracing will also apply.
 // TEST_F(CpuTestbench, TestLiAdd)

@@ -14,12 +14,13 @@ module cache_top #(
     input logic                     CPU_WriteEnable,    // write enable (0=read, 1=write) 
     input logic [ADDR_WIDTH-1:0]    CPU_Address,       
     input logic [DATA_WIDTH-1:0]    CPU_WriteData,   
+    input logic                     mem_used,           // 1 = memory being used (read or write), 0 = no memory operation
 
     input logic [DATA_WIDTH-1:0]    Mem_ReadData,   
 
     // to cpu
     output logic [DATA_WIDTH-1:0]   CPU_ReadData,
-    output logic                    CPU_Ready,
+    output logic                    Cache_Ready,
 
     // to dram
     output logic [DATA_WIDTH-1:0]   Mem_WriteData,  
@@ -98,7 +99,7 @@ module cache_top #(
         .Mem_Ready(1'b1),   // asynchronous read - memory is always ready
         // to cpu
         .DataOut(CPU_ReadData),
-        .CPU_Ready(CPU_Ready),
+        .cache_ready(Cache_Ready),
         // to sram
         .SRAM_WriteData(SRAM_WriteData),
         .SRAM_WriteEnable(SRAM_WriteEnable),
@@ -107,7 +108,8 @@ module cache_top #(
         .Mem_WriteData(Mem_WriteData),
         .Mem_Address(Mem_Address),
         .Mem_WriteEnable(Mem_WriteEnable),
-        .Mem_ReadRequest(Mem_ReadRequest)
+        .Mem_ReadRequest(Mem_ReadRequest),
+        .mem_used(mem_used)
     );
 
 endmodule

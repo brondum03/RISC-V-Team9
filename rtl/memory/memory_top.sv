@@ -25,7 +25,7 @@ module memory_top #(
     output logic [DATA_WIDTH-1:0]     ResultW,
     output logic                      RegWriteW,    
     output logic [4:0]                RdW,
-    output logic                      CPU_Ready
+    output logic                      mem_stall
 );
 // wires to pipeline register
 logic [1:0]                 ResultSrcW;
@@ -41,6 +41,12 @@ logic                       Mem_WriteEnable;
 logic                       Mem_ReadRequest;
 
 logic [DATA_WIDTH-1:0]      ReadDataM;
+logic                       Cache_Ready;
+logic                       mem_used;
+
+assign mem_used = (ResultSrcM == 2'b01) || MemWriteM;
+assign mem_stall = mem_used && !Cache_Ready;
+
 
 // data memory access 
 datamemory #(
@@ -69,12 +75,14 @@ cache_top cache (
     .Mem_ReadData(Mem_ReadData),
     
     .CPU_ReadData(ReadDataM),
-    .CPU_Ready(CPU_Ready),   // stall entire cpu if cpu is not ready
+    .Cache_Ready(Cache_Ready),   // stall entire cpu if cpu is not ready
     
     .Mem_WriteData(Mem_WriteData),
     .Mem_Address(Mem_Address),
     .Mem_WriteEnable(Mem_WriteEnable),
-    .Mem_ReadRequest(Mem_ReadRequest)
+    .Mem_ReadRequest(Mem_ReadRequest),
+
+    .mem_used(mem_used)
 );
 
 memory_pipeline_register #(
@@ -89,7 +97,7 @@ memory_pipeline_register #(
     .ReadDataM(ReadDataM),
     .RdM(RdM),
     .PCPlus4M(PCPlus4M),
-    .StallW(~CPU_Ready),
+    .StallW(mem_stall),
 
     .RegWriteW(RegWriteW),
     .ResultSrcW(ResultSrcW),

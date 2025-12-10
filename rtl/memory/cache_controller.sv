@@ -1,5 +1,5 @@
 module cache_controller #(
-    parameter SET_SIZE = 277,
+    parameter SET_SIZE = 307,
     parameter DATA_WIDTH = 32,
     parameter ADDR_WIDTH = 17,
     parameter CACHE_ADDR_WIDTH = 5,
@@ -19,6 +19,7 @@ module cache_controller #(
 
     // from SRAM
     input logic [SET_SIZE-1:0]              SetData,
+    input logic                             mem_used,   // 1 = memory being used (read or write), 0 = no memory operation
     
     // from DRAM
     input logic [DATA_WIDTH-1:0]            Mem_ReadData,
@@ -26,7 +27,7 @@ module cache_controller #(
 
     // to CPU
     output logic [DATA_WIDTH-1:0]           DataOut,
-    output logic                            CPU_Ready,
+    output logic                            cache_ready,
     
     // to SRAM
     output logic [SET_SIZE-1:0]             SRAM_WriteData,
@@ -55,30 +56,34 @@ module cache_controller #(
     logic [TAG_WIDTH-1:0]   Tag_1; 
     logic [DATA_WIDTH-1:0]  Way1_Data;
 
+    (* verilator public *)
+    logic [2:0]             current_state_enc; // for debugging
     // hit logic
     logic                   Hit0;
     logic                   Hit1;     
     logic                   Hit;
     logic [DATA_WIDTH-1:0]  Data;                
 
-    assign LRU_bit = SetData[276];
-    // way 0 
-    assign Dirty_bit_0 = SetData[137];
-    assign Valid_bit_0 = SetData[136];
-    assign Tag_0 = SetData[135:128];
-    assign Word3_0 = SetData[127:96];
-    assign Word2_0 = SetData[95:64];
-    assign Word1_0 = SetData[63:32];
-    assign Word0_0 = SetData[31:0];
+    assign LRU_bit = SetData[306];
 
-    //way 1
-    assign Dirty_bit_1 = SetData[275];
-    assign Valid_bit_1 = SetData[274];
-    assign Tag_1       = SetData[273:266];  
-    assign Word3_1     = SetData[265:234];
-    assign Word2_1     = SetData[233:202];
-    assign Word1_1     = SetData[201:170];
-    assign Word0_1     = SetData[169:138];
+    // WAY 0
+    assign Dirty_bit_0 = SetData[152];
+    assign Valid_bit_0 = SetData[151];
+    assign Tag_0       = SetData[150:128];
+    assign Word3_0     = SetData[127:96];
+    assign Word2_0     = SetData[95:64];
+    assign Word1_0     = SetData[63:32];
+    assign Word0_0     = SetData[31:0];
+
+    // WAY 1
+    assign Dirty_bit_1 = SetData[305];
+    assign Valid_bit_1 = SetData[304];
+    assign Tag_1       = SetData[303:281];
+    assign Word3_1     = SetData[280:249];
+    assign Word2_1     = SetData[248:217];
+    assign Word1_1     = SetData[216:185];
+    assign Word0_1     = SetData[184:153];
+
 
     // hit logic
     assign Hit0 = (Valid_bit_0 && (Tag_0 == TargetTag));
@@ -119,6 +124,9 @@ module cache_controller #(
     } cache_state;
 
     cache_state current_state, next_state;
+    assign current_state_enc = current_state;
+
+
     logic [1:0] refill_count;
     logic [1:0] writeback_count;
 
@@ -150,7 +158,7 @@ module cache_controller #(
     always_comb begin   
         // default parameters
         next_state = current_state; // stay in the current state until next_state updated
-        CPU_Ready = 1'b0;
+        cache_ready = 1'b0;
         DataOut = '0;
 
         SRAM_WriteEnable = 1'b0;
@@ -168,12 +176,15 @@ module cache_controller #(
 
         case(current_state)
             IDLE: begin
-                next_state = CHECK_TAG;
+                if (mem_used)    // only proceed if memory is being used (read or write)    
+                    next_state = CHECK_TAG;
+                else
+                    next_state = IDLE;
             end
 
             CHECK_TAG: begin
                 if (Hit) begin  // cache hit
-                    CPU_Ready = 1'b1;   // cpu can continue once data is available in cache
+                    cache_ready = 1'b1;   // cpu can continue once data is available in cache
                     DataOut = Data;
 
                     if (WriteEnable) begin  // writing to cache

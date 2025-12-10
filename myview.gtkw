@@ -1,20 +1,22 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Fri Dec  5 01:10:41 2025
+[*] Wed Dec 10 03:35:45 2025
 [*]
 [dumpfile] "/home/jerryzhang/RISC-V-Team9/tb/test_out/1_addi_bne/waveform.vcd"
-[dumpfile_mtime] "Fri Dec  5 00:15:05 2025"
-[dumpfile_size] 6328007
+[dumpfile_mtime] "Wed Dec 10 03:35:01 2025"
+[dumpfile_size] 6582416
 [savefile] "/home/jerryzhang/RISC-V-Team9/myview.gtkw"
 [timestart] 22
-[size] 1908 1119
-[pos] 1956 -939
+[size] 3828 2055
+[pos] -1501 -461
 *-2.000000 38 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.top.
 [treeopen] TOP.top.decode.
+[treeopen] TOP.top.memory.
+[treeopen] TOP.top.memory.cache.
 [sst_width] 214
-[signals_width] 404
+[signals_width] 514
 [sst_expanded] 1
 [sst_vpaned_height] 334
 @24
@@ -37,7 +39,10 @@ TOP.top.execute.ForwardAE[1:0]
 TOP.top.execute.ForwardBE[1:0]
 @28
 TOP.top.execute.StallD
-@29
 TOP.top.execute.FlushE
+TOP.top.memory.mem_used
+TOP.top.memory.mem_stall
+@29
+TOP.top.memory.cache.cache_controller.current_state_enc[2:0]
 [pattern_trace] 1
 [pattern_trace] 0
