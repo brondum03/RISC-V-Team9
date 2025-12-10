@@ -1,9 +1,9 @@
 module cache_controller #(
-    parameter SET_SIZE = 307,
+    parameter SET_SIZE = 277,
     parameter DATA_WIDTH = 32,
     parameter ADDR_WIDTH = 17,
     parameter CACHE_ADDR_WIDTH = 5,
-    parameter TAG_WIDTH = 23,
+    parameter TAG_WIDTH = 8,
     parameter BLOCK_OFFSET_WIDTH = 2
 )(
     input logic                             clk,
@@ -64,22 +64,24 @@ module cache_controller #(
     logic                   Hit;
     logic [DATA_WIDTH-1:0]  Data;                
 
-    assign LRU_bit = SetData[306];
+    assign LRU_bit = SetData[276];
 
-    // WAY 0
-    assign Dirty_bit_0 = SetData[152];
-    assign Valid_bit_0 = SetData[151];
-    assign Tag_0       = SetData[150:128];
+    // WAY 0 
+    assign Dirty_bit_0 = SetData[137];
+    assign Valid_bit_0 = SetData[136];
+    assign Tag_0       = SetData[135:128];      // 8-bit tag
+
     assign Word3_0     = SetData[127:96];
     assign Word2_0     = SetData[95:64];
     assign Word1_0     = SetData[63:32];
     assign Word0_0     = SetData[31:0];
 
     // WAY 1
-    assign Dirty_bit_1 = SetData[305];
-    assign Valid_bit_1 = SetData[304];
-    assign Tag_1       = SetData[303:281];
-    assign Word3_1     = SetData[280:249];
+    assign Dirty_bit_1 = SetData[275];
+    assign Valid_bit_1 = SetData[274];
+    assign Tag_1       = SetData[273:266];      // 8-bit tag
+
+    assign Word3_1     = SetData[265:234];
     assign Word2_1     = SetData[248:217];
     assign Word1_1     = SetData[216:185];
     assign Word0_1     = SetData[184:153];

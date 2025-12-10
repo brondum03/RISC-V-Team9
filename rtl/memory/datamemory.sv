@@ -13,23 +13,26 @@ module datamemory #(
     
     
 );
-    logic [BYTE_WIDTH-1:0] memory [32'h0001FFFF:0]; 
+    (*verilator public_flat_rw*)
+    logic [BYTE_WIDTH-1:0] memory [0:32'h0001FFFF]; 
     
     initial begin
         $readmemh("data.hex", memory, 32'h00010000); 
     end
 
-    always_comb begin
+    always_ff @(posedge clk) begin
         logic [31:0] word;
+        word <= 32'b0;
+        read_data <= 32'b0;
         if(Mem_ReadRequest) begin
-            word = { memory[address+3], memory[address+2], memory[address+1], memory[address] };
+            word <= {memory[address+3], memory[address+2], memory[address+1], memory[address]};
             case (addr_mode)
-                3'b000: read_data = {{24{memory[address][7]}}, memory[address]};                      // LB
-                3'b001: read_data = {{16{memory[address+1][7]}}, memory[address+1], memory[address]}; // LH
-                3'b010: read_data = word;                                                             // LW
-                3'b011: read_data = {24'b0, memory[address]};                                         // LBU
-                3'b100: read_data = {16'b0, memory[address+1], memory[address]};                      // LHU
-                default: read_data = word;
+                3'b000: read_data <= {{24{memory[address][7]}}, memory[address]};                      // LB
+                3'b001: read_data <= {{16{memory[address+1][7]}}, memory[address+1], memory[address]}; // LH
+                3'b010: read_data <= word;                                                             // LW
+                3'b011: read_data <= {24'b0, memory[address]};                                         // LBU
+                3'b100: read_data <= {16'b0, memory[address+1], memory[address]};                      // LHU
+                default: read_data <= word;
             endcase
         end
     end

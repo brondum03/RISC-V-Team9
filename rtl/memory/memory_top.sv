@@ -35,7 +35,7 @@ logic [DATA_WIDTH-1:0]      ReadDataW;
 
 // wires between cache to dram
 logic [DATA_WIDTH-1:0]      Mem_ReadData;
-logic [ADDR_WIDTH-1:0]      Mem_Address;
+wire  [ADDR_WIDTH-1:0]      Mem_Address;
 logic [DATA_WIDTH-1:0]      Mem_WriteData;
 logic                       Mem_WriteEnable;  
 logic                       Mem_ReadRequest;

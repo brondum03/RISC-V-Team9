@@ -39,7 +39,7 @@ for file in "${files[@]}"; do
     fi
 
     # Translate Verilog -> C++ including testbench
-    verilator   -Wall --trace \
+    verilator   -Wall --trace --trace-structs\
                 -cc ${RTL_FOLDER}/${name}.sv \
                 --exe ${file} \
                 -y ${RTL_FOLDER} \

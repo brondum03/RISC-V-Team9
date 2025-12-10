@@ -1,7 +1,7 @@
 
 module cache_sram #(
     parameter CACHE_ADDR_WIDTH = 5,     // 2^5 (32) sets
-    parameter SET_SIZE = 307            // 307 bits in a set - 1 bit LRU + 2 way * (1 dirty bit + 1 valid bit + 23 bit tag + 4*32bit data)
+    parameter SET_SIZE = 277            // 277 bits in a set - 1 bit LRU + 2 way * (1 dirty bit + 1 valid bit + 8 bit tag + 4*32bit data)
 )(
     input logic                         clk,
     input logic [CACHE_ADDR_WIDTH-1:0]  Address,    
