@@ -5,7 +5,8 @@ module instruction_memory #(
 )(
   // interface signals
   input  logic [INSTR_WIDTH-1:0] in,       
-  output logic [INSTR_WIDTH-1:0] out      
+  output logic [INSTR_WIDTH-1:0] Instr1,
+  output logic [INSTR_WIDTH-1:0] Instr2
 );
 
 logic [DATA_WIDTH-1:0] mem [MEM_SIZE-1:0];
@@ -15,8 +16,8 @@ initial begin
 end;
 
 always_comb begin
-    out  = {mem[in+3], mem[in+2], mem[in+1], mem[in+0]}; // 32-bit word from 4 bytes
-
+    Instr1 = {mem[in+3], mem[in+2], mem[in+1], mem[in+0]}; // 32-bit word from 4 bytes
+    Instr2 = {mem[in+7], mem[in+6], mem[in+5], mem[in+4]}; // 2nd instruction fetched
 end
 
 endmodule

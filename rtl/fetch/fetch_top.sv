@@ -11,8 +11,10 @@ module fetch_top#(
     input   logic [1:0]                    PCsrc,
     input   logic [DATA_WIDTH-1:0]         ImmExt,
     input   logic [DATA_WIDTH-1:0]         ALUResult,
-    output  logic [DATA_WIDTH-1:0]         Instr,
-    output  logic [DATA_WIDTH-1:0]         PCPlus4
+
+    output  logic [DATA_WIDTH-1:0]         PCPlus4,
+    output  logic [DATA_WIDTH-1:0]         Instr1,
+    output  logic [DATA_WIDTH-1:0]         Instr2,
 );
 logic [DATA_WIDTH-1:0]          PC;
 logic [DATA_WIDTH-1:0]          PCTarget; 
@@ -48,7 +50,8 @@ program_counter ProgramCounter(
 
 instruction_memory Instruction_Memory(
     .in(PC),
-    .out(Instr)
+    .Instr1(Instr1),
+    .Instr2(Instr2)
 );
 
 endmodule

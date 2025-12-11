@@ -3,46 +3,53 @@ Ezekiel
 decode_top.sv
 */
 
-`include "../rtl/decode/register.sv"
-`include "../rtl/decode/signExtend.sv"
-`include "../rtl/decode/controlUnit.sv"
-
 module decode_top #(
     parameter DATA_WIDTH = 32
 )(
-    input logic                     Zero,
-    input logic                     stall,
-    input logic                     negative,
     input logic                     clk,
-    input logic [DATA_WIDTH-1:0]    WD3, 
-    input logic [DATA_WIDTH-1:0]    Instr,
+    input logic                     stall,
     input logic                     rst,
 
-    output logic [1:0]              PCSrc,
+    input logic [DATA_WIDTH-1:0]    Instr1,
+    input logic [DATA_WIDTH-1:0]    Result1,
+
+    input logic [DATA_WIDTH-1:0]    Instr2,
+    input logic [DATA_WIDTH-1:0]    Result2,
+    
+    output logic                    PCSrc,
     output logic [1:0]              ResultSrc,
-    output logic                    MemWrite,
-    output logic [3:0]              ALUControl,
-    output logic                    ALUSrc,
-    output logic                    AddressingMode,
+    output logic [1:0]              MemWrite,
+    output logic [7:0]              ALUControl,
+    output logic [1:0]              ALUSrc,
+
     output logic [DATA_WIDTH-1:0]   RD1, 
     output logic [DATA_WIDTH-1:0]   RD2,
-    output logic [DATA_WIDTH-1:0]   ImmExt,
+    output logic [DATA_WIDTH-1:0]   ImmExt1,
+
+    output logic [DATA_WIDTH-1:0]   RD4, 
+    output logic [DATA_WIDTH-1:0]   RD5,
+    output logic [DATA_WIDTH-1:0]   ImmExt2,
+
     output logic [DATA_WIDTH-1:0]   a0
 );
 
     // internal wire connections
-    logic [2:0]                     ImmSrc;
-    logic                           RegWrite;
+    logic [1:0] shiftImmFlag;
+    logic [1:0] RegWrite;
+    logic [5:0] ImmSrc;
     
     // controlUnit.sv
     controlUnit control_unit(
         // input
-        .op(Instr[6:0]),
-        .funct3(Instr[14:12]),
-        .funct7(Instr[30]),
-        .Zero(Zero),
-        .negative(negative),
         .stall(stall),
+
+        .op1(Instr1[6:0]),
+        .funct3_1(Instr1[14:12]),
+        .funct7_1(Instr1[30]),
+
+        .op2(Instr2[6:0]),
+        .funct3_2(Instr2[14:12]),
+        .funct7_2(Instr2[30]),
         // output
         .PCSrc(PCSrc),
         .ResultSrc(ResultSrc),
@@ -51,7 +58,7 @@ module decode_top #(
         .ALUSrc(ALUSrc),
         .ImmSrc(ImmSrc),
         .RegWrite(RegWrite),
-        .AddressingMode(AddressingMode)
+        .shiftImmFlag(shiftImmFlag)
     );
 
     // register.sv
@@ -59,24 +66,38 @@ module decode_top #(
         // input 
         .clk(clk),
         .rst(rst),
-        .WE3(RegWrite),
-        .AD1(Instr[19:15]),
-        .AD2(Instr[24:20]),
-        .AD3(Instr[11:7]),
-        .WD3(WD3),
+        .WE(RegWrite),
+
+        .AD1(Instr1[19:15]),
+        .AD2(Instr1[24:20]),
+        .AD3(Instr1[11:7]),
+        .WD3(Result1),
+
+        .AD4(Instr2[19:15]),
+        .AD5(Instr2[24:20]),
+        .AD6(Instr2[11:7]),
+        .WD6(Result2),
+
         // output
         .RD1(RD1),
         .RD2(RD2),
+        
+        .RD4(RD4),
+        .RD5(RD5),
+
         .a0(a0)
     );
 
     // signExtend.sv
     signExtend sign_extend(
         // input
-        .Instr(Instr[31:7]),
+        .Instr1(Instr1),
+        .Instr2(Instr2),
         .ImmSrc(ImmSrc),
+        .shiftImmFlag(shiftImmFlag),
         // output 
-        .ImmExt(ImmExt)
+        .ImmExt1(ImmExt1),
+        .ImmExt2(ImmExt2)
     );
 
 endmodule

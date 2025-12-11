@@ -15,7 +15,8 @@ module top #(
 
     //fetch
     logic [1:0] PCSrc; // -> connected to mux which selects PCNext
-    logic [DATA_WIDTH-1:0] Instr; //instruction from instruction memory
+    logic [DATA_WIDTH-1:0] Instr1; //instruction from instruction memory
+    logic [DATA_WIDTH-1:0] Instr2;
     logic [DATA_WIDTH-1:0] PCPlus4;
 
     /*decode*/
@@ -38,12 +39,15 @@ module top #(
     logic [DATA_WIDTH-1:0] WriteData;
     
     fetch_top fetch (
+        // input
         .clk(clk),
         .rst(rst),
         .PCsrc(PCSrc),
         .ImmExt(ImmExt),
         .ALUResult(ALUResult),
-        .Instr(Instr),
+        // output
+        .Instr1(Instr1),
+        .Instr2(Instr2),
         .PCPlus4(PCPlus4)
     ); 
     
