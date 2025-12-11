@@ -3,6 +3,8 @@
 `include "../rtl/fetch/program_counter.sv"
 `include "../rtl/fetch/instruction_memory.sv"
 `include "../rtl/fetch/fetch_pipeline.sv"
+`include "../rtl/fetch/branch_predictor.sv"
+`include "../rtl/fetch/branch_target_buffer.sv"
 
 module fetch_top#(
     parameter DATA_WIDTH = 32
@@ -16,6 +18,13 @@ module fetch_top#(
 
     input   logic                          PCsrcE,
     input   logic [DATA_WIDTH-1:0]         PCTargetE,
+
+    input   logic                          branch_resolved,
+    input   logic                          branch_taken,
+    input   logic [DATA_WIDTH-1:0]         branch_pc,
+    input   logic [DATA_WIDTH-1:0]         branch_target,
+    
+    output  logic                          predict_taken,
 
     output  logic [DATA_WIDTH-1:0]         InstrD,
     output  logic [DATA_WIDTH-1:0]         PCD,
