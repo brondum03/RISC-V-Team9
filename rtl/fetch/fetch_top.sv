@@ -1,44 +1,26 @@
-// `include "../rtl/mux4.sv"
+ `include "../mux2.sv"
 // `include "../rtl/adder.sv"
-`include "../rtl/fetch/program_counter.sv"
-`include "../rtl/fetch/instruction_memory.sv"
+//`include "../rtl/fetch/program_counter.sv"
+//`include "../rtl/fetch/instruction_memory.sv"
 
 module fetch_top#(
     parameter DATA_WIDTH = 32
 )(
     input   logic                          clk,
     input   logic                          rst,
-    input   logic [1:0]                    PCsrc,
-    input   logic [DATA_WIDTH-1:0]         ImmExt,
-    input   logic [DATA_WIDTH-1:0]         ALUResult,
+    input   logic                          PCsrc,
 
-    output  logic [DATA_WIDTH-1:0]         PCPlus4,
     output  logic [DATA_WIDTH-1:0]         Instr1,
-    output  logic [DATA_WIDTH-1:0]         Instr2,
+    output  logic [DATA_WIDTH-1:0]         Instr2
 );
-logic [DATA_WIDTH-1:0]          PC;
-logic [DATA_WIDTH-1:0]          PCTarget; 
-logic [DATA_WIDTH-1:0]          PCNext;  
+    logic [DATA_WIDTH-1:0]          PC;
+    logic [DATA_WIDTH-1:0]          PCNext;  
 
-mux4 pcmux(
-    .in0(PCPlus4),
-    .in1(PCTarget),
-    .in2(ALUResult),
-    .in3(PC),
+mux2 pcmux(
+    .in0(PC + 8),
+    .in1(PC),
     .sel(PCsrc),
     .out(PCNext)
-);
-
-adder adder_branch(
-    .in0(PC),
-    .in1(ImmExt),
-    .out(PCTarget)
-);
-
-adder adder_plus4(
-    .in0(PC),
-    .in1(4),
-    .out(PCPlus4)
 );
 
 program_counter ProgramCounter(
