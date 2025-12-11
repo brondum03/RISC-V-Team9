@@ -1,6 +1,6 @@
 //`include "../rtl/mux2.sv"
-//`include "../rtl/memory/datamemory.sv"
-`include "../mux2.sv"
+`include "../rtl/memory/datamemory.sv"
+//`include "../mux2.sv"
 
 module memory_top #(
     parameter DATA_WIDTH = 32

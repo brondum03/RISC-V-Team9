@@ -1,4 +1,5 @@
-`include "../mux2.sv"
+//`include "../mux2.sv"
+`include "../rtl/execute/alu.sv"
 
 module execute_top #(
     parameter DATA_WIDTH = 32

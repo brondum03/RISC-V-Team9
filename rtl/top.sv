@@ -14,41 +14,38 @@ module top #(
 );
 
     //fetch
-    logic [1:0] PCSrc; // -> connected to mux which selects PCNext
+    logic  PCSrc; // 1 bit to select pc + 8 or stall
     logic [DATA_WIDTH-1:0] Instr1; //instruction from instruction memory
     logic [DATA_WIDTH-1:0] Instr2;
-    logic [DATA_WIDTH-1:0] PCPlus4;
 
     /*decode*/
     // control unit inputs
-    logic                   Zero;
-    logic                   Negative;
-    logic                   MemWrite;
-    logic                   ALUSrc;
-    logic                   AddressingMode;
+    logic [1:0]             MemWrite;
+    logic [1:0]             ALUSrc;
     logic [1:0]             ResultSrc;
-    logic [3:0]             ALUControl;
+    logic [7:0]             ALUControl;
     // Register file wires
-    logic [DATA_WIDTH-1:0]  Result;
+    logic [DATA_WIDTH-1:0]  Result1;
+    logic [DATA_WIDTH-1:0]  Result2;
     logic [DATA_WIDTH-1:0]  RD1; 
     logic [DATA_WIDTH-1:0]  RD2; 
-    logic [DATA_WIDTH-1:0]  ImmExt; 
+    logic [DATA_WIDTH-1:0]  RD4;
+    logic [DATA_WIDTH-1:0]  RD5;
+    logic [DATA_WIDTH-1:0]  ImmExt1; 
+    logic [DATA_WIDTH-1:0]  ImmExt2;
 
     // execute
-    logic [DATA_WIDTH-1:0] ALUResult; 
-    logic [DATA_WIDTH-1:0] WriteData;
+    logic [DATA_WIDTH-1:0] ALUResult1; 
+    logic [DATA_WIDTH-1:0] ALUResult2;
     
     fetch_top fetch (
         // input
         .clk(clk),
         .rst(rst),
         .PCsrc(PCSrc),
-        .ImmExt(ImmExt),
-        .ALUResult(ALUResult),
         // output
         .Instr1(Instr1),
-        .Instr2(Instr2),
-        .PCPlus4(PCPlus4)
+        .Instr2(Instr2)
     ); 
     
     // complete decode_top
@@ -57,10 +54,10 @@ module top #(
         .clk(clk),
         .rst(rst),
         .stall(trigger),
-        .Instr(Instr),
-        .WD3(Result),
-        .Zero(Zero),   
-        .negative(Negative),     
+        .Instr1(Instr1),
+        .Instr2(Instr2),
+        .WD3(Result1),    
+        .WD6(Result2),
         
         // output
         .PCSrc(PCSrc),      // selects mux for PCNext
@@ -68,35 +65,40 @@ module top #(
         .MemWrite(MemWrite),        // WE in data memory
         .ALUControl(ALUControl),      // input to ALU
         .ALUSrc(ALUSrc),          // selects mux for SrcB
-        .AddressingMode(AddressingMode),
         .RD1(RD1),             // SrcA
         .RD2(RD2),             // 0 for mux that outputs SrcB
-        .ImmExt(ImmExt),          // goes into PCTarget
+        .ImmExt1(ImmExt1),
+        .RD4(RD4),
+        .RD5(RD5),
+        .ImmExt2(ImmExt2),
         .a0(a0)
     );
 
     execute_top execute (
+        // input
         .RD1(RD1),   
         .RD2(RD2), 
-        .ImmExt(ImmExt),
+        .ImmExt1(ImmExt1),
+        .RD4(RD4),   
+        .RD5(RD5), 
+        .ImmExt2(ImmExt2),
         .ALUControl(ALUControl),
         .ALUSrc(ALUSrc),
-        .ALUResult(ALUResult), 
-        .Zero(Zero), 
-        .WriteData(WriteData),
-        .Negative(Negative)
+        // output
+        .ALUResult1(ALUResult1), 
+        .ALUResult2(ALUResult2)
     );
 
     memory_top memory (
         .clk(clk),
-        .AddressingMode(AddressingMode),
-        .ALUResult(ALUResult),
-        .ImmExt(ImmExt),
-        .PCPlus4(PCPlus4),
+        .ALUResult1(ALUResult1),
+        .ALUResult2(ALUResult2),
+        .WriteData1(RD2),
+        .WriteData2(RD5),
         .ResultSrc(ResultSrc),
-        .WriteData(WriteData),
         .MemWrite(MemWrite),
-        .Result(Result)
+        .Result1(Result1),
+        .Result2(Result2)
     );
 
 endmodule

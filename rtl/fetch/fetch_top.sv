@@ -1,7 +1,7 @@
- `include "../mux2.sv"
+//`include "../mux2.sv"
 // `include "../rtl/adder.sv"
-//`include "../rtl/fetch/program_counter.sv"
-//`include "../rtl/fetch/instruction_memory.sv"
+`include "../rtl/fetch/program_counter.sv"
+`include "../rtl/fetch/instruction_memory.sv"
 
 module fetch_top#(
     parameter DATA_WIDTH = 32

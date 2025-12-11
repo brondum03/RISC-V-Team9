@@ -1,7 +1,7 @@
-/*
-Ezekiel
-decode_top.sv
-*/
+`include "../rtl/decode/controlUnit.sv"
+`include "../rtl/decode/register.sv"
+`include "../rtl/decode/signExtend.sv"
+
 
 module decode_top #(
     parameter DATA_WIDTH = 32
@@ -11,10 +11,10 @@ module decode_top #(
     input logic                     rst,
 
     input logic [DATA_WIDTH-1:0]    Instr1,
-    input logic [DATA_WIDTH-1:0]    Result1,
+    input logic [DATA_WIDTH-1:0]    WD3,
 
     input logic [DATA_WIDTH-1:0]    Instr2,
-    input logic [DATA_WIDTH-1:0]    Result2,
+    input logic [DATA_WIDTH-1:0]    WD6,
     
     output logic                    PCSrc,
     output logic [1:0]              ResultSrc,
@@ -71,12 +71,12 @@ module decode_top #(
         .AD1(Instr1[19:15]),
         .AD2(Instr1[24:20]),
         .AD3(Instr1[11:7]),
-        .WD3(Result1),
+        .WD3(WD3),
 
         .AD4(Instr2[19:15]),
         .AD5(Instr2[24:20]),
         .AD6(Instr2[11:7]),
-        .WD6(Result2),
+        .WD6(WD6),
 
         // output
         .RD1(RD1),
