@@ -103,26 +103,21 @@ This design implements the basic RV32I instruction set.
 
 - `program_counter.sv`
 - `instruction_memory.sv`
-- `fetch_top.sv`
 
 **Decode Stage**
 
-- `controlUnit.sv`
 - `mainDecoder.sv`
 - `aluDecoder.sv`
 - `register.sv`
 - `signExtend.sv`
-- `decode_top.sv`
 
 **Execute Stage**
 
 - `alu.sv`
-- `execute_top.sv`
 
 **Memory Stage**
 
 - `datamemory.sv`
-- `memory_top.sv`
 
 ### Instruction Implemented
 
