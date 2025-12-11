@@ -29,12 +29,28 @@ static VerilatedVcdC* tfp = nullptr;
 //     EXPECT_EQ(top_->a0, 1000);
 // }
 
-TEST_F(CpuTestbench, TestLbuSb)
+TEST_F(CpuTestbench, TestDebug)
 {
-    setupTest("3_lbu_sb");
+    setupTest("0_debug");
+    setData("reference/data.mem");
     initSimulation();
     runSimulation(CYCLES);
-    EXPECT_EQ(top_->a0, 300);
+    EXPECT_EQ(top_->a0, 51200);
+}
+
+// TEST_F(CpuTestbench, TestPdfWithCache)
+// {
+//     // Runs the full PDF program that builds the distribution in memory
+//     // and returns the sum of all bins in a0.
+//     //
+//     // The assembly for this test should be the pdf program
+//     // (e.g. "pdf.S") wired up in the test harness under the name "pdf".
+//     //
+//     // Expected result (from spec): a0 = 15363.
+//     setupTest("pdf");
+//     initSimulation();
+//     runSimulation(CYCLES);
+//     EXPECT_EQ(top_->a0, 15363);
 }
 
 // TEST_F(CpuTestbench, TestJalRet)
