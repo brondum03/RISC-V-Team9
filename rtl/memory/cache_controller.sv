@@ -139,6 +139,16 @@ module cache_controller #(
     logic                   evict_dirty;
     logic [TAG_WIDTH-1:0]   evict_tag;
 
+    // Latched memory request info for miss handling
+    logic                   pending_write;
+    logic                   pending_read;
+    logic [DATA_WIDTH-1:0]  pending_wdata;
+    logic [TAG_WIDTH-1:0]   pending_tag;
+    logic [CACHE_ADDR_WIDTH-1:0] pending_set;
+    logic [BLOCK_OFFSET_WIDTH-1:0] pending_offset;
+
+    // Miss detect flag
+    logic                   miss_detected;
 
 
     always_ff @(posedge clk) begin
@@ -155,12 +165,33 @@ module cache_controller #(
                 refill_count <= '0;
 
             if (current_state == WRITE_BACK && Mem_Ready)
-                writeback_count <= writeback_count + 1; // ensures all 4 words in the block are written back
+                writeback_count <= writeback_count + 1; // ensures all 4 words are written back
             else if (current_state == ALLOCATE)
                 writeback_count <= '0;
         end
     end
 
+    // Miss detection: latch request information when a miss is seen in CHECK_TAG
+    assign miss_detected = (current_state == CHECK_TAG) && !Hit;
+
+    // Pending request registers: hold the CPU's memory request across miss handling
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            pending_write  <= 1'b0;
+            pending_read   <= 1'b0;
+            pending_wdata  <= '0;
+            pending_tag    <= '0;
+            pending_set    <= '0;
+            pending_offset <= '0;
+        end else if (miss_detected) begin
+            pending_write  <= WriteEnable;
+            pending_read   <= !WriteEnable;
+            pending_wdata  <= WriteData;
+            pending_tag    <= TargetTag;
+            pending_set    <= TargetSet;
+            pending_offset <= TargetBlockOffset;
+        end
+    end
     
 
     always_comb begin   
@@ -248,7 +279,7 @@ module cache_controller #(
             WRITE_BACK: begin   // writeback to memory
                 cache_ready = 1'b0;   // cpu has to wait
                 Mem_WriteEnable = 1'b1;
-                Mem_Address = {evict_tag, TargetSet, writeback_count, 2'b00};   // writeback count ensures all 4 words are written back
+                Mem_Address = {evict_tag, pending_set, writeback_count, 2'b00};   // writeback count ensures all 4 words are written back
 
                 if (evict_way) begin    // way 1
                     case (writeback_count)
@@ -274,7 +305,7 @@ module cache_controller #(
             REFILL: begin   // fetch from memory
                 cache_ready = 1'b0;   // cpu has to wait
                 Mem_ReadRequest = 1'b1;
-                Mem_Address = {TargetTag, TargetSet, refill_count, 2'b00};   // refill count ensures all 4 words are fetched
+                Mem_Address = {pending_tag, pending_set, refill_count, 2'b00};   // refill count ensures all 4 words are fetched
 
                 if (Mem_Ready) begin
                     SRAM_WriteEnable = 1'b1;
@@ -291,7 +322,7 @@ module cache_controller #(
                         if (refill_count == 2'd3) begin // once all 4 words fetched
                             SRAM_WriteData[274] = 1'b1;             // set way 1 valid bit
                             SRAM_WriteData[275] = 1'b0;             // reset dirty bit
-                            SRAM_WriteData[273:266] = TargetTag;    // new tag
+                            SRAM_WriteData[273:266] = pending_tag;    // new tag
                             SRAM_WriteData[276] = 1'b0;             // way 0 becomes LRU
                         end
                     
@@ -306,7 +337,7 @@ module cache_controller #(
                         if (refill_count == 2'd3) begin
                             SRAM_WriteData[136] = 1'b1;         
                             SRAM_WriteData[137] = 1'b0;         
-                            SRAM_WriteData[135:128] = TargetTag; 
+                            SRAM_WriteData[135:128] = pending_tag; 
                             SRAM_WriteData[276] = 1'b1;         
                         end
                     end
