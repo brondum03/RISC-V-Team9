@@ -17,9 +17,7 @@ module alu#(
     input   logic [DATA_WIDTH-1:0]  ALUop1,
     input   logic [DATA_WIDTH-1:0]  ALUop2,
     input   logic [3:0]             ALUctrl,
-    output  logic [DATA_WIDTH-1:0]  ALUout,
-    output  logic                   Zero,
-    output  logic                   Negative
+    output  logic [DATA_WIDTH-1:0]  ALUout
 );
 
     always_comb begin
@@ -37,10 +35,5 @@ module alu#(
             default:  ALUout = {DATA_WIDTH{1'b0}};
         endcase
     end
-
-    //the EQ flag will be used to determine if ALUop1 = ALUop2
-    //after subtraction, if ALUout = 0, meaning both inputs are the same, then EQ will output 1
-    assign Zero = (ALUout == {DATA_WIDTH{1'b0}}); 
-    assign Negative = (ALUout[DATA_WIDTH-1] == 1); //flag high if negative
 
 endmodule
