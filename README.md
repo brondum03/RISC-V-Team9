@@ -93,6 +93,10 @@ std::string dist = "gaussian";   // "gaussian" or "triangle" or "noisy"
 
 This design implements the basic RV32I instruction set.
 
+### Schematic Diagram
+<p align="left"> <img src="images/single_cycle_diagram.jpg" /> </p><BR>
+
+
 ### Module Breakdown
 
 **Fetch stage**
