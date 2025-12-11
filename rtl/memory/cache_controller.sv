@@ -160,30 +160,6 @@ module cache_controller #(
         end
     end
 
-    //     // Registered cache outputs
-    // logic [31:0] DataOut_r;
-    // logic        cache_ready_r;
-
-    // assign DataOut     = DataOut_r;
-    // assign cache_ready = cache_ready_r;
-
-    // always_ff @(posedge clk) begin
-    //     if (rst) begin
-    //         DataOut_r     <= 32'b0;
-    //         cache_ready_r <= 1'b0;
-    //     end else begin
-    //         // default: not ready
-    //         cache_ready_r <= 1'b0;
-
-    //         // latch data when hitting in CHECK_TAG
-    //         if (current_state == CHECK_TAG && Hit) begin
-    //             DataOut_r     <= Data;   // the selected word from cache
-    //             cache_ready_r <= 1'b1;   // 1-cycle pulse
-    //         end
-    //     end
-    // end
-
-
     
 
     always_comb begin   
@@ -207,7 +183,7 @@ module cache_controller #(
 
         case(current_state)
             IDLE: begin
-                cache_ready = 1'b1;
+                cache_ready = 1'b0;   // cpu can proceed
                 if (mem_used)    // only proceed if memory is being used (read or write)    
                     next_state = CHECK_TAG;
                 else

@@ -7,17 +7,7 @@ start address 0xbfc00000
 
 Disassembly of section .text:
 
-bfc00000 <main>:
+bfc00000 <__BSS_END__-0x100c>:
 bfc00000:	00010437          	lui	s0,0x10
-bfc00004:	06400313          	li	t1,100
-bfc00008:	00640023          	sb	t1,0(s0) # 10000 <main-0xbfbf0000>
-bfc0000c:	0c800393          	li	t2,200
-bfc00010:	00740223          	sb	t2,4(s0)
-bfc00014:	00444e83          	lbu	t4,4(s0)
-bfc00018:	00000013          	nop
-bfc0001c:	00044e03          	lbu	t3,0(s0)
-bfc00020:	01de0533          	add	a0,t3,t4
-bfc00024:	00051263          	bnez	a0,bfc00028 <finish>
-
-bfc00028 <finish>:
-bfc00028:	00051063          	bnez	a0,bfc00028 <finish>
+bfc00004:	07b00313          	li	t1,123
+bfc00008:	00640023          	sb	t1,0(s0) # 10000 <__BSS_END__-0xbfbf100c>

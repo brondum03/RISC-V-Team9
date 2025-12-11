@@ -65,6 +65,20 @@ module execute_pipeline_register #(
             MemReadM <= MemReadE;
             AddressingModeM <= AddressingModeE;
         end
+        else if (StallM) begin
+            // data paths
+            ALUResultM <= ALUResultM;
+            WriteDataM <= WriteDataM;
+            PCPlus4M <= PCPlus4M;
+            RdM <= RdM;
+                
+            // control signals
+            RegWriteM <= RegWriteM;
+            ResultSrcM <= ResultSrcM;
+            MemWriteM <= MemWriteM;
+            MemReadM <= MemReadM;
+            AddressingModeM <= AddressingModeM;
+        end
     end
 
 endmodule

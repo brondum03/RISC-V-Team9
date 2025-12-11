@@ -41,6 +41,14 @@ module memory_pipeline_register #(
             RdW             <= RdM;
             PCPlus4W        <= PCPlus4M;
         end
+        else if (StallW) begin
+            RegWriteW       <= RegWriteW;
+            ResultSrcW      <= ResultSrcW;
+            ALUResultW      <= ALUResultW;
+            ReadDataW       <= ReadDataW;
+            RdW             <= RdW;
+            PCPlus4W        <= PCPlus4W;
+        end
     end
 
 endmodule

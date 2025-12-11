@@ -64,7 +64,8 @@ module execute_top #(
     output logic                    StallF,
     output logic                    StallD,
     output logic                    FlushD,
-    output logic                    FlushE
+    output logic                    FlushE,
+    output logic                    memory_used_E
 );
 
     logic [DATA_WIDTH-1:0]  ALUResultE;
@@ -83,6 +84,8 @@ module execute_top #(
     logic [1:0]             ForwardAE;
     logic [1:0]             ForwardBE;
     
+    assign memory_used_E = MemReadE || MemWriteE;
+
     alu #(
         .DATA_WIDTH(DATA_WIDTH)
     ) alu (

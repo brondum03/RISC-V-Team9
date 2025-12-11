@@ -13,7 +13,7 @@ module cache_top #(
     input logic [2:0]               AddressingMode,        
     input logic                     CPU_WriteEnable,    // write enable (0=read, 1=write) 
     input logic [ADDR_WIDTH-1:0]    CPU_Address,       
-    input logic [DATA_WIDTH-1:0]    CPU_WriteData,   
+    input logic [DATA_WIDTH-1:0]    CPU_WriteData,
     input logic                     mem_used,           // 1 = memory being used (read or write), 0 = no memory operation
 
     input logic [DATA_WIDTH-1:0]    Mem_ReadData,   

@@ -27,6 +27,11 @@ module fetch_pipeline #(
             PCD         <= PCD;
             PCPlus4D    <= PCPlus4D;
         end
+        else if(StallD) begin
+            InstrD      <= InstrD;
+            PCD         <= PCD;
+            PCPlus4D    <= PCPlus4D;
+        end
         else begin
             InstrD      <= InstrF;
             PCD         <= PCF;

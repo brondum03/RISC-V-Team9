@@ -59,7 +59,7 @@ module top #(
     logic                   StallD;
     logic                   FlushD;
     logic                   FlushE;
-    
+    logic                  memory_used_E;
     logic                   mem_stall;  // 1 = data available in cache, 0 = stall cpu until data is fetched
 
     fetch_top fetch (
@@ -160,7 +160,8 @@ module top #(
         .StallF(StallF),
         .StallD(StallD),
         .FlushD(FlushD),
-        .FlushE(FlushE)
+        .FlushE(FlushE),
+        .memory_used_E(memory_used_E)
     );
 
     memory_top memory (
@@ -175,6 +176,7 @@ module top #(
         .ResultSrcM(ResultSrcM),
         .MemWriteM(MemWriteM),
         .MemReadM(MemReadM),
+        .memory_used_E(memory_used_E),
         .AddressingModeM(AddressingModeM),
         .ResultW(ResultW),
         .RegWriteW(RegWriteW),    

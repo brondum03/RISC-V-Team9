@@ -94,6 +94,25 @@ module decodePipeline #(
             PCPlus4E   <= '0;
             ImmExtE    <= '0;
         end
+        else if(StallE) begin
+            RegWriteE       <= RegWriteE;
+            ResultSrcE      <= ResultSrcE;
+            MemWriteE       <= MemWriteE;
+            MemReadE        <= MemReadE;
+            JumpE           <= JumpE;
+            BranchE         <= BranchE;
+            ALUControlE     <= ALUControlE;
+            ALUSrcE         <= ALUSrcE;
+            AddressingModeE <= AddressingModeE;
+            RD1E       <= RD1E;
+            RD2E       <= RD2E;
+            PCE        <= PCE;
+            Rs1E       <= Rs1E;
+            Rs2E       <= Rs2E;
+            RdE        <= RdE;
+            PCPlus4E   <= PCPlus4E;
+            ImmExtE    <= ImmExtE;
+        end
     end
 
 endmodule

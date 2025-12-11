@@ -21,6 +21,7 @@ module memory_top #(
     input   logic                     MemWriteM,
     input   logic                     MemReadM,
     input   logic [2:0]               AddressingModeM,
+    input   logic                     memory_used_E,
     
     // from to MEM/WB pipeline register
     output logic [DATA_WIDTH-1:0]     ResultW,
@@ -44,9 +45,9 @@ logic                       Mem_ReadRequest;
 logic [DATA_WIDTH-1:0]      ReadDataM;
 logic                       Cache_Ready;
 logic                       mem_used;
-
 assign mem_used = MemReadM || MemWriteM;
 assign mem_stall = !Cache_Ready;
+
 
 
 // data memory access 
@@ -98,7 +99,7 @@ memory_pipeline_register #(
     .ReadDataM(ReadDataM),
     .RdM(RdM),
     .PCPlus4M(PCPlus4M),
-    .StallW(mem_stall),
+    .StallW(0),
 
     .RegWriteW(RegWriteW),
     .ResultSrcW(ResultSrcW),
