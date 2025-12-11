@@ -1,42 +1,32 @@
 module datamemory #(
-    parameter DATA_WIDTH = 32,
-    parameter BYTE_WIDTH = 8
+    parameter DATA_WIDTH = 32
 )(    
-    input   logic [DATA_WIDTH-1:0]  write_data,
-    input   logic [16:0]            address,
-    input   logic                   addr_mode,  //0 for word, 1 for byte
-    input   logic                   write_enable,
+    input   logic [1:0]             write_enable,
     input   logic                   clk,
-    output  logic [DATA_WIDTH-1:0]  read_data
-    
-    
+
+    input   logic [DATA_WIDTH-1:0]  write_data1,
+    input   logic [DATA_WIDTH-1:0]  address_1,
+
+    input   logic [DATA_WIDTH-1:0]  write_data2,
+    input   logic [DATA_WIDTH-1:0]  address_2,
+
+    output  logic [DATA_WIDTH-1:0]  read_data1,
+    output  logic [DATA_WIDTH-1:0]  read_data2
 );
-    logic [BYTE_WIDTH-1:0] memory [32'h0001FFFF:0]; 
+    logic [DATA_WIDTH-1:0] memory [32'h0001FFFF:0]; 
     
     initial begin
         $readmemh("data.hex", memory, 32'h00010000); 
     end;
 
     always_comb begin
-        if(addr_mode) begin //byte addressing
-            read_data = {24'b0, memory[address[16:0]]}; //extends the 8 bits(byte) to 32 bits with 0
-        end else begin
-            read_data = {memory[address[16:0]+3], memory[address[16:0]+2], memory[address[16:0]+1], memory[address[16:0]]};
-        end
+        read_data1 = memory[address_1];
+        read_data2 = memory[address_2];
     end
 
     always_ff @(posedge clk) begin
-        if (write_enable) begin
-            if (addr_mode) begin //byte mode
-                memory[address[16:0]] <= write_data[7:0];
-            end
-            else begin
-                memory[address[16:0]] <= write_data[7:0];
-                memory[address[16:0]+1] <= write_data[15:8];
-                memory[address[16:0]+2] <= write_data[23:16];
-                memory[address[16:0]+3] <= write_data[31:24];
-            end
-        end 
+        if (write_enable[0]) memory[address_1] <= write_data1;
+        if (write_enable[1]) memory[address_2] <= write_data2;
     end
 
 endmodule
