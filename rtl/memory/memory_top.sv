@@ -45,8 +45,9 @@ logic                       Mem_ReadRequest;
 logic [DATA_WIDTH-1:0]      ReadDataM;
 logic                       Cache_Ready;
 logic                       mem_used;
+
 assign mem_used = MemReadM || MemWriteM;
-assign mem_stall =  !Cache_Ready;
+assign mem_stall = mem_used && (!Cache_Ready);
 
 
 

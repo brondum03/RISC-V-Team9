@@ -184,8 +184,7 @@ module cache_controller #(
 
         case(current_state)
             IDLE: begin
-                cache_ready = 1'b1;   // cpu can proceed
-                if (memory_used_E)    // only proceed if memory is being used (read or write)    
+                if (mem_used)    // only proceed if memory is being used (read or write)    
                     next_state = CHECK_TAG;
                 else
                     next_state = IDLE;

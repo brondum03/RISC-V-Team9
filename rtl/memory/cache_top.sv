@@ -63,7 +63,6 @@ module cache_top #(
 
     // controller signals
 
-
     cache_sram #(
         .CACHE_ADDR_WIDTH(INDEX_BITS),
         .SET_SIZE(SET_SIZE)

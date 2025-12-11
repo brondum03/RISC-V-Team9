@@ -181,6 +181,7 @@ module execute_top #(
         .RegWriteW(RegWriteW),
         .ResultSrcE(ResultSrcE),
         .RdE(RdE),
+        .StallM(StallM),
         .Rs1D(Rs1D),
         .Rs2D(Rs2D),
         .PCSrcE(PCSrcE),
