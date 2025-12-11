@@ -51,7 +51,7 @@ TEST_F(CpuTestbench, TestDebug)
 //     initSimulation();
 //     runSimulation(CYCLES);
 //     EXPECT_EQ(top_->a0, 15363);
-}
+//
 
 // TEST_F(CpuTestbench, TestJalRet)
 // {

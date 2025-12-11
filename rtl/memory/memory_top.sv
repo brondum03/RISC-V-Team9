@@ -19,6 +19,7 @@ module memory_top #(
     input   logic                     RegWriteM,
     input   logic [1:0]               ResultSrcM,
     input   logic                     MemWriteM,
+    input   logic                     MemReadM,
     input   logic [2:0]               AddressingModeM,
     
     // from to MEM/WB pipeline register
@@ -44,7 +45,7 @@ logic [DATA_WIDTH-1:0]      ReadDataM;
 logic                       Cache_Ready;
 logic                       mem_used;
 
-assign mem_used = (ResultSrcM == 2'b01) || MemWriteM;
+assign mem_used = MemReadM || MemWriteM;
 assign mem_stall = mem_used && !Cache_Ready;
 
 

@@ -208,10 +208,13 @@ module cache_controller #(
 
         case(current_state)
             IDLE: begin
-                if (mem_used)    // only proceed if memory is being used (read or write)    
+                if (mem_used)  begin  // only proceed if memory is being used (read or write)    
                     next_state = CHECK_TAG;
-                else
+                    cache_ready = 1'b0;
+                end else begin
+                    cache_ready = 1'b1;
                     next_state = IDLE;
+                end    
             end
 
             CHECK_TAG: begin

@@ -16,6 +16,7 @@ module execute_pipeline_register #(
     input   logic                       RegWriteE,
     input   logic [1:0]                 ResultSrcE,
     input   logic                       MemWriteE,
+    input   logic                       MemReadE,
     input   logic [2:0]                 AddressingModeE,
 
     input   logic                       StallM,     // stall signal to be triggered if cache is not loaded  
@@ -30,6 +31,7 @@ module execute_pipeline_register #(
     output  logic                       RegWriteM,
     output  logic [1:0]                 ResultSrcM,
     output  logic                       MemWriteM,
+    output  logic                       MemReadM,
     output  logic [2:0]                 AddressingModeM
 );
 
@@ -46,6 +48,7 @@ module execute_pipeline_register #(
             RegWriteM <= 0;
             ResultSrcM <= 0;
             MemWriteM <= 0;
+            MemReadM <= 0;
             AddressingModeM <= 0;
         end
         else if(!trigger && !StallM) begin 
@@ -59,6 +62,7 @@ module execute_pipeline_register #(
             RegWriteM <= RegWriteE;
             ResultSrcM <= ResultSrcE;
             MemWriteM <= MemWriteE;
+            MemReadM <= MemReadE;
             AddressingModeM <= AddressingModeE;
         end
     end

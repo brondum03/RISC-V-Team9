@@ -1,0 +1,41 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Thu Dec 11 08:57:57 2025
+[*]
+[dumpfile] "/home/jerryzhang/RISC-V-Team9/tb/test_out/0_debug/waveform.vcd"
+[dumpfile_mtime] "Thu Dec 11 08:55:49 2025"
+[dumpfile_size] 4235250
+[savefile] "/home/jerryzhang/RISC-V-Team9/pdf_sample_view.gtkw"
+[timestart] 15
+[size] 3828 2055
+[pos] -2470 -1142
+*-2.000000 25 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.top.
+[treeopen] TOP.top.memory.
+[treeopen] TOP.top.memory.cache.
+[sst_width] 214
+[signals_width] 659
+[sst_expanded] 1
+[sst_vpaned_height] 663
+@24
+TOP.top.MemReadE
+TOP.top.MemReadM
+TOP.top.ALUSrcE
+TOP.top.ALUResultM[31:0]
+TOP.top.RdE[4:0]
+TOP.top.RdM[4:0]
+TOP.top.RdW[4:0]
+TOP.top.RegWriteE
+TOP.top.decode.register_file.regfile[5][31:0]
+TOP.top.decode.register_file.regfile[6][31:0]
+TOP.top.decode.register_file.regfile[7][31:0]
+TOP.top.decode.register_file.regfile[28][31:0]
+TOP.top.decode.register_file.regfile[29][31:0]
+TOP.top.memory.mem_stall
+TOP.top.memory.mem_used
+TOP.top.memory.Cache_Ready
+@25
+TOP.top.memory.cache.cache_controller.current_state[2:0]
+[pattern_trace] 1
+[pattern_trace] 0

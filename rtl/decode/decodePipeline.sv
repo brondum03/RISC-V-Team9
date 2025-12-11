@@ -11,6 +11,7 @@ module decodePipeline #(
     input logic        RegWriteD,
     input logic [1:0]  ResultSrcD, // selects mux, 00 -> ALUResultM, 01 -> ReaEEataW, 10 -> PCPlus4
     input logic        MemWriteD,
+    input logic        MemReadD,
     input logic [1:0]  JumpD, // -> 00 for noJump, 01 for JAL, 10 for JALR
     input logic [2:0]  BranchD,
     input logic [3:0]  ALUControlD,
@@ -34,6 +35,7 @@ module decodePipeline #(
     output logic        RegWriteE,
     output logic [1:0]  ResultSrcE, // selects mux, 00 -> ALUResultM, 01 -> ReaEEataW, 10 -> PCPlus4
     output logic        MemWriteE,
+    output logic        MemReadE,
     output logic [1:0]  JumpE, // -> 00 for noJump, 01 for JAL, 10 for JALR
     output logic [2:0]  BranchE,
     output logic [3:0]  ALUControlE,
@@ -57,6 +59,7 @@ module decodePipeline #(
             RegWriteE       <= RegWriteD;
             ResultSrcE      <= ResultSrcD;
             MemWriteE       <= MemWriteD;
+            MemReadE        <= MemReadD;
             JumpE           <= JumpD;
             BranchE         <= BranchD;
             ALUControlE     <= ALUControlD;
@@ -76,6 +79,7 @@ module decodePipeline #(
             RegWriteE       <= 1'b0;
             ResultSrcE      <= 2'b00;
             MemWriteE       <= 1'b0;
+            MemReadE        <= 1'b0;
             JumpE           <= 2'b00;
             BranchE         <= 3'b000;
             ALUControlE     <= 4'b0000;

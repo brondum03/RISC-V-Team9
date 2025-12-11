@@ -36,6 +36,7 @@ module decode_top #(
     output logic        RegWriteE,
     output logic [1:0]  ResultSrcE, // selects mux, 00 -> ALUResultM, 01 -> ReaEEataW, 10 -> PCPlus4
     output logic        MemWriteE,
+    output logic        MemReadE,
     output logic [1:0]  JumpE, // -> 00 for noJump, 01 for JAL, 10 for JALR
     output logic [2:0]  BranchE,
     output logic [3:0]  ALUControlE,
@@ -61,6 +62,7 @@ module decode_top #(
     logic RegWriteD;
     logic [1:0] ResultSrcD;
     logic MemWriteD;
+    logic MemReadD;
     logic [1:0] JumpD;
     logic [2:0] BranchD;
     logic [3:0] ALUControlD;
@@ -76,6 +78,7 @@ module decode_top #(
     // custom logic to handle flushing decode signals. 
     logic RegWriteD_out;
     logic MemWriteD_out;
+    logic MemReadD_out;
     logic [2:0] BranchD_out;
     logic [1:0] JumpD_out;
     logic ALUSrcD_out;
@@ -91,6 +94,7 @@ module decode_top #(
         .RegWriteD(RegWriteD_out),
         .ResultSrcD(ResultSrcD_out),
         .MemWriteD(MemWriteD_out),
+        .MemReadD(MemReadD_out),
         .JumpD(JumpD_out),
         .BranchD(BranchD_out),
         .ALUControlD(ALUControlD_out),
@@ -104,6 +108,7 @@ always_comb begin
         RegWriteD       = 0;
         ResultSrcD      = 0;
         MemWriteD       = 0;
+        MemReadD        = 0;
         JumpD           = 0;
         BranchD         = 0;
         ALUControlD     = 4'b0000;
@@ -113,6 +118,7 @@ always_comb begin
         RegWriteD       = RegWriteD_out;
         ResultSrcD      = ResultSrcD_out;
         MemWriteD       = MemWriteD_out;
+        MemReadD        = MemReadD_out;
         JumpD           = JumpD_out;
         BranchD         = BranchD_out;
         ALUControlD     = ALUControlD_out;
@@ -155,6 +161,7 @@ end
         .RegWriteD(RegWriteD),
         .ResultSrcD(ResultSrcD),
         .MemWriteD(MemWriteD),
+        .MemReadD(MemReadD),
         .JumpD(JumpD),
         .BranchD(BranchD),
         .ALUControlD(ALUControlD),
@@ -173,6 +180,7 @@ end
         .RegWriteE(RegWriteE),
         .ResultSrcE(ResultSrcE),
         .MemWriteE(MemWriteE),
+        .MemReadE(MemReadE),
         .JumpE(JumpE),
         .BranchE(BranchE),
         .ALUControlE(ALUControlE),
