@@ -10,10 +10,14 @@ module fetch_pipeline #(
     input  logic [DATA_WIDTH-1:0]          InstrF,
     input  logic [DATA_WIDTH-1:0]          PCF,
     input  logic [DATA_WIDTH-1:0]          PCPlus4F,
+    input  logic                           PredictTakenF,
+    input  logic [DATA_WIDTH-1:0]          PredictTargetF,
 
     output logic [DATA_WIDTH-1:0]          InstrD,
     output logic [DATA_WIDTH-1:0]          PCD,
-    output logic [DATA_WIDTH-1:0]          PCPlus4D
+    output logic [DATA_WIDTH-1:0]          PCPlus4D,
+    output logic                           PredictTakenD,
+    output logic [DATA_WIDTH-1:0]          PredictTargetD
 );
 
     always_ff @(posedge clk) begin
@@ -21,16 +25,22 @@ module fetch_pipeline #(
             InstrD      <= '0;
             PCD         <= '0;
             PCPlus4D    <= '0;
+            PredictTakenD <= '0;
+            PredictTargetD <= '0;
         end
         else if (StallD | trigger) begin
             InstrD      <= InstrD;
             PCD         <= PCD;
             PCPlus4D    <= PCPlus4D;
+            PredictTakenD <= PredictTakenF;
+            PredictTargetD <= PredictTargetF;
         end
         else begin
             InstrD      <= InstrF;
             PCD         <= PCF;
             PCPlus4D    <= PCPlus4F;
+            PredictTakenD <= PredictTakenF;
+            PredictTargetD <= PredictTargetF;
         end
     end
 

@@ -25,8 +25,12 @@ module decodePipeline #(
     input logic [ADDR_WIDTH-1:0]    Rs2D,
     input logic [ADDR_WIDTH-1:0]    RdD,
     input logic [DATA_WIDTH-1:0]    PCPlus4D,
-    //input from signExtend
+    // input from signExtend
     input logic [DATA_WIDTH-1:0]    ImmExtD,
+
+    // signals for branch prediction
+    input logic                     PredictTakenD,
+    input logic [DATA_WIDTH-1:0]    PredictTargetD,
 
     // output from control unit
     output logic        RegWriteE,
@@ -46,8 +50,11 @@ module decodePipeline #(
     output logic [ADDR_WIDTH-1:0]    Rs2E,
     output logic [ADDR_WIDTH-1:0]    RdE,
     output logic [DATA_WIDTH-1:0]    PCPlus4E,
-    //output from signExtend
-    output logic [DATA_WIDTH-1:0]    ImmExtE
+    // output from signExtend
+    output logic [DATA_WIDTH-1:0]    ImmExtE,
+    // signals for branch prediction
+    output logic                     PredictTakenE,
+    output logic [DATA_WIDTH-1:0]    PredictTargetE
 );
 
     always_ff @ (posedge clk) begin 
@@ -68,6 +75,8 @@ module decodePipeline #(
             RdE        <= RdD;
             PCPlus4E   <= PCPlus4D;
             ImmExtE    <= ImmExtD;
+            PredictTakenE <= PredictTakenD;
+            PredictTargetE <= PredictTargetD;
         end
         else if(FlushE || rst) begin 
             // // Flush pipeline — set everything to 0
@@ -87,6 +96,8 @@ module decodePipeline #(
             RdE        <= '0;
             PCPlus4E   <= '0;
             ImmExtE    <= '0;
+            PredictTakenE <= '0;
+            PredictTargetE <= '0;
         end
     end
 

@@ -17,7 +17,11 @@ module hazard_unit(
     input logic [4:0]   RdE,
     input logic [4:0]   Rs1D,
     input logic [4:0]   Rs2D,
-    input logic         PCSrcE,  // 1 when branch is taken (for control hazard)
+
+    // branch prediction signals
+    input logic         PredictTakenE,
+    input logic         BranchE,
+    input logic         BranchTakenE,
 
     // forwarding
     output logic [1:0]  ForwardAE,
@@ -31,6 +35,7 @@ module hazard_unit(
 );
     
     logic lwStall;
+    logic mispredicted;
     // unused bit
     logic unused = ResultSrcE[1];
 
@@ -56,9 +61,12 @@ module hazard_unit(
     StallF = lwStall;
     StallD = lwStall;
     
+    // branch prediction logic
+    assign  mispredicted = BranchE && (PredictTakenE != BranchTakenE);
+    
     //flush logic
-    FlushD = PCSrcE;
-    FlushE = lwStall | PCSrcE;  // flush execute stage on branch taken, or load-use hazard
+    FlushD = mispredicted;
+    FlushE = lwStall | mispredicted;  // flush execute stage on misprediciton, or load-use hazard
 
     end
 

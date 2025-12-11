@@ -4,8 +4,8 @@ module instruction_memory #(
     parameter MEM_SIZE  = 4096
 )(
   // interface signals
-  input  logic [INSTR_WIDTH-1:0] in,       
-  output logic [INSTR_WIDTH-1:0] out      
+    input  logic [INSTR_WIDTH-1:0] in,       
+    output logic [INSTR_WIDTH-1:0] out      
 );
 
 logic [DATA_WIDTH-1:0] mem [MEM_SIZE-1:0];

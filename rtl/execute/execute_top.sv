@@ -43,7 +43,11 @@ module execute_top #(
     // pc source
     input   logic [2:0]             BranchE,
     input   logic [1:0]             JumpE,  
-        
+
+    // branch prediction
+    input   logic                   PredictTakenE,
+    input   logic                   PredictTargetE,
+
     output  logic [DATA_WIDTH-1:0]  ALUResultM,
     output  logic [DATA_WIDTH-1:0]  WriteDataM,
     output  logic [DATA_WIDTH-1:0]  PCPlus4M,
@@ -77,6 +81,8 @@ module execute_top #(
     // forwarding internal logic
     logic [1:0]             ForwardAE;
     logic [1:0]             ForwardBE;
+
+    logic                   BranchTakenE;
     
     alu #(
         .DATA_WIDTH(DATA_WIDTH)
@@ -145,7 +151,7 @@ module execute_top #(
     logic [31:0] jal_target;
     logic [31:0] jalr_target;
 
-    // Branch anjd JAL use PC + imm
+    // Branch and JAL use PC + imm
     assign branch_target = PCE + ImmExtE;
     assign jal_target    = PCE + ImmExtE;
 
@@ -187,7 +193,8 @@ module execute_top #(
         .JumpE(JumpE),
         .NegativeE(NegativeE),
         .Less_unsignedE(Less_unsignedE),   
-        .PCSrcE(PCSrcE)
+        .PCSrcE(PCSrcE),
+        .BranchTakenE(BranchTakenE)
     );
 
 endmodule

@@ -31,6 +31,9 @@ module decode_top #(
     input logic                     FlushE, // FlushE = lwStall | PCSrcE
     // used to drive the flush. if PCSrc = 1 then the next instr is invalid bc jump was taken
 
+    input logic                     PredictTakenD,
+    input logic [DATA_WIDTH-1:0]    PredictTargetD,
+
     // output from control unit
     output logic        RegWriteE,
     output logic [1:0]  ResultSrcE, // selects mux, 00 -> ALUResultM, 01 -> ReaEEataW, 10 -> PCPlus4
@@ -53,6 +56,10 @@ module decode_top #(
     output logic [DATA_WIDTH-1:0]    PCPlus4E,
     //output from signExtend
     output logic [DATA_WIDTH-1:0]    ImmExtE,
+
+    output logic                     PredictTakenE;
+    output logic [DATA_WIDTH-1:0]    PredictTargetE;
+
     output logic [DATA_WIDTH-1:0]    a0
 );
 
@@ -167,6 +174,8 @@ end
         .RdD(InstrD[11:7]),
         .PCPlus4D(PCPlus4D),
         .ImmExtD(ImmExtD),
+        .PredictTakenD(PredictTakenD),
+        .PredictTargetD(PredictTargetD),
 
         // output 
         .RegWriteE(RegWriteE),
@@ -184,7 +193,9 @@ end
         .Rs2E(Rs2E),
         .RdE(RdE),
         .PCPlus4E(PCPlus4E),
-        .ImmExtE(ImmExtE)
+        .ImmExtE(ImmExtE),
+        .PredictTakenE(PredictTakenE),
+        .PredictTargetE(PredictTargetE)
     );
 
     assign Rs1D_o = InstrD[19:15];

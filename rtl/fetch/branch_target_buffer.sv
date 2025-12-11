@@ -1,52 +1,71 @@
 module branch_target_buffer #(
-    parameter ADDR_WIDTH = 32,
-    parameter INDEX_BITS = 8
+    parameter TABLE_BITS = 8,      // 256 entries
+    parameter PC_WIDTH = 32
 )(
-    input  logic                     clk,
-    input  logic                     rst,
-    
-    // lookup in fetch stage
-    input  logic [ADDR_WIDTH-1:0]    pc_fetch,
-    output logic                     hit,
-    output logic [ADDR_WIDTH-1:0]    target_addr,
-    
-    // update from execute stage
-    input  logic                     update_enable,
-    input  logic [ADDR_WIDTH-1:0]    update_pc,
-    input  logic [ADDR_WIDTH-1:0]    update_target
+    input  logic                clk,
+    input  logic                rst,
+
+    input  logic [PC_WIDTH-1:0] PCF,            // current PC in fetch
+    output logic [PC_WIDTH-1:0] PredictTargetF, // predicted target address
+    output logic                BTBHitF,        // 1 if we have a valid entry for this PC
+
+    input  logic [PC_WIDTH-1:0] PCE,            // PC of instruction in execute
+    input  logic [PC_WIDTH-1:0] BranchTargetE,  // calculated target address
+    input  logic                BranchE,        // check if instruction is a branch
+    input  logic                BranchTakenE    // check if branch taken
 );
 
-    typedef struct packed{
-        logic                   valid;
-        logic [ADDR_WIDTH-1:0]  tag;
-        logic [ADDR_WIDTH-1:0]  target;
-    } btb_entry;
+    // number of entries
+    localparam NUM_ENTRIES = 2**TABLE_BITS;
+    // tag width = 32 - 2 (byte offset) - TABLE_BITS (index) = 22
+    localparam TAG_WIDTH = PC_WIDTH - 2 - TABLE_BITS;
+
+    typedef struct packed {
+        logic                   valid;  
+        logic [TAG_WIDTH-1:0]   tag;
+        logic [PC_WIDTH-1:0]    target;
+    } btb_entry_t;
+
+    btb_entry_t btb_array [NUM_ENTRIES-1:0];
+
+    logic [TABLE_BITS-1:0] index_f;
+    logic [TAG_WIDTH-1:0]  tag_f;    
+    logic [TABLE_BITS-1:0] index_e;
+    logic [TAG_WIDTH-1:0]  tag_e;
+
+    // extract index and tag from PCs (ignore byte offset)
+    assign index_f = PCF[TABLE_BITS+1:2];
+    assign tag_f   = PCF[PC_WIDTH-1 : TABLE_BITS+2];
+
+    assign index_e = PCE[TABLE_BITS+1:2];
+    assign tag_e   = PCE[PC_WIDTH-1 : TABLE_BITS+2];
     
-    btb_entry btb_table [2**INDEX_BITS-1:0];
-    
-    logic [INDEX_BITS-1:0] fetch_index;
-    logic [INDEX_BITS-1:0] update_index;
-    logic [ADDR_WIDTH-INDEX_BITS-2-1:0] fetch_tag;
-    
-    assign fetch_index = pc_fetch[INDEX_BITS+1:2];
-    assign update_index = update_pc[INDEX_BITS+1:2];
-    assign fetch_tag = pc_fetch[ADDR_WIDTH-1:INDEX_BITS+2];
-    
-    // lookup
-    assign hit = btb_table[fetch_index].valid && (btb_table[fetch_index].tag == fetch_tag);
-    assign target_addr = btb_table[fetch_index].target;
-    
-    // update
-    always_ff @(posedge clk) begin
-        if (rst) begin
-            for (int i = 0; i < 2**INDEX_BITS; i++) begin
-                btb_table[i].valid <= 1'b0;
-            end
-        end else if (update_enable) begin
-            btb_table[update_index].valid <= 1'b1;
-            btb_table[update_index].tag <= update_pc[ADDR_WIDTH-1:INDEX_BITS+2];
-            btb_table[update_index].target <= update_target;
+    // reading from btb
+    always_comb begin
+        // read entry at the current index
+        btb_entry_t entry_f = btb_array[index_f];
+
+        // check for hit: valid bit is set AND tags match
+        if (entry_f.valid && (entry_f.tag == tag_f)) begin
+            BTBHitF        = 1'b1;
+            PredictTargetF = entry_f.target;
+        end else begin
+            BTBHitF        = 1'b0;
+            PredictTargetF = {PC_WIDTH{1'b0}};  
         end
     end
 
+    // writing to btb when branch is taken
+    always_ff @(posedge clk) begin
+        if (rst) begin  // wipe all entries
+            for (int i = 0; i < NUM_ENTRIES; i++) begin
+                btb_array[i].valid = 1'b0;
+            end
+        end
+        else if (BranchE) begin  // updates on any branch instructions
+            btb_array[index_e].valid  <= 1'b1;
+            btb_array[index_e].tag    <= tag_e;
+            btb_array[index_e].target <= BranchTargetE;
+        end
+    end
 endmodule
