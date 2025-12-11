@@ -6,6 +6,7 @@ module hazard_unit(
     // write to register addresses for instructions in memory and writeback stages
     input logic [4:0]   RdM,
     input logic [4:0]   RdW,
+    input logic         StallM,
 
     // not all instructions writeback to register(e.g. BEQ)
     // need RegWrite to know whether the destination register will actually be written 
@@ -53,13 +54,18 @@ module hazard_unit(
     
     // stall logic
     lwStall = ResultSrcE[0] & ((Rs1D == RdE) | (Rs2D == RdE));  //resultsrcE[0] = 1 for load instructions
-    StallF = lwStall;
-    StallD = lwStall;
-    
-    //flush logic
-    FlushD = PCSrcE;
-    FlushE = lwStall | PCSrcE;  // flush execute stage on branch taken, or load-use hazard
+    if(StallM) begin
+        StallF = 1;
+        StallD = 1;
+        FlushE = 0;
+        FlushD = 0;
+    end else begin
+        StallF = lwStall;
+        StallD = lwStall;
+        FlushE = PCSrcE|lwStall;  // flush execute stage on branch or load-use hazard
+        FlushD = PCSrcE;      // flush decode stage on branch
 
+    end
     end
 
 endmodule

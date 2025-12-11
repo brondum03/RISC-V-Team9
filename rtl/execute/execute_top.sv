@@ -181,7 +181,8 @@ module execute_top #(
         .StallF(StallF),
         .StallD(StallD),
         .FlushD(FlushD),
-        .FlushE(FlushE)
+        .FlushE(FlushE),
+        .StallM(StallM)
     );
 
     pcsrc_logic pcsrc_logic(
