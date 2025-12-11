@@ -15,7 +15,7 @@ module cache_top #(
     input logic [ADDR_WIDTH-1:0]    CPU_Address,       
     input logic [DATA_WIDTH-1:0]    CPU_WriteData,
     input logic                     mem_used,           // 1 = memory being used (read or write), 0 = no memory operation
-
+    input logic                     memory_used_E,      // from execute stage (not used here)
     input logic [DATA_WIDTH-1:0]    Mem_ReadData,   
 
     // to cpu
@@ -110,7 +110,8 @@ module cache_top #(
         .Mem_Address(Mem_Address),
         .Mem_WriteEnable(Mem_WriteEnable),
         .Mem_ReadRequest(Mem_ReadRequest),
-        .mem_used(mem_used)
+        .mem_used(mem_used),
+        .memory_used_E(memory_used_E)
     );
 
 endmodule

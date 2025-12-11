@@ -46,7 +46,7 @@ logic [DATA_WIDTH-1:0]      ReadDataM;
 logic                       Cache_Ready;
 logic                       mem_used;
 assign mem_used = MemReadM || MemWriteM;
-assign mem_stall = !Cache_Ready;
+assign mem_stall =  !Cache_Ready;
 
 
 
@@ -73,7 +73,7 @@ cache_top cache (
     .CPU_WriteEnable(MemWriteM),
     .CPU_Address(ALUResultM[16:0]),
     .CPU_WriteData(WriteDataM),
-    
+    .memory_used_E(memory_used_E),
     .Mem_ReadData(Mem_ReadData),
     
     .CPU_ReadData(ReadDataM),

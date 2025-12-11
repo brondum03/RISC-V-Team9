@@ -15,12 +15,13 @@ module cache_controller #(
     input logic [CACHE_ADDR_WIDTH-1:0]      TargetSet,
     input logic [TAG_WIDTH-1:0]             TargetTag,  
     input logic [BLOCK_OFFSET_WIDTH-1:0]    TargetBlockOffset,
-    input logic [2:0]                       addr_mode,                                   
+    input logic [2:0]                       addr_mode,    
+    input logic                             memory_used_E,  // from execute stage (not used here) 
+                               
 
     // from SRAM
     input logic [SET_SIZE-1:0]              SetData,
     input logic                             mem_used,   // 1 = memory being used (read or write), 0 = no memory operation
-    
     // from DRAM
     input logic [DATA_WIDTH-1:0]            Mem_ReadData,
     input logic                             Mem_Ready,
@@ -183,8 +184,8 @@ module cache_controller #(
 
         case(current_state)
             IDLE: begin
-                cache_ready = 1'b0;   // cpu can proceed
-                if (mem_used)    // only proceed if memory is being used (read or write)    
+                cache_ready = 1'b1;   // cpu can proceed
+                if (memory_used_E)    // only proceed if memory is being used (read or write)    
                     next_state = CHECK_TAG;
                 else
                     next_state = IDLE;
