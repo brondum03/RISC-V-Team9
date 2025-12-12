@@ -406,6 +406,14 @@ The hazard unit detects mispredictions by comparing prediction with actual branc
 assign branch_is_active = (BranchE != 3'b000);
 assign mispredicted = branch_is_active && (PredictTakenE != BranchTakenE);
 ```
+
+The misprediction signal is drives FlushD and FlushE signals in the hazard unit, which will flush the wrong instructions in event of misprediction:
+
+```systemverilog
+FlushD = mispredicted;
+FlushE = lwStall | mispredicted;
+```
+
 ### Testing
 
 To test the logic, three programs were tested:
@@ -414,7 +422,6 @@ To test the logic, three programs were tested:
 - **bp_never** - never-taken loop
 
 <p align="left"> <img src="images/bp_tests.jpg" width="500" /> </p><BR>
-
 ### Contribution
 
 | **Task** | **Brandon** | 
