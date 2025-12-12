@@ -36,21 +36,33 @@ The following design is what I referenced initially to make design the decode mo
 
 ---
 
-## Control Unit
+### Control Unit
 
 I started with the control unit which i believed would have been the most time consuming and core aspect of the decode section. Initially, I split the control unit into `MainDecoder` and `ALUDecoder`. I used the following references when implementing and parsing the instruction bits.
 
 **[Insert Image of riscV reference here]**
 
-### ALU Decoder
+#### ALU Decoder
 
 Looking at the image above, I noticed that there were 10 instructions for R instructions. When comparing to the reference design, `ALUControl` only showed a 3 bit output (up to 8 combinations). This means that in order to account for all the instructions, the most straight forward approach was to increase ALUControl output to 4 bits (up to 16 combinations) and map that to each instruction. 
 
-The following image is my input and output for the `ALUDecoder` and also which operation each `ALUControl` maps to:
+The following table is which operation each `ALUControl` maps to:
 
-**[Insert Image of ALUDecoder]**
+| ALUControl (binary) | Operation |
+|---------------------|-----------|
+| `0000`              | ADD       |
+| `0001`              | SUB       |
+| `0010`              | AND       |
+| `0011`              | OR        |
+| `0100`              | XOR       |
+| `0101`              | SLL       |
+| `0110`              | SRA       |
+| `0111`              | SRL       |
+| `1000`              | SLT       |
+| `1001`              | SLTU      |
 
-### Main Decoder
+
+#### Main Decoder
 
 When working on the `MainDecoder`, the initial step was to take a look at the core instruction formats and note how many instructions have to handle immediate extension as this would determine how I decide to implement the `signExtend` module. Looking at core instructions, I noted that there were a total of 6 instructions, R, I, S, B, U and J. However, R instructions do not require sign extension as they do not use immediates. As such, there are 5 instructions where immediate would have to be sign extended. When looking at the initial design, `ImmSrc` was 2 bits (maximum 4 types of instructions). As such, I increased `ImmSrc` to 3 bits so as to account for every type of instruction.
 
@@ -169,37 +181,122 @@ An additional input, `negative` was also added. This was done to implemented con
     endcase
 end
 ```
+#### Putting it together
 
+With both `ALUDecoder` and `MainDecoder` complete, I simply put it together in `ControlUnit`.
 
-The following is my Main Decoder submodule : 
-**[Insert Image of Main Decoder]**
+```verilog  
 
+module controlUnit (
+    input logic [6:0]   op,
+    input logic         Zero,
+    input logic         stall,
+    input logic         negative,
+    input logic [2:0]   funct3,
+    input logic         funct7,
 
+    output logic [1:0]  PCSrc, // 0->move to next, 1->branch, 2->jump, 3->stall
+    output logic [1:0]  ResultSrc,
+    output logic        MemWrite,
+    output logic        ALUSrc,
+    output logic [2:0]  ImmSrc,
+    output logic        RegWrite,
+    output logic        AddressingMode, // --> 0 for word, 1 for byte
+    output logic [3:0]  ALUControl
+);
 
-My implementation consisted of:
+    // main decoder
+    mainDecoder mainDec(
+        .op        (op),
+        .Zero      (Zero),
+        .stall     (stall),
+        .negative  (negative),
+        .funct3    (funct3),
 
-### Instruction Field Extraction
-- opcode  
-- funct3  
-- funct7  
-- rs1, rs2, rd  
-- immediate selection (I-imm, S-imm, B-imm, U-imm, J-imm)
+        .PCSrc     (PCSrc),
+        .ResultSrc (ResultSrc),
+        .MemWrite  (MemWrite),
+        .ALUSrc    (ALUSrc),
+        .ImmSrc    (ImmSrc),
+        .RegWrite  (RegWrite),
+        .AddressingMode (AddressingMode)
+    );
 
-### Control Signal Generation  
-I generated all decode signals needed by later pipeline stages:
+    // alu decoder
+    aluDecoder aluDec (
+        .op         (op),
+        .funct3     (funct3),
+        .funct7     (funct7),
 
-- `RegWrite`  
-- `MemWrite`  
-- `MemRead`  
-- `ResultSrc` (ALU, PC+4, memory, immediate)  
-- `Jump` (JAL, JALR)  
-- `Branch` (BEQ/BNE/BLT/BGE/BLTU/BGEU)  
-- `ALUSrc`  
-- `ALUControl` (full mapping for RV32I)  
-- Addressing modes for loads/stores  
+        .ALUControl (ALUControl)
+    );
+    
+endmodule
 
-**[Insert Image Here: Opcode → Control Signal Mapping Table]**
+```
 
+### Sign Extend
+
+`SignExtend` was rather straightforward to implement. In this single cycle version, while we did aim to start implementing the full instruction set, we did not complete it. The following `SignExtend` contains an issue with shift immediate instructions 
+(`slli`, `srli`, `srai`). I only noticed this after doing rigorous testing for every instruction in the pipelining stage.
+
+The following is the straightforward sign extension we followed which follows the RISC-V Reference : 
+
+``` verilog
+
+always_comb begin
+        case (ImmSrc)
+            3'b000:    ImmExt = {{20{Instr[31]}}, Instr[31:20]}; // I-type
+            3'b001:    ImmExt = {{20{Instr[31]}}, Instr[31:25], Instr[11:7]}; // S-type
+            3'b010:    ImmExt = {{20{Instr[31]}}, Instr[7], Instr[30:25], Instr[11:8], 1'b0}; // B-type
+            3'b011:    ImmExt = {Instr[31:12], 12'b0}; // U-type
+            3'b100:    ImmExt = {{11{Instr[31]}}, Instr[31], Instr[19:12], Instr[20], Instr[30:21], 1'b0}; // J-type
+            default:   ImmExt = {{20{Instr[31]}}, Instr[31:20]};
+        endcase
+end
+
+```
+
+### Register
+
+The `Register` was worked on by Brandon in the Lab4 task which we reused for the single cycle CPU. 
+
+### Putting the Decode Unit Together
+
+Putting the `DecodeUnit` together was quite straightforward as I had split up the modules up properly which made integration easier. 
+
+The following is the overview of the `DecodeUnit` :
+
+``` verilog
+
+module decode_top #(
+    parameter DATA_WIDTH = 32
+)(
+    input logic                     Zero,
+    input logic                     stall,
+    input logic                     negative,
+    input logic                     clk,
+    input logic [DATA_WIDTH-1:0]    WD3, 
+    input logic [DATA_WIDTH-1:0]    Instr,
+    input logic                     rst,
+
+    output logic [1:0]              PCSrc,
+    output logic [1:0]              ResultSrc,
+    output logic                    MemWrite,
+    output logic [3:0]              ALUControl,
+    output logic                    ALUSrc,
+    output logic                    AddressingMode,
+    output logic [DATA_WIDTH-1:0]   RD1, 
+    output logic [DATA_WIDTH-1:0]   RD2,
+    output logic [DATA_WIDTH-1:0]   ImmExt,
+    output logic [DATA_WIDTH-1:0]   a0
+);
+
+    // internal wire connections
+    logic [2:0]                     ImmSrc;
+    logic                           RegWrite;
+
+```
 ---
 
 ## 1.3 Integration Work
