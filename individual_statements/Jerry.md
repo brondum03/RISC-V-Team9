@@ -57,6 +57,15 @@ always_ff @(posedge clk) begin
 - If starting again, I would have finished this section at lot sooner so we could have more time to work on the pipelined cpu and the cache since this was rather easy since I implemented the program counter in lab4 reduced RISC-V cpu. 
 - Debugging the pipelined CPU and Cache proved a lot more challenging than we expected.
 
+### 1.5 Important Commits
+1. Created Instruction Memory 
+https://github.com/brondum03/RISC-V-Team9/commit/9c1dbd424e858ecd8181a45fba7fd543357e2702
+
+2. Top level SV file creation for fetching
+https://github.com/brondum03/RISC-V-Team9/commit/ef388cfe30ed3d941659f1d89853d7b9dec35fd6
+
+3. Successful testing of all my modules 
+https://github.com/brondum03/RISC-V-Team9/commit/7dd1de446e6d8640e6eac29b0fa55f012d33d2ca
 ---
 
 ## 2. Pipelining
@@ -66,7 +75,7 @@ always_ff @(posedge clk) begin
 - I also created a custom branch and jump logic that decides to program counter where to source the next PC from. 
 - Lastly, I was in charge of debugging and verifying the entire pipelined cpu. 
 
-#Insert image of pipelined diagram here
+<p align="left"> <img src="../images/pipeline_schematic.jpg" /> </p><BR>
 
 ### Fetch Stage Integration
 - For pipelining, the fetch stage need to add the Fetch-Decode pipelining register. 
@@ -258,6 +267,18 @@ always_comb begin
 - In my opinion, what lead to the successful debug came down to viewing the correct waveforms. I learned from this debugging session the importance of knowing exactly what each signal in the CPU does, what its behavior should look like, only then could the bugs in the waveform be detected. 
 - This gave me great confidence and valuable experiences for future debug jobs, such as when I debugged for Cache. 
 
+### Important Commits
+1. Fetch stage pipelining
+https://github.com/brondum03/RISC-V-Team9/commit/3172fa34095a444e6ae6576f51cdbc9a5011c18c
+
+2. Memory stage pipelining
+https://github.com/brondum03/RISC-V-Team9/commit/d1edba1f4840d6656847e446d2cda3e8a1194f5f
+
+3. PC Source Control Logic 
+https://github.com/brondum03/RISC-V-Team9/commit/e6d13d307d5d9f08e32dfc431c5995842eb55cc5
+
+4. Debugged and implemented all fixes by viewing waveforms, pipeline cpu passes all tests after this commit
+https://github.com/brondum03/RISC-V-Team9/commit/3176f796f7ae7678829003dafb4c19ea5d0191ba
 
 ## 3. Cache Development & Debugging
 
@@ -324,9 +345,19 @@ I fixed this by adding logic to have pipelining registers around the CPU to not 
         FlushD = PCSrcE;     
 ```
 
+#### 3. Fixing the data memory addressing mode handling logic: 
+Lastly, since now all the data memory storing and reading comes from cache, I removed the handling of different addressing modes reading in data memory. I changed the design to now only have the data memory return full words instead of bytes half words during the pipelined cpu implementation. After this, the pdf test returned 15328 instead of 15363, compared to earlier 244. The end result being closer to the expected value makes me believe that more instructions were executed correctly than before. 
+
 ---
 #### Major Breakthroughs
 - After implementing the above 2 fixes, the CPU managed to pass my version of the Lbu Sb test. 
+
+### Important Commits
+1. Added Fixes for set size, mem stall logic, this led to passing LBU-SB test
+https://github.com/brondum03/RISC-V-Team9/commit/1415e0ecae9f6828e3f52043071399c9c9277e40
+
+2. Added Fixes for correct addressing mode handling in the data memory and cache
+https://github.com/brondum03/RISC-V-Team9/commit/be31bed76bf4ed3d45f9e69d70755104689ab404
 
 ## 4. Overall Reflection
 Across all tasks, my biggest insights are:
@@ -336,3 +367,5 @@ Across all tasks, my biggest insights are:
 - It was a great choice to make stage top files and folders such as decode_top, fetch_top, keeping the CPU and the project organized.
 
 This project, especially the two debugging session, significantly solidified my understanding of the cpu and its inner workings. It also gave me confidence to take on other RTL design tasks in the future, as I gained a lot of practice in not only rtl coding but also waveform inspecting and debugging. 
+
+
