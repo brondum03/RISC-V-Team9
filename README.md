@@ -4,9 +4,10 @@ This project implements a fully-featured RV32I RISC-V processor, developed as pa
 
 ## Branch Structure
 
-- `main` - fully functional single-cycle RV32I CPU
-- `pipeline` - 5-stage pipelined CPU with hazard unit and forwarding
-- `cache` -  RV32I design with L1, L2, L3, pseudo-LRU, write-allocate, write-back cache, with CSR
+- `main` - Full single-cycle RV32I CPU
+- `pipeline` - 5-stage pipelined CPU with full hazard detection and handling for data and control hazards
+- `cache` - Full RV32I design with 2 way set associate, 4 word block size, write-back cache
+- `branch_prediction` - 2 bit dynamic branch prediction implementation on pipelined CPU
 
 ## Testbench Infrastructure
 
