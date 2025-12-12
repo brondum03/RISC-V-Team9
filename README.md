@@ -253,7 +253,7 @@ Digital Design and Computer Architecture: RISC-V Edition, © Morgan Kaufmann.*
 
 The pipelined CPU passed all of our tests.
 
-<p align="left"> <img src="images/pipeline/pipeline_test.png" /> </p><BR>
+<p align="left"> <img src="images/pipeline/pipeline_test.png" width="400"/> </p><BR>
 
 ### Contribution
 
@@ -334,11 +334,11 @@ The cache controller also implements all addressing modes (byte, half, word) thr
 
 The Cache implementation succesfully passed the the following tests: 
 
-<p align="left"> <img src="images/cache/cache_test.png" /> </p><BR>
+<p align="left"> <img src="images/cache/cache_test.png" width="400" /> </p><BR>
 
 ### Contribution
 
-| **Task** | **Brandon** | **Jerry** |
-| --- | --- | --- |
-| SV Implementation | ✓ |  |  |  |
-| Testing and Debugging  | | ✓ |  
+| **Task** | **Brandon** | **Jerry** | **Ezekiel**|
+| --- | --- | --- | --- |
+| SV Implementation | ✓ |  |  |  |  |
+| Testing and Debugging  | ✓ | ✓ | ✓ |
