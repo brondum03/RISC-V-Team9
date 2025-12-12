@@ -307,26 +307,14 @@ I collaborated with Brandon and Jerry to integrate my decode logic with:
 - Instruction memory  
 - The ALU and register file  
 - The writeback multiplexer  
-- The hazard-free single-cycle datapath  
 
 This standardised our signal naming conventions and ensured the CPU was structured for a smooth transition into pipelining.
 
 ---
 
-## 1.4 Mistakes & Fixes (Single Cycle)
+## 1.4 Reflection (Single Cycle)
 
-One important issue I discovered while writing tests was an incorrect implementation of **SRAI** (arithmetic right shift immediate).  
-The CPU initially performed a *logical* right shift instead of *arithmetic*, causing sign-extension failures.
-
-**[Insert Before/After Image Here: SRAI Incorrect vs Correct Implementation]**
-
-Finding this bug early prevented the same error from propagating into the pipelined version.
-
----
-
-## 1.5 Reflection (Single Cycle)
-
-The single-cycle CPU gave me a strong foundation in understanding instruction decoding, datapath signal flow, and the architectural guarantees required by RV32I. Designing decode from scratch forced me to thoroughly understand instruction formats and their interactions.
+The single-cycle CPU gave me a strong foundation in understanding instruction decoding, datapath signal flow, and the architectural guarantees required by RV32I. Designing decode from scratch forced me to thoroughly understand instruction formats and their interactions. On hindsight, I was not flexible enough and was initially doubtful about changing the bit width as I did not want to veer away from what was in the book. I learnt to be less rigid when working and to be unafraid to try new changes.
 
 ---
 
@@ -348,9 +336,89 @@ I extended my single-cycle decoder into a decode stage that supports:
 - Branch/jump control propagation  
 - Register file reads under forwarding constraints  
 
-I worked closely with Jerry, who handled fetch and branch logic, to ensure our decode signals matched the requirements of the execute and memory stages.
+Similar to the single cycle processor, for the pipelined implementation, I referenced the Harris & Harris book. For the pipelined decode folder, there were no changes to `Register`.
 
-**[Insert Image Here: Pipeline Diagram Highlighting Decode Stage Signals]**
+### Control Unit
+For the `ControlUnit`, I decided to collapse it into one module instead as it got very confusing and handle the parsing and input and output all in the same module. The key consideration for the `ControlUnit` in this design was to in a way decouple the `Controlunit` from the next stage Execute. When we analyse the initial single cycle CPU, we notice that the `Zero` and `Negative` signals are being fed back in from the next stage which is fine when it is done in a single cycle. However, for the pipelined version, we cannot use these 'future' signals. Instead, we have to use a `BranchD` and `JumpD` output which indicates the type of operation from `ControlUnit` to the next stage. 
+
+The following are the `BranchD` and `JumpD` mappings to the instruction :
+
+| BranchD (binary) | Meaning        |
+|------------------|----------------|
+| `000`            | No branch      |
+| `001`            | BEQ            |
+| `010`            | BNE            |
+| `011`            | BLT            |
+| `100`            | BGE            |
+| `101`            | BLTU           |
+| `110`            | BGEU           |
+
+| JumpD (binary) | Meaning   |
+|----------------|-----------|
+| `00`           | No jump   |
+| `01`           | JAL       |
+| `02`           | JALR      |
+| `11`           | Stall     |
+
+Additionally, we expanded the `AddressingMode` output signal to handle the full store and load instruction set
+
+| AddressingMode (binary) | Meaning         |
+|--------------------------|-----------------|
+| `000`                    | Byte            |
+| `001`                    | Half            |
+| `010`                    | Word            |
+| `011`                    | Byte (unsigned) |
+| `100`                    | Half (unsigned) |
+
+### Decode Pipeline
+For the `DecodePipeline` module, I had to work closely with Brandon who was implementing the `HazardUnit` in the Execute stage to ensure proper forwarding, flushing and stalling. 
+`DecodePipeline` acts as a bridge between the Decode and Execute stage. The following logic is implemented
+
+``` verilog    
+
+always_ff @ (posedge clk) begin 
+    if(!FlushE && !rst && !trigger) begin 
+        RegWriteE       <= RegWriteD;
+        ResultSrcE      <= ResultSrcD;
+        MemWriteE       <= MemWriteD;
+        JumpE           <= JumpD;
+        BranchE         <= BranchD;
+        ALUControlE     <= ALUControlD;
+        ALUSrcE         <= ALUSrcD;
+        AddressingModeE <= AddressingModeD;
+        RD1E       <= RD1D;
+        RD2E       <= RD2D;
+        PCE        <= PCD;
+        Rs1E       <= Rs1D;
+        Rs2E       <= Rs2D;
+        RdE        <= RdD;
+        PCPlus4E   <= PCPlus4D;
+        ImmExtE    <= ImmExtD;
+    end
+    else if(FlushE || rst) begin 
+        // // Flush pipeline — set everything to 0
+        RegWriteE       <= 1'b0;
+        ResultSrcE      <= 2'b00;
+        MemWriteE       <= 1'b0;
+        JumpE           <= 2'b00;
+        BranchE         <= 3'b000;
+        ALUControlE     <= 4'b0000;
+        ALUSrcE         <= 1'b0;
+        AddressingModeE <= 3'b000;
+        RD1E       <= '0;
+        RD2E       <= '0;
+        PCE        <= '0;
+        Rs1E       <= '0;
+        Rs2E       <= '0;
+        RdE        <= '0;
+        PCPlus4E   <= '0;
+        ImmExtE    <= '0;
+    end
+end
+
+```
+
+
 
 ---
 
@@ -365,8 +433,6 @@ A major responsibility of mine was verifying that **every instruction in the ful
 - JAL/JALR  
 - All loads/stores  
 
-I created a cross-check document mapping each RV32I instruction to datapath and control signals, ensuring nothing was missing.
-
 ---
 
 ## 2.3 Assembly Tests (Tests 6–15)
@@ -374,16 +440,81 @@ I created a cross-check document mapping each RV32I instruction to datapath and 
 To validate the CPU, I authored tests 6–15 entirely in assembly, each designed to capture one category of instruction:
 
 - Shift operations  
-- Branch families (BEQ/BNE, BLT/BGE, BLTU/BGEU)  
 - Load/store with different addressing modes  
 - AUIPC / LUI  
 - Jump correctness  
 - Sign-extension behaviour  
 - Pipeline-hazard situations  
 
-**[Insert Image Here: Screenshot of Tests or Waveform of Passing Test]**
+| Test File            | Description |
+|----------------------|-------------|
+| **6_all_logicals.s** | Tests all logical operations (AND, OR, XOR, SLL, SRL, SRA). |
+| **7_all_imms.s**     | Tests immediate-based arithmetic and logical instructions. |
+| **8_load_byte.s**    | Tests LB (load byte, sign-extended). |
+| **9_load_half.s**    | Tests LH (load halfword, sign-extended). |
+| **10_load_word.s**   | Tests LW (load 32-bit word). |
+| **11_load_byte_u.s** | Tests LBU (load byte unsigned). |
+| **12_store_byte.s**  | Tests SB (store byte). |
+| **13_store_half.s**  | Tests SH (store halfword). |
+| **14_srai.s**        | Tests SRAI (arithmetic right shift immediate). |
+| **15_sltiu.s**       | Tests SLTIU (set-less-than-immediate unsigned). |
+*
 
 Writing these tests is where I discovered the **SRAI bug**, which I then fixed.
+
+This was the test for `srai` :
+
+```
+.text
+.globl main
+main:
+
+    # --------------------------
+    # SRAI   (-64 >> 2 = -16)
+    # --------------------------
+    li t1, -64
+    srai a0, t1, 2          # arithmetic right shift
+    li t3, -16
+    bne a0, t3, finish
+
+finish:
+    # Final expected result = -16
+    bne a0, a0, finish      # infinite loop
+ ```
+
+The issue that I faced was that the `signExtend` was extending all 12 bits when it encountered an immediate logical/arithmetic operation. Which I had not noticed earlier when implementing the instructions in the single cycle processor. This is seen in the following row :
+
+**Insert image of the row of those immediate instructions with the shift portion highlighted**
+ 
+Inorder to fix that, I had to add 2 changes into my decode folder. 
+
+Firstly, I now had to send a signal to `SignExtend` to indicate if a certain instruction is of the immediate type and require shifting. I therefore added a signal called `shiftImmFlag` which is then passed into `signExtend`
+
+| ShiftImmFlag           | Description |
+|----------------------|-------------|
+| 0 | Does not need special sign extension |
+| 1 | Requires special sign extension |
+
+Secondly, I had to change the way I handled `SignExtend` the code is as follows :
+
+``` verilog
+always_comb begin
+    if (shiftImmFlag && (ImmSrcD == 3'b000)) begin 
+        ImmExtD = {{27{InstrD[24]}}, InstrD[24:20]};
+    end
+    else begin
+        case (ImmSrcD)
+            3'b000:    ImmExtD = {{20{InstrD[31]}}, InstrD[31:20]}; // I-type
+            3'b001:    ImmExtD = {{20{InstrD[31]}}, InstrD[31:25], InstrD[11:7]}; // S-type
+            3'b010:    ImmExtD = {{20{InstrD[31]}}, InstrD[7], InstrD[30:25], InstrD[11:8], 1'b0}; // B-type
+            3'b011:    ImmExtD = {InstrD[31:12], 12'b0}; // U-type
+            3'b100:    ImmExtD = {{11{InstrD[31]}}, InstrD[31], InstrD[19:12], InstrD[20], InstrD[30:21], 1'b0}; // J-type
+            default:   ImmExtD = {32'b0};
+        endcase
+    end
+end
+
+``` 
 
 ---
 
