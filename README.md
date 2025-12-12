@@ -7,7 +7,7 @@ This project feautures a RISC-V processor that supports the full RV32I instructi
 - `main` - Full RV32I instrcution set single-cycle CPU
 - `pipeline` - 5-stage pipelined CPU with full hazard detection and handling for data and control hazards
 - `cache` - Full RV32I design with 2 way set associate, 4 word block size, write-back cache
-- `branch_prediction` - 2 bit dynamic branch prediction implementation on pipelined CPU
+- `branch_prediction` - 2-bit dynamic branch prediction implementation on pipelined CPU
 - `superscalar` - Superscaled implementation 
 
 ## Testbench Infrastructure
@@ -97,7 +97,6 @@ This design implements the full RV32I instruction set.
 
 ### Schematic Diagram
 <p align="left"> <img src="images/single_cycle_diagram.jpg" /> </p><BR>
-
 
 ### Module Breakdown
 
@@ -248,7 +247,6 @@ Branches and jumps are resolved in the EX stage. If a branch is taken, IF/ID is 
 *Figure adapted from Harris & Harris,  
 Digital Design and Computer Architecture: RISC-V Edition, © Morgan Kaufmann.*
 
-
 ### Testing
 
 The pipelined CPU passed all of our tests.
@@ -342,3 +340,84 @@ The Cache implementation succesfully passed the the following tests:
 | --- | --- | --- | --- |
 | SV Implementation | ✓ |  |  |  |  |
 | Testing and Debugging  | ✓ | ✓ | ✓ |
+
+## Branch Prediction
+
+### Overview
+The branch predictor implements a **2-bit saturating counter** with a **Branch Target Buffer (BTB)** to reduce pipeline stalls caused by control hazards. By predicting branch outcomes and targets during the fetch stage, the CPU can speculatively fetch instructions without waiting for branch resolution in the execute stage.
+
+| Parameter | Value |
+|-----------|-------|
+| Predictor Type | 2-bit Saturating Counter |
+| Predictor Table Size | 256 entries |
+| BTB Size | 256 entries |
+| Index Bits | 8 bits (from PC) |
+| Initial State | Weakly Not-Taken (01) |
+
+<p align="left"> <img src="images/Branch_Prediction_FSM.png" width="500" /> </p><BR>
+*Figure taken from Harris & Harris,  
+Digital Design and Computer Architecture: RISC-V Edition, © Morgan Kaufmann.*
+
+### State Encoding
+
+| State | Value | Prediction | Description |
+|-------|-------|------------|-------------|
+| Strongly Not-Taken | `00` | Not-Taken | High confidence not-taken |
+| Weakly Not-Taken | `01` | Not-Taken | Low confidence not-taken (initial state) |
+| Weakly Taken | `10` | Taken | Low confidence taken |
+| Strongly Taken | `11` | Taken | High confidence taken |
+
+### State Transitions
+
+| Current State | Branch Outcome | Next State |
+|---------------|----------------|------------|
+| `00` (SNT) | Not-Taken | `00` (SNT) |
+| `00` (SNT) | Taken | `01` (WNT) |
+| `01` (WNT) | Not-Taken | `00` (SNT) |
+| `01` (WNT) | Taken | `10` (WT) |
+| `10` (WT) | Not-Taken | `01` (WNT) |
+| `10` (WT) | Taken | `11` (ST) |
+| `11` (ST) | Not-Taken | `10` (WT) |
+| `11` (ST) | Taken | `11` (ST) |
+
+### Indexing
+
+The predictor table is indexed using bits [9:2] of the PC (256 entries):
+
+```
+PC[31:0]:
+┌────────────────────────┬──────────────┬─────────┐
+│       Unused           │  Index [9:2] │ [1:0]   │
+│                        │   (8 bits)   │ (ignored│
+└────────────────────────┴──────────────┴─────────┘
+```
+### BTB Lookup
+
+| Condition | BTBHitF | Action |
+|-----------|---------|--------|
+| `valid[index] && (tag[index] == PC_tag)` | 1 | Use `PredictTargetF` |
+| Otherwise | 0 | Use `PC + 4` |
+
+### Misprediction Detection
+
+The hazard unit detects mispredictions by comparing prediction with actual branch outcome:
+
+```systemverilog
+assign branch_is_active = (BranchE != 3'b000);
+assign mispredicted = branch_is_active && (PredictTakenE != BranchTakenE);
+```
+### Testing
+
+To test the logic, three programs were tested:
+- **bp_alt** - alternating pattern of taking/not taking branches
+- **bp_always** - always-taken loop
+- **bp_never** - never-taken loop
+
+<p align="left"> <img src="images/bp_tests.jpg" width="500" /> </p><BR>
+
+### Contribution
+
+| **Task** | **Brandon** | 
+| --- | --- | 
+| SV Implementation | ✓ |   
+| Testing and Debugging  | ✓ | 
