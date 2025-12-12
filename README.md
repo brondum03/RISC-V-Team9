@@ -177,7 +177,7 @@ rtl/
 | Sign Extend |  |  | ✓ |  |
 | Register File |  |  | ✓ |  |
 | ALU | ✓ |  |  |  |
-| Instruction Memory | ✓ |  |  |  |
+| Instruction Memory |  |  |  |  ✓ |
 | Program Counter |  |  |  | ✓ |
 | Data Memory | ✓ |  |  |  |
 | Overall Integration | ✓ |  | ✓ | ✓ |
@@ -241,10 +241,45 @@ Load requires one extra cycle before their data becomes available. If the instru
 
 Branches and jumps are resolved in the EX stage. If a branch is taken, IF/ID is flushed and PC is updated to the branch target to remove incorrectly fetched instructions on the wrong path. 
 
+### Testing
+
+The pipelined CPU passed all of our tests.
+
+<p align="left"> <img src="images/pipeline/pipeline_test.png" /> </p><BR>
+
 ### Contribution
 
 | **Task** | **Brandon** | **En Qi** | **Ezekiel** | **Jerry** |
 | --- | --- | --- | --- | --- |
 | Pipeline stages | ✓ | ✓ | ✓ | ✓ |
 | Hazard Unit | ✓ |  | ✓ |  |
-| Unit Tests and Debugging | ✓ | ✓ | ✓ | ✓ |
+| Testbench | ✓ | ✓ | ✓ | ✓ |
+| Testing and Debugging  | | |  | ✓ 
+
+## Cache 
+
+### Cache Controller Design
+The cache controller is designed as a finite state machine (FSM) that manages interactions between the CPU, cache SRAM, and main memory while maintaining correct timing and stalling behaviour. The 5 states are: IDLE, CHECK_TAG, ALLOCATE, WRITE_BACK, REFILL
+
+- IDLE: Entry state that detects a CPU memory request and transitions to tag checking.
+
+- CHECK_TAG: Compares request tag against cache tags to determine hit or miss and select the target way. If cache hit, reads data immediately and transitions back to IDLE in the next state. If miss, transitions to ALLOCATE.  
+
+- ALLOCATE: Checks whether write-back is required depending on if the way to be evicted is dirty.
+
+- WRITE_BACK: Writes the dirty cache line back to main memory one word at a time.
+
+- REFILL: Fetches a full cache line from main memory into the selected cache way and updates tag/valid/dirty/LRU.
+
+### Testing
+
+The Cache implementation succesfully passed the the following tests: 
+
+<p align="left"> <img src="images/cache/cache_test.png" /> </p><BR>
+
+### Contribution
+
+| **Task** | **Brandon** | **Jerry** |
+| --- | --- | --- |
+| SV Implementation | ✓ |  |  |  |
+| Testing and Debugging  | | ✓ |  
