@@ -1,17 +1,18 @@
 ## Introduction
 
-This project implements a fully-featured RV32I RISC-V processor, developed as part of the EIE2 IAC design project.
+This project feautures a RISC-V processor that supports the full RV32I instruction set, developed as part of the EIE2 Instruction Architecture & Compilers Autumn project.
 
 ## Branch Structure
 
-- `main` - Full single-cycle RV32I CPU
+- `main` - Full RV32I instrcution set single-cycle CPU
 - `pipeline` - 5-stage pipelined CPU with full hazard detection and handling for data and control hazards
 - `cache` - Full RV32I design with 2 way set associate, 4 word block size, write-back cache
 - `branch_prediction` - 2 bit dynamic branch prediction implementation on pipelined CPU
+- `superscalar` - Superscaled implementation 
 
 ## Testbench Infrastructure
 
-All branches support the full RV32I instruction set and are validated using a shared testbench suite, including unit tests, integration tests, and full application workloads such as the F1 Starting Lights and pdf program with Vbuddy. The testbench is organised to support incremental debugging and full execution. 
+**All branches support the full RV32I instruction set** and are validated using a shared testbench suite, including unit tests, integration tests, and full application workloads such as the F1 Starting Lights and pdf program with Vbuddy. The testbench is organised to support incremental debugging and full execution. 
 
 ### Testbench Directory Structure
 
@@ -92,7 +93,7 @@ std::string dist = "gaussian";   // "gaussian" or "triangle" or "noisy"
 
 ## Single-Cycle RV32I Design
 
-This design implements the basic RV32I instruction set.
+This design implements the full RV32I instruction set.
 
 ### Schematic Diagram
 <p align="left"> <img src="images/single_cycle_diagram.jpg" /> </p><BR>
@@ -213,18 +214,18 @@ This design extends the single-cycle design into a fully pipelined 5-stage desig
 
 ### Pipeline Architecture
 
-1. Instruction Fetch (IF) - Fetches instructions and PC + 4 from instruction memory
-2. Instruction Decode (ID) - Decodes control signals, read registers, generates immediate
-3. Execute / ALU / Branch Decision (EX) - Performs ALU operations and evaluates branch or jump conditions
-4. Memory Access (MEM) - Handles load or store instruction to data memory
-5. Writeback (WB) - Writes results back to the resigner file.
+1. Instruction Fetch (F) - Fetches instructions and PC + 4 from instruction memory
+2. Instruction Decode (D) - Decodes control signals, read registers, generates immediate
+3. Execute / ALU / Branch Decision (E) - Performs ALU operations and evaluates branch or jump conditions
+4. Memory Access (M) - Handles load or store instruction to data memory
+5. Writeback (W) - Writes results back to the resigner file.
 
-Pipeline resigners separate each stage, capturing operands, immediate, control signals, and results for the next stage. 
+Pipeline registers separate each stage, capturing operands, immediate, control signals, and results for the next stage. 
 
 ### Hazard Handling
 
 We also included a hazard unit that manages all data and control hazards to ensure correct execution.
-
+ 
 **Data Hazard (Forwarding)**
 
 To avoid unnecessary stalls, results are forwarded directly to the ALU when needed
@@ -259,18 +260,69 @@ The pipelined CPU passed all of our tests.
 
 ## Cache 
 
-### Cache Controller Design
-The cache controller is designed as a finite state machine (FSM) that manages interactions between the CPU, cache SRAM, and main memory while maintaining correct timing and stalling behaviour. The 5 states are: `IDLE`, `CHECK_TAG`, `ALLOCATE`, `WRITE_BACK`, `REFILL`
+### Cache Architecture
+The cache implements a **2-way set associative** design with a block size of 4 words (16 bytes). This configuration leverages:
+- **Temporal locality** through LRU replacement policy and set associativity (reduces thrashing)
+- **Spatial locality** through 4-word cache lines (prefetches adjacent words)
+- **Write-back policy** to minimize main memory traffic (dirty blocks written back only on eviction)
 
-- `IDLE`: Entry state that detects a CPU memory request and transitions to tag checking.
+| Parameter | Value |
+|-----------|-------|
+| Cache Size | 1024 bytes |
+| Block Size | 16 bytes (4 words) |
+| Associativity | 2-way |
+| Number of Sets | 32 |
+| Replacement Policy | LRU (1-bit per set) |
+| Write Policy | Write-back |
 
-- `CHECK_TAG`: Compares request tag against cache tags to determine hit or miss and select the target way. If cache hit, reads data immediately and transitions back to IDLE in the next state. If miss, transitions to ALLOCATE.  
+### Address Parsing
+The 17-bit CPU address is parsed by `cache_top` into the following fields:
 
-- `ALLOCATE`: Checks whether write-back is required depending on if the way to be evicted is dirty.
+```
+Address[16:0]:
+┌────────────────┬───────────────┬──────────────┬─────────────┐
+│    Tag [16:9]  │ Set Index[8:4]│Block Off[3:2]│Byte Off[1:0]│
+│    (8 bits)    │   (5 bits)    │   (2 bits)   │  (2 bits)   │
+└────────────────┴───────────────┴──────────────┴─────────────┘
+```
 
-- `WRITE_BACK`: Writes the dirty cache line back to main memory one word at a time.
+| Field | Bits | Purpose |
+|-------|------|---------|
+| Tag | [16:9] | Identifies memory block for tag comparison |
+| Set Index | [8:4] | Selects one of 32 cache sets |
+| Block Offset | [3:2] | Selects word within 4-word block |
+| Byte Offset | [1:0] | Selects byte within word (for LB/LH/SB/SH) |
 
-- `REFILL`: Fetches a full cache line from main memory into the selected cache way and updates tag/valid/dirty/LRU.
+### SRAM Layout
+Each of the 32 sets contains 277 bits organized as follows:
+
+```
+Set[276:0]:
+┌─────┬───────────────────────── Way 1 (138 bits) ─────────────────────────┬───────────────────────── Way 0 (138 bits) ─────────────────────────┐
+│ LRU │ Dirty │ Valid │   Tag   │  Word3  │  Word2  │  Word1  │  Word0    │ Dirty │ Valid │   Tag   │  Word3  │  Word2  │  Word1  │  Word0    │
+│[276]│ [275] │ [274] │[273:266]│[265:234]│[233:202]│[201:170]│[169:138]  │ [137] │ [136] │[135:128]│[127:96] │ [95:64] │ [63:32] │  [31:0]   │
+│1 bit│ 1 bit │ 1 bit │ 8 bits  │ 32 bits │ 32 bits │ 32 bits │ 32 bits   │ 1 bit │ 1 bit │ 8 bits  │ 32 bits │ 32 bits │ 32 bits │ 32 bits   │
+└─────┴───────┴───────┴─────────┴─────────┴─────────┴─────────┴───────────┴───────┴───────┴─────────┴─────────┴─────────┴─────────┴───────────┘
+```
+
+- **LRU bit**: 0 = evict Way 0, 1 = evict Way 1
+- **Valid bit**: Indicates entry contains valid data
+- **Dirty bit**: Indicates entry has been modified (needs write-back on eviction)
+
+### Cache Controller FSM
+The cache controller is implemented as a 5-state finite state machine:
+
+**State Descriptions:**
+
+| State | Description |
+|-------|-------------|
+| **IDLE** | Waits for CPU memory request (`mem_used`). Signals `cache_ready` when no operation pending. |
+| **CHECK_TAG** | Compares request tag against both ways. On **hit**: returns data (read) or updates cache line and dirty bit (write), updates LRU, returns to IDLE. On **miss**: transitions to ALLOCATE. |
+| **ALLOCATE** | Selects victim way using LRU bit. If victim is dirty, transitions to WRITE_BACK; otherwise transitions directly to REFILL. |
+| **WRITE_BACK** | Writes dirty cache line to main memory one word at a time (4 cycles). Transitions to REFILL when complete. |
+| **REFILL** | Fetches new block from main memory one word at a time (4 cycles). Updates tag, valid, dirty (cleared), and LRU bits. Transitions to CHECK_TAG to complete the original request. |
+
+The cache controller also implements all addressing modes (byte, half, word) through appropriate shifting and masking.
 
 ### Testing
 
@@ -280,7 +332,7 @@ The Cache implementation succesfully passed the the following tests:
 
 ### Contribution
 
-| **Task** | **Brandon** | **Jerry** |
-| --- | --- | --- |
-| SV Implementation | ✓ |  |  |  |
-| Testing and Debugging  | | ✓ |  
+| **Task** | **Brandon** | **Jerry** | **Ezekiel**|
+| --- | --- | --- | --- |
+| SV Implementation | ✓ |  |  |  |  |
+| Testing and Debugging  | ✓ | ✓ | ✓ |  
