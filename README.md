@@ -1,12 +1,25 @@
+# RISC-V RV32I Processor
+
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Branch Structure](#branch-structure)
+- [Testbench Infrastructure](#testbench-infrastructure)
+- [Single-Cycle RV32I Design](#single-cycle-rv32i-design)
+- [Pipelined RISC-V CPU](#pipelined-risc-v-cpu)
+- [Cache](#cache)
+- [Branch Prediction](#branch-prediction)
+- [In Process Superscalar](#in-process-superscalar)
+
 ## Introduction
 
-This project feautures a RISC-V processor that supports the full RV32I instruction set, developed as part of the EIE2 Instruction Architecture & Compilers Autumn project.
+This project features a RISC-V processor that supports the full RV32I instruction set, developed as part of the EIE2 Instruction Architecture & Compilers Autumn project.
 
 ## Branch Structure
 
-- `main` - Full RV32I instrcution set single-cycle CPU
+- `main` - Full RV32I instruction set single-cycle CPU
 - `pipeline` - 5-stage pipelined CPU with full hazard detection and handling for data and control hazards
-- `cache` - Full RV32I design with 2 way set associate, 4 word block size, write-back cache
+- `cache` - Full RV32I design with 2-way set associative, 4 word block size, write-back cache
 - `branch_prediction` - 2-bit dynamic branch prediction implementation on pipelined CPU
 - `superscalar` - Superscaled implementation 
 
@@ -16,7 +29,7 @@ This project feautures a RISC-V processor that supports the full RV32I instructi
 
 ### Testbench Directory Structure
 
-```jsx
+```plaintext
 tb/
 ├── asm/                # Assembly test programs
 ├── c/                  # C test cases
@@ -41,18 +54,18 @@ The directory provides three helper scripts:
 
 ### How to run the tests
 
-To run all integration tests
+To run all integration tests:
 
-```jsx
+```bash
 cd tb
 chmod +x assemble.sh
 chmod +x doit.sh
 ./doit.sh
 ```
 
-To run module-level unit tests
+To run module-level unit tests:
 
-```jsx
+```bash
 cd tb
 chmod +x unit.sh
 ./unit.sh <modulename_tb.cpp>
@@ -64,23 +77,23 @@ First, ensure Vbuddy is connected and configured with `tb/vbuddy.cfg`
 
 1. F1 FSM
 
-```jsx
+```bash
 cd tb/vb-f1_test
 chmod +x doit.sh
 ./dof1.sh
 ```
 
-1. PDF 
+2. PDF
 
-```jsx
+```bash
 cd tb/vb-pdf_test
 chmod +x dopdf.sh
 ./dopdf.sh
 ```
 
-You can change the PDF input distribution by editing line 20 in `tb/vb-pdf_test/pdf_tb.cpp` 
+You can change the PDF input distribution by editing line 20 in `tb/vb-pdf_test/pdf_tb.cpp`:
 
-```jsx
+```cpp
 std::string dist = "gaussian";   // "gaussian" or "triangle" or "noisy"
 ```
 
@@ -137,7 +150,7 @@ Also supports pseudo instructions (`li` `j` `beqz` `bnez` `snez` `seqz`)
 
 ### RTL File Structure
 
-```jsx
+```plaintext
 rtl/
 │
 ├── decode/                   # Instruction decode stage
@@ -145,9 +158,9 @@ rtl/
 │   │   ├── aluDecoder.sv    
 │   │   └── mainDecoder.sv
 │   │
-│   ├── controlUnit.sv]
+│   ├── controlUnit.sv
 │   ├── decode_top.sv                
-│   ├── register.sv]  
+│   ├── register.sv  
 │   └── signExtend.sv          
 │
 ├── execute/                  # Execute stage
@@ -217,7 +230,7 @@ This design extends the single-cycle design into a fully pipelined 5-stage desig
 2. Instruction Decode (D) - Decodes control signals, read registers, generates immediate
 3. Execute / ALU / Branch Decision (E) - Performs ALU operations and evaluates branch or jump conditions
 4. Memory Access (M) - Handles load or store instruction to data memory
-5. Writeback (W) - Writes results back to the resigner file.
+5. Writeback (W) - Writes results back to the register file.
 
 Pipeline registers separate each stage, capturing operands, immediate, control signals, and results for the next stage. 
 
@@ -260,7 +273,7 @@ The pipelined CPU passed all of our tests.
 | Pipeline stages | ✓ | ✓ | ✓ | ✓ |
 | Hazard Unit | ✓ |  | ✓ |  |
 | Testbench | ✓ | ✓ | ✓ | ✓ |
-| Testing and Debugging  | | ✓ |  | ✓ 
+| Testing and Debugging  |  | ✓ |  | ✓ |
 
 ## Cache 
 
@@ -330,16 +343,16 @@ The cache controller also implements all addressing modes (byte, half, word) thr
 
 ### Testing
 
-The Cache implementation succesfully passed the the following tests: 
+The Cache implementation successfully passed the following tests: 
 
 <p align="left"> <img src="images/cache/cache_test.png" width="500" /> </p><BR>
 
 ### Contribution
 
-| **Task** | **Brandon** | **Jerry** | **Ezekiel**|
+| **Task** | **Brandon** | **Jerry** | **Ezekiel** |
 | --- | --- | --- | --- |
-| SV Implementation | ✓ |  |  |  |  |
-| Testing and Debugging  | ✓ | ✓ | ✓ |
+| SV Implementation | ✓ |  |  |
+| Testing and Debugging | ✓ | ✓ | ✓ |
 
 ## Branch Prediction
 
@@ -407,7 +420,7 @@ assign branch_is_active = (BranchE != 3'b000);
 assign mispredicted = branch_is_active && (PredictTakenE != BranchTakenE);
 ```
 
-The misprediction signal is drives FlushD and FlushE signals in the hazard unit, which will flush the wrong instructions in event of misprediction:
+The misprediction signal drives FlushD and FlushE signals in the hazard unit, which will flush the wrong instructions in the event of a misprediction:
 
 ```systemverilog
 FlushD = mispredicted;
@@ -455,13 +468,12 @@ We tested our superscalar implementation to see if it could do in order processe
 
 To go further, we also checked the gtkwave to ensure that both registers were being written to at the same time.
 
-For this code :
+For this code:
 
-``` 
+```asm
 addi x1, zero, 67
 addi x2, zero, 89
 add a0, x2, x1 # 156
-
 ```
 
 We see the waveform :

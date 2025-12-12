@@ -45,14 +45,22 @@ Output flags for branch and jump instructions:
 ````
 
 ### 2.2. Data Memory (`datamemory.sv`)
-I defined the memory as a logic array and initialized it using $readmemh to load test data (such as the Gaussian distribution array for the PDF reference program)
+I defined the memory as a logic array and initialized it using `$readmemh` to load test data (such as the Gaussian distribution array for the PDF reference program). The data memory module supports word-aligned reads and writes, with the address provided by the ALU result. In the single-cycle design, memory operations complete within the same clock cycle, simplifying the control logic but limiting clock frequency.
 
 ### 2.3. Testing and Debugging
 These modules were then integrated in top.sv, together with top level files for fetch and decode. Together with Ezekiel, I first used command `verilator --lint-only <filename>` to test each module, resolving all the errors that surfaced. Likely due to lack of experience at that point, this process took a while before our CPU was able to pass all 5 provided tests. We had messy naming conventions which made the integration difficult. From this point forward, our group decided to reference the design and naming convention of the textbook Digital Design and Computer Architecture by Harris & Harris. The design in the textbook would act as the basis for us to build upon for the rest of the project.
 
 ## 3. Pipelining
+The pipelined design divides instruction execution into five stages: **Fetch (IF)**, **Decode (ID)**, **Execute (EX)**, **Memory (MEM)**, and **Writeback (WB)**. This allows multiple instructions to be in flight simultaneously, significantly improving throughput compared to the single-cycle design.
+
+To propagate data and control signals between stages, we implemented four pipeline registers:
+- **F/D Register**: Holds the fetched instruction and PC
+- **D/E Register**: Holds decoded control signals, register values, and immediates
+- **E/M Register**: Holds ALU result, write data, and memory control signals
+- **M/W Register**: Holds memory read data, ALU result, and writeback control signals
+
 I began by defining the interfaces for the EX/MEM pipeline register, ensuring all necessary control signals (like RegWrite, MemWrite, and ResultSrc) and data signals (ALUResult, WriteData, Rd) were correctly propagated through the stages.
-Under the execute stage, I was also responsible for the hazard unit and pcsrc logic (for branch and jump instructions)
+Under the execute stage, I was also responsible for the hazard unit and pcsrc logic (for branch and jump instructions).
 
 ### 3.1. Hazard Unit (`hazard_unit.sv`)
 I first designed the hazard unit to handle data dependency, when instructions in the execute stage required data from instructions in the memory or writeback stage. This is overcome with forwarding the data in the memory or writeback stage to the execute stage, such that the CPU does not need to stall while waiting for the data to be written back to the registers.
@@ -91,6 +99,15 @@ At the same time, the execute stage is flushed to prevent incorrect execution:
 
 ````SystemVerilog
  FlushE = lwStall;
+````
+
+In addition to data hazards, the pipelined CPU must handle control hazards caused by branch and jump instructions. Since the branch outcome is not known until the execute stage, the CPU may have already fetched incorrect instructions. In our initial pipelined design (before branch prediction), we handled this by flushing the pipeline when a branch is taken, incurring a 2-cycle penalty. This penalty motivated our later implementation of branch prediction to reduce the performance impact of control hazards.
+
+To detect whenever a branch or jump is taken, the hazard unit reads the (`PCSrcE`) signal from the pcsrc logic. If a branch is taken, the fetch and decode stages are flushed to discard incorrect instructions:
+
+````SystemVerilog
+FlushD = PCSrcE;
+FlushE = lwStall | PCSrcE; // both load-use and branch taken
 ````
 
 ### 3.2. PCSrc Logic (`pcsrc_logic.sv`)
