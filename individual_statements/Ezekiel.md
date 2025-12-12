@@ -38,23 +38,23 @@ The following design is what I referenced initially to make design the decode mo
 
 ## Control Unit
 
-I started with the control unit which i believed would have been the most time consuming and core aspect of the decode section. Initially, I split the control unit into Main ecoder and ALU Decoder. I used the following references when implementing and parsing the instruction bits.
+I started with the control unit which i believed would have been the most time consuming and core aspect of the decode section. Initially, I split the control unit into `MainDecoder` and `ALUDecoder`. I used the following references when implementing and parsing the instruction bits.
 
 **[Insert Image of riscV reference here]**
 
 ### ALU Decoder
 
-Looking at the image above, I noticed that there were 10 instructions for R instructions. When comparing to the reference design, ALUControl only showed a 3 bit output (up to 8 combinations). This means that in order to account for all the instructions, the most straight forward approach was to increase ALUControl output to 4 bits (up to 16 combinations) and map that to each instruction. 
+Looking at the image above, I noticed that there were 10 instructions for R instructions. When comparing to the reference design, `ALUControl` only showed a 3 bit output (up to 8 combinations). This means that in order to account for all the instructions, the most straight forward approach was to increase ALUControl output to 4 bits (up to 16 combinations) and map that to each instruction. 
 
-The following image is my input and output for the ALUDecoder and also which operation each ALUControl maps to:
+The following image is my input and output for the `ALUDecoder` and also which operation each `ALUControl` maps to:
 
 **[Insert Image of ALUDecoder]**
 
 ### Main Decoder
 
-When working on the Main Decoder, the initial step was to take a look at the core instruction formats and note how many instructions have to handle immediate extension as this would determine how I decide to implement the sign extend module. Looking at core instructions, I noted that there were a total of 6 instructions, R, I, S, B, U and J. However, R instructions do not require sign extension as they do not use immediates. As such, there are 5 instructions where immediate would have to be sign extended. When looking at the initial design, ImmSrc was 2 bits (maximum 4 types of instructions). As such, I increased ImmSrc to 3 bits so as to account for every type of instruction.
+When working on the `MainDecoder`, the initial step was to take a look at the core instruction formats and note how many instructions have to handle immediate extension as this would determine how I decide to implement the `signExtend` module. Looking at core instructions, I noted that there were a total of 6 instructions, R, I, S, B, U and J. However, R instructions do not require sign extension as they do not use immediates. As such, there are 5 instructions where immediate would have to be sign extended. When looking at the initial design, `ImmSrc` was 2 bits (maximum 4 types of instructions). As such, I increased `ImmSrc` to 3 bits so as to account for every type of instruction.
 
-The following is how i mapped ImmSrc to the instruction type :
+The following is how i mapped `ImmSrc` to the instruction type :
 
 | ImmSrc (binary) | Instruction Type |
 |-----------------|------------------|
@@ -64,9 +64,9 @@ The following is how i mapped ImmSrc to the instruction type :
 | `011`           | **U-type**       |
 | `100`           | **J-type**       | 
 
-As I was trying to start on working on the full instruction set from the get go, I started to consider branch and jump instructions affecting the PC as well. Initially PCSrc was 1 bit as it was simply to move to the next instruction (PC + 4) or the branched instruction (PCTarget). I decided that to take into account stalling and jump instructions as well, we would require 2 bits for our PCSrc (maximum 4 types for PCNext).
+As I was trying to start on working on the full instruction set from the get go, I started to consider `branch` and `jump` instructions affecting the `PC` as well. Initially `PCSrc` was 1 bit as it was simply to move to the next instruction `PC + 4` or the branched instruction `PCTarget`. I decided that to take into account stalling and jump instructions as well, we would require 2 bits for our `PCSrc` (maximum 4 types for `PCNext`).
 
-The following is how I mapped PCSrc to what kind of PCNext to take :
+The following is how I mapped `PCSrc` to what kind of `PCNext` to take :
 
 | PCSrc (binary) | Meaning / Selected Next PC |
 |----------------|----------------------------|
@@ -75,6 +75,104 @@ The following is how I mapped PCSrc to what kind of PCNext to take :
 | `10`           | **ALUResult** (JALR target) |
 | `11`           | **PC** (stall — hold current PC) |
 
+```verilog 
+
+mux4 pcmux(
+    .in0(PCPlus4),
+    .in1(PCTarget),
+    .in2(ALUResult),
+    .in3(PC),
+    .sel(PCsrc),
+    .out(PCNext)
+);
+
+```
+
+The final increase in bit width I had to do was on `ResultSrc` (compared to the Harris & Harris diagram). The initial `ResultSrc` was only 1 bit to choose between `ALUResult` and `ReadData`. However, to account for all the instructions we would have to add an additional bit. 
+Initially, 
+`ResultSrc = 0`, `ALUResult` is written back to register file (for R, I instructions and address calculations)
+`ResultSrc = 1`, `ReadData` is written back to register file (for load instructions)
+
+The issue now is that jump instructions cannot be implemented as such we increase to a 2 bit selector. 00 and 01 remain the same. 
+`ResultSrc = 10`, `PC+4` is stored (for jump instructions, to store return address before jumping to the target)
+`ResultSrc = 11`, `ImmExt` is stored (upper immediate storing due to the limitations of riscv with adding immediates more than 3 bytes)
+
+The following is how I mapped `ResultSrc` to select `Result` in `memory_top`
+
+| ResultSrc (binary) | Written Back Value | Instructions Affected |
+|--------------------|--------------------|------------------------|
+| `00`               | **ALUResult**      | R-type ops, I-type ALU ops, address calculations |
+| `01`               | **ReadData**       | Load instructions (LB, LH, LW, LBU, LHU) |
+| `10`               | **PC + 4**         | JAL, JALR (store return address before jumping) |
+| `11`               | **ImmExt**         | U-type: LUI, AUIPC (handling upper-immediate values) |
+
+On top of increasing the output bit width of `PCSrc`, `ResultSrc` and `ImmSrc`, In my main decoder I also introduced `AddressingMode` output (1 bit) which selected between 
+
+| AddressingMode | Type |
+|----------------|------|
+|`0`             | Word |
+|`1`             | Byte |
+
+
+This was done in order to correctly parse the bits for the 5 tests given. 
+The following is the snippet of code where `AddressingMode` was used in Load and Store instructions :
+
+```verilog 
+
+// I -> load operations --> lw, lb, lbu
+7'b0000011: begin
+    RegWrite = 1;
+    ALUSrc = 1;
+    ResultSrc = 1;
+    ImmSrc = 3'b000;
+    MemWrite = 1'b0;
+    PCSrc = 2'b00;
+    case(funct3)
+        3'b010: AddressingMode = 1'b0;  // lw
+        3'b100: AddressingMode = 1'b1;  // lbu
+        default: AddressingMode = 1'b0;
+    endcase
+end
+// S -> store operations --> sw, sb
+7'b0100011: begin
+    MemWrite = 1;
+    ALUSrc = 1;
+    ImmSrc = 3'b001;
+    RegWrite = 1'b0;
+    PCSrc = 2'b00;
+    case(funct3) 
+        3'b000: AddressingMode = 1'b1;  // sb
+        3'b010: AddressingMode = 1'b0;  // sw
+        default: AddressingMode = 1'b0;
+    endcase
+end
+
+```
+
+An additional input, `negative` was also added. This was done to implemented conditional branches which is showed in this snippet of code from `MainDecoder` :
+
+```verilog
+// B -> conditional branch operations -->> beq, bne, blt, bge
+7'b1100011: begin
+    RegWrite = 1'b0;
+    ALUSrc = 1'b0;
+    ImmSrc = 3'b010;
+    MemWrite = 1'b0;
+    case (funct3)
+        3'b000: PCSrc = Zero ? 2'b01 : 2'b0;       // beq
+        3'b001: PCSrc = ~Zero ? 2'b01 : 2'b0;      // bne
+        3'b100: PCSrc = negative ? 2'b01 : 2'b0;   // blt 
+        3'b101: PCSrc = ~negative ? 2'b01 : 2'b0;  // bge
+        3'b110: PCSrc = negative ? 2'b01 : 2'b0;   // bltu
+        3'b111: PCSrc = ~negative ? 2'b01 : 2'b0;  // bgeu
+        default: PCSrc = 2'b0; // Default case
+    endcase
+end
+```
+
+
+The following is my Main Decoder submodule : 
+**[Insert Image of Main Decoder]**
 
 
 
