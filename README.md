@@ -466,6 +466,7 @@ add a0, x2, x1 # 156
 
 We see the waveform :
 
+<p align="left"> <img src="images/superscalar_wave.jpg" width="500" /> </p>
 
 We can see that from this, the 2 registers `x1` and `x2` get written to at the same time. 
 
