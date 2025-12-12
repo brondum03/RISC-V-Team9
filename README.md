@@ -259,17 +259,17 @@ The pipelined CPU passed all of our tests.
 ## Cache 
 
 ### Cache Controller Design
-The cache controller is designed as a finite state machine (FSM) that manages interactions between the CPU, cache SRAM, and main memory while maintaining correct timing and stalling behaviour. The 5 states are: IDLE, CHECK_TAG, ALLOCATE, WRITE_BACK, REFILL
+The cache controller is designed as a finite state machine (FSM) that manages interactions between the CPU, cache SRAM, and main memory while maintaining correct timing and stalling behaviour. The 5 states are: `IDLE`, `CHECK_TAG`, `ALLOCATE`, `WRITE_BACK`, `REFILL`
 
-- IDLE: Entry state that detects a CPU memory request and transitions to tag checking.
+- `IDLE`: Entry state that detects a CPU memory request and transitions to tag checking.
 
-- CHECK_TAG: Compares request tag against cache tags to determine hit or miss and select the target way. If cache hit, reads data immediately and transitions back to IDLE in the next state. If miss, transitions to ALLOCATE.  
+- `CHECK_TAG`: Compares request tag against cache tags to determine hit or miss and select the target way. If cache hit, reads data immediately and transitions back to IDLE in the next state. If miss, transitions to ALLOCATE.  
 
-- ALLOCATE: Checks whether write-back is required depending on if the way to be evicted is dirty.
+- `ALLOCATE`: Checks whether write-back is required depending on if the way to be evicted is dirty.
 
-- WRITE_BACK: Writes the dirty cache line back to main memory one word at a time.
+- `WRITE_BACK`: Writes the dirty cache line back to main memory one word at a time.
 
-- REFILL: Fetches a full cache line from main memory into the selected cache way and updates tag/valid/dirty/LRU.
+- `REFILL`: Fetches a full cache line from main memory into the selected cache way and updates tag/valid/dirty/LRU.
 
 ### Testing
 
