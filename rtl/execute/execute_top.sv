@@ -1,7 +1,7 @@
 `include "../rtl/execute/alu.sv"
 `include "../rtl/execute/execute_pipeline_register.sv"
 `include "../rtl/mux4.sv"
-// `include "../rtl/mux2.sv"
+`include "../rtl/mux2.sv"
 `include "../rtl/execute/pcsrc_logic.sv"
 `include "../rtl/execute/hazard_unit.sv"
 
@@ -46,7 +46,7 @@ module execute_top #(
 
     // branch prediction
     input   logic                   PredictTakenE,
-    input   logic                   PredictTargetE,
+    input   logic [DATA_WIDTH-1:0]  PredictTargetE,
 
     output  logic [DATA_WIDTH-1:0]  ALUResultM,
     output  logic [DATA_WIDTH-1:0]  WriteDataM,
@@ -58,12 +58,15 @@ module execute_top #(
     output  logic                   MemWriteM,
 
     output  logic [DATA_WIDTH-1:0]  PCTargetE, 
-    output  logic                   PCSrcE, 
 
     output logic                    StallF,
     output logic                    StallD,
     output logic                    FlushD,
-    output logic                    FlushE
+    output logic                    FlushE,
+
+    output logic                    BranchTakenE,
+    output logic                    JumpTakenE,
+    output logic [DATA_WIDTH-1:0]   BranchTargetE
 );
 
     logic [DATA_WIDTH-1:0]  ALUResultE;
@@ -81,8 +84,6 @@ module execute_top #(
     // forwarding internal logic
     logic [1:0]             ForwardAE;
     logic [1:0]             ForwardBE;
-
-    logic                   BranchTakenE;
     
     alu #(
         .DATA_WIDTH(DATA_WIDTH)
@@ -147,12 +148,11 @@ module execute_top #(
         .out(SrcBE)
     );
 
-    logic [31:0] branch_target;
     logic [31:0] jal_target;
     logic [31:0] jalr_target;
 
     // Branch and JAL use PC + imm
-    assign branch_target = PCE + ImmExtE;
+    assign BranchTargetE = PCE + ImmExtE;
     assign jal_target    = PCE + ImmExtE;
 
     // JALR uses (rs1 + imm), also clears lsb
@@ -162,7 +162,7 @@ module execute_top #(
         case (JumpE)
             2'b01: PCTargetE = jal_target;     // JAL
             2'b10: PCTargetE = jalr_target;    // JALR
-            default: PCTargetE = branch_target; // Branch
+            default: PCTargetE = BranchTargetE; // Branch
         endcase
     end
 
@@ -178,7 +178,13 @@ module execute_top #(
         .RdE(RdE),
         .Rs1D(Rs1D),
         .Rs2D(Rs2D),
-        .PCSrcE(PCSrcE),
+
+        .PredictTakenE(PredictTakenE),
+        .BranchE(BranchE),
+        .BranchTakenE(BranchTakenE),
+        .PredictTargetE(PredictTargetE),
+        .BranchTargetE(BranchTargetE),
+
         .ForwardAE(ForwardAE),
         .ForwardBE(ForwardBE),
         .StallF(StallF),
@@ -193,7 +199,7 @@ module execute_top #(
         .JumpE(JumpE),
         .NegativeE(NegativeE),
         .Less_unsignedE(Less_unsignedE),   
-        .PCSrcE(PCSrcE),
+        .JumpTakenE(JumpTakenE),
         .BranchTakenE(BranchTakenE)
     );
 

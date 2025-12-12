@@ -10,7 +10,6 @@ decode_top.sv
 `include "../rtl/decode/signExtend.sv"
 `include "../rtl/decode/decodePipeline.sv"
 
-
 module decode_top #(
     parameter DATA_WIDTH = 32,
     parameter ADDR_WIDTH = 5
@@ -57,8 +56,8 @@ module decode_top #(
     //output from signExtend
     output logic [DATA_WIDTH-1:0]    ImmExtE,
 
-    output logic                     PredictTakenE;
-    output logic [DATA_WIDTH-1:0]    PredictTargetE;
+    output logic                     PredictTakenE,
+    output logic [DATA_WIDTH-1:0]    PredictTargetE,
 
     output logic [DATA_WIDTH-1:0]    a0
 );

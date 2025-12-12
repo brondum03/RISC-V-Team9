@@ -1,4 +1,3 @@
-`include "../rtl/mux2.sv"
 `include "../rtl/adder.sv"
 `include "../rtl/fetch/program_counter.sv"
 `include "../rtl/fetch/instruction_memory.sv"
@@ -16,21 +15,22 @@ module fetch_top#(
     input   logic                          StallD,
     input   logic                          FlushD,
 
-    input   logic                          PCsrcE,
     input   logic [DATA_WIDTH-1:0]         PCTargetE,
     
-    input   logic                          BranchE,
+    input   logic [2:0]                    BranchE,
     input   logic                          BranchTakenE,
+    input   logic                          PredictTakenE,
+    input   logic [DATA_WIDTH-1:0]         PredictTargetE,
     input   logic [DATA_WIDTH-1:0]         PCE,
     input   logic [DATA_WIDTH-1:0]         BranchTargetE,
+    input   logic                          JumpTakenE,
 
-    
     output  logic [DATA_WIDTH-1:0]         InstrD,
     output  logic [DATA_WIDTH-1:0]         PCD,
     output  logic [DATA_WIDTH-1:0]         PCPlus4D,
 
     output  logic [DATA_WIDTH-1:0]         PredictTargetD,
-    output  logic                          PredictTakenD,
+    output  logic                          PredictTakenD
 );
 
 logic [DATA_WIDTH-1:0]          PCF;
@@ -42,8 +42,6 @@ logic                           predict_taken;
 logic                           btb_hit;
 logic [DATA_WIDTH-1:0]          btb_target;
 
-logic                           mispredicted;
-
 branch_predictor branch_predictor(
     .clk(clk),
     .rst(rst),
@@ -51,6 +49,7 @@ branch_predictor branch_predictor(
     .BranchE(BranchE),
     .PCE(PCE),
     .BranchTakenE(BranchTakenE),
+    // output
     .PredictTakenF(predict_taken)
 );
 
@@ -59,19 +58,25 @@ branch_target_buffer btb(
     .rst(rst),
     .PCF(PCF),
     .PCE(PCE),
-    .BranchTargetE(BranchTargetE),
-    .BranchE(BranchE),
+    .BranchTargetE(BranchTargetE), 
     .BranchTakenE(BranchTakenE),
+    .BranchE(BranchE),
+    // outputs
     .PredictTargetF(btb_target),
     .BTBHitF(btb_hit)
 );
 
-assign mispredicted = BranchE && (PredictTakenF != BranchTakenE);
+logic mispredicted;
+logic branch_is_active;
+assign branch_is_active = (BranchE != 3'b000);
+assign mispredicted = branch_is_active && ((PredictTakenE != BranchTakenE) || (BranchTakenE && (PredictTargetE != BranchTargetE)));
 
 // PC select logic
 always_comb begin
     if (mispredicted)begin  // recover from misprediction
         PCNext = BranchTakenE ? BranchTargetE : (PCE + 4);
+    end else if (JumpTakenE) begin
+        PCNext = PCTargetE;
     end else if (predict_taken && btb_hit) begin    // predict taken with valid target
         PCNext = btb_target;
     end else begin  // default state
@@ -79,7 +84,7 @@ always_comb begin
     end 
 end
 
-adder adder_plus4(
+adder PCPlus4(
     .in0(PCF),
     .in1(4),
     .out(PCPlus4F)
@@ -88,7 +93,6 @@ adder adder_plus4(
 program_counter ProgramCounter(
     .clk(clk),
     .rst(rst),
-    .PCsrcE(PCsrcE),
     .StallF(StallF),
     .trigger(trigger),
     .PCNext(PCNext),
@@ -100,7 +104,9 @@ instruction_memory Instruction_Memory(
     .out(InstrF)
 );
 
-assign PredictTakenF = predict_taken && btb_hit;
+logic                           PredictTakenF;
+logic [DATA_WIDTH-1:0]          PredictTargetF;
+assign PredictTakenF = predict_taken & btb_hit;
 assign PredictTargetF = btb_target;
 
 fetch_pipeline Fetch_Pipeline(

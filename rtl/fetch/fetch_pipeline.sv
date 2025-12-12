@@ -32,8 +32,8 @@ module fetch_pipeline #(
             InstrD      <= InstrD;
             PCD         <= PCD;
             PCPlus4D    <= PCPlus4D;
-            PredictTakenD <= PredictTakenF;
-            PredictTargetD <= PredictTargetF;
+            PredictTakenD <= PredictTakenD;
+            PredictTargetD <= PredictTargetD;
         end
         else begin
             InstrD      <= InstrF;

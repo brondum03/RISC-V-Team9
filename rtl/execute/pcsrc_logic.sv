@@ -4,11 +4,9 @@ module pcsrc_logic (
     input   logic [1:0]     JumpE,
     input   logic           NegativeE,
     input   logic           Less_unsignedE,
-    output  logic           PCSrcE,
-    output  logic           BranchTakenE
+    output  logic           BranchTakenE,
+    output  logic           JumpTakenE
 );
-
-    logic   JumpTakenE;
     always_comb begin   // check for jump instructions 
         case (JumpE) 
             2'b01: JumpTakenE = 1'b1;   // JAL 
@@ -25,8 +23,6 @@ module pcsrc_logic (
             3'b110: BranchTakenE = ~Less_unsignedE;   // BGEU 
             default: BranchTakenE = 1'b0;
         endcase
-
-        PCSrcE = JumpTakenE | BranchTakenE;
     end
 
 endmodule

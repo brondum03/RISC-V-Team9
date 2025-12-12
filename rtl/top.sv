@@ -18,6 +18,8 @@ module top #(
     logic [DATA_WIDTH-1:0]  InstrD;     // instruction from instruction memory
     logic [DATA_WIDTH-1:0]  PCPlus4D;
     logic [DATA_WIDTH-1:0]  PCD;
+    logic                   PredictTakenD;
+    logic [DATA_WIDTH-1:0]  PredictTargetD;
 
     // decode > execute
     logic [DATA_WIDTH-1:0]  RD1E;
@@ -33,7 +35,6 @@ module top #(
     logic [1:0]             ResultSrcE;
     logic                   RegWriteE;
     logic                   MemWriteE;
-    logic                   PCSrcE;
     logic [ADDR_WIDTH-1:0]  Rs1E;
     logic [ADDR_WIDTH-1:0]  Rs2E;
     logic [4:0]             RdW;
@@ -43,6 +44,12 @@ module top #(
     logic [2:0]             BranchE;
     logic [1:0]             JumpE; 
     
+    logic                   PredictTakenE;
+    logic [DATA_WIDTH-1:0]  PredictTargetE;
+    logic                   BranchTakenE;
+    logic                   JumpTakenE;
+    logic [DATA_WIDTH-1:0]  BranchTargetE;
+
     // execute > memory
     logic [DATA_WIDTH-1:0]  ALUResultM;
     logic [DATA_WIDTH-1:0]  WriteDataM;
@@ -58,7 +65,6 @@ module top #(
     logic                   FlushD;
     logic                   FlushE;
     
-
     fetch_top fetch (
         // input
         .clk(clk),
@@ -67,12 +73,22 @@ module top #(
         .StallF(StallF),
         .StallD(StallD),
         .FlushD(FlushD),
-        .PCsrcE(PCSrcE),
         .PCTargetE(PCTargetE),
+        
+        .BranchE(BranchE),
+        .BranchTakenE(BranchTakenE),
+        .PredictTakenE(PredictTakenE),
+        .PredictTargetE(PredictTargetE),
+        .PCE(PCE),
+        .BranchTargetE(BranchTargetE),
+        .JumpTakenE(JumpTakenE),
         // output
         .InstrD(InstrD),
         .PCD(PCD),
-        .PCPlus4D(PCPlus4D)
+        .PCPlus4D(PCPlus4D),
+        
+        .PredictTargetD(PredictTargetD),
+        .PredictTakenD(PredictTakenD)
     ); 
     
     decode_top #(
@@ -90,6 +106,9 @@ module top #(
         .RdW(RdW),
         .FlushE(FlushE),
         .FlushD(FlushD),
+        
+        .PredictTakenD(PredictTakenD),
+        .PredictTargetD(PredictTargetD),
         // output
         .RegWriteE(RegWriteE),
         .ResultSrcE(ResultSrcE),
@@ -109,6 +128,10 @@ module top #(
         .RdE(RdE),
         .PCPlus4E(PCPlus4E),
         .ImmExtE(ImmExtE),
+
+        .PredictTakenE(PredictTakenE),
+        .PredictTargetE(PredictTargetE),
+
         .a0(a0)
     );
 
@@ -138,6 +161,9 @@ module top #(
         .Rs2D(Rs2D),
         .BranchE(BranchE),
         .JumpE(JumpE),
+
+        .PredictTakenE(PredictTakenE),
+        .PredictTargetE(PredictTargetE),
         // output
         .ALUResultM(ALUResultM), 
         .WriteDataM(WriteDataM),
@@ -148,11 +174,13 @@ module top #(
         .RegWriteM(RegWriteM),
         .MemWriteM(MemWriteM),
         .PCTargetE(PCTargetE),
-        .PCSrcE(PCSrcE),
         .StallF(StallF),
         .StallD(StallD),
         .FlushD(FlushD),
-        .FlushE(FlushE)
+        .FlushE(FlushE),
+        .JumpTakenE(JumpTakenE),
+        .BranchTakenE(BranchTakenE),
+        .BranchTargetE(BranchTargetE)
     );
 
     memory_top memory (

@@ -20,8 +20,10 @@ module hazard_unit(
 
     // branch prediction signals
     input logic         PredictTakenE,
-    input logic         BranchE,
+    input logic [2:0]   BranchE,
     input logic         BranchTakenE,
+    input logic [31:0]  PredictTargetE,
+    input logic [31:0]  BranchTargetE,
 
     // forwarding
     output logic [1:0]  ForwardAE,
@@ -35,38 +37,39 @@ module hazard_unit(
 );
     
     logic lwStall;
+    logic branch_is_active;
     logic mispredicted;
     // unused bit
     logic unused = ResultSrcE[1];
 
     always_comb begin
+        // forwarding logic          
+        if((Rs1E == RdM) && RegWriteM & (Rs1E!=0))   // forward from memory stage 
+            ForwardAE = 2'b10;
+        else if((Rs1E == RdW) && RegWriteW && (Rs1E!=0))  // forward from writeback stage
+            ForwardAE = 2'b01;
+        else 
+            ForwardAE = 2'b00;
 
-    // forwarding logic          
-    if((Rs1E == RdM) && RegWriteM & (Rs1E!=0))   // forward from memory stage 
-        ForwardAE = 2'b10;
-    else if((Rs1E == RdW) && RegWriteW && (Rs1E!=0))  // forward from writeback stage
-        ForwardAE = 2'b01;
-    else 
-        ForwardAE = 2'b00;
-
-    if((Rs2E == RdM) && RegWriteM && (Rs2E!=0))
-        ForwardBE = 2'b10;
-    else if((Rs2E == RdW) && RegWriteW && (Rs2E!=0))
-        ForwardBE = 2'b01;
-    else 
-        ForwardBE = 2'b00;    
-    
-    // stall logic
-    lwStall = ResultSrcE[0] & ((Rs1D == RdE) | (Rs2D == RdE));  //resultsrcE[0] = 1 for load instructions
-    StallF = lwStall;
-    StallD = lwStall;
-    
-    // branch prediction logic
-    assign  mispredicted = BranchE && (PredictTakenE != BranchTakenE);
-    
-    //flush logic
-    FlushD = mispredicted;
-    FlushE = lwStall | mispredicted;  // flush execute stage on misprediciton, or load-use hazard
+        if((Rs2E == RdM) && RegWriteM && (Rs2E!=0))
+            ForwardBE = 2'b10;
+        else if((Rs2E == RdW) && RegWriteW && (Rs2E!=0))
+            ForwardBE = 2'b01;
+        else 
+            ForwardBE = 2'b00;    
+        
+        // stall logic
+        lwStall = ResultSrcE[0] & ((Rs1D == RdE) | (Rs2D == RdE));  //resultsrcE[0] = 1 for load instructions
+        StallF = lwStall;
+        StallD = lwStall;
+        
+        // branch prediction logic
+        assign branch_is_active = (BranchE != 3'b000);
+        assign mispredicted = branch_is_active && ((PredictTakenE != BranchTakenE) || (BranchTakenE && (PredictTargetE != BranchTargetE)));
+        
+        //flush logic
+        FlushD = mispredicted;
+        FlushE = lwStall | mispredicted;  // flush execute stage on misprediciton, or load-use hazard
 
     end
 

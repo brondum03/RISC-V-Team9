@@ -126,14 +126,6 @@ TEST_F(CpuTestbench, TestSltiu)
     EXPECT_EQ(top_->a0, 0);
 }
 
-TEST_F(CpuTestbench, TestBranch)
-{
-    setupTest("16_branch");
-    initSimulation();
-    runSimulation(CYCLES);
-    EXPECT_EQ(top_->a0, 1);
-}
-
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);

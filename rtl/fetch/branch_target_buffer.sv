@@ -10,9 +10,9 @@ module branch_target_buffer #(
     output logic                BTBHitF,        // 1 if we have a valid entry for this PC
 
     input  logic [PC_WIDTH-1:0] PCE,            // PC of instruction in execute
-    input  logic [PC_WIDTH-1:0] BranchTargetE,  // calculated target address
-    input  logic                BranchE,        // check if instruction is a branch
-    input  logic                BranchTakenE    // check if branch taken
+    input  logic [PC_WIDTH-1:0] BranchTargetE,  // address of instruction branched to
+    input  logic                BranchTakenE,    // check if branch taken
+    input  logic [2:0]          BranchE
 );
 
     // number of entries
@@ -51,7 +51,7 @@ module branch_target_buffer #(
             PredictTargetF = entry_f.target;
         end else begin
             BTBHitF        = 1'b0;
-            PredictTargetF = {PC_WIDTH{1'b0}};  
+            PredictTargetF = {PC_WIDTH{1'b0}};  //if no hit, the branch wouldn't be taken so this is just a placeholder
         end
     end
 
@@ -62,7 +62,7 @@ module branch_target_buffer #(
                 btb_array[i].valid = 1'b0;
             end
         end
-        else if (BranchE) begin  // updates on any branch instructions
+        else if (BranchTakenE && (BranchE != 3'b000)) begin  // updates on any branch instructions
             btb_array[index_e].valid  <= 1'b1;
             btb_array[index_e].tag    <= tag_e;
             btb_array[index_e].target <= BranchTargetE;

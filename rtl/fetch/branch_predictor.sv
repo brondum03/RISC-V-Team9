@@ -10,7 +10,7 @@ module branch_predictor #(
     output logic                     PredictTakenF, // 1 = predict taken
     
     // execute stage: update
-    input  logic                     BranchE, // checks if instruction in execute stage is a branch
+    input  logic [2:0]               BranchE, // checks if instruction in execute stage is a branch
     input  logic [ADDR_WIDTH-1:0]    PCE, // PC from execute stage
     input  logic                     BranchTakenE   // checks if branch taken
 );
@@ -36,7 +36,7 @@ module branch_predictor #(
                 predictor_table[i] = 2'b01;    
             end
         end
-        else if (BranchE) begin
+        else if (BranchTakenE && BranchE != 3'b000) begin   // if branch is active
             // update state based on actual outcome
             case (predictor_table[index_e])
                 2'b00: predictor_table[index_e] <= (BranchTakenE) ? 2'b01 : 2'b00; // SNT - if taken, go to WNT. if not taken, stay SNT
