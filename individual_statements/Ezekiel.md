@@ -26,9 +26,9 @@ Before coding, I read up on the single cycle CPU in Harris & Harris to understan
 As per the design in the book, I split the Control Unit up into an ALU Decoder and a Main Decoder. 
 The following design is what I referenced initially to make design the decode module:
 
-**[Insert Image Here: Single-Cycle CPU Block Diagram]**
+<p align="left"> <img src="../images/single-cycle.jpg" /> </p><BR>
 
-**[Insert Image of aludecoder and maindecoder here]**
+<p align="left"> <img src="../images/singleCycleDecoder.jpg" /> </p><BR>
 
 ---
 
@@ -40,7 +40,7 @@ The following design is what I referenced initially to make design the decode mo
 
 I started with the control unit which i believed would have been the most time consuming and core aspect of the decode section. Initially, I split the control unit into `MainDecoder` and `ALUDecoder`. I used the following references when implementing and parsing the instruction bits.
 
-**[Insert Image of riscV reference here]**
+<p align="left"> <img src="../images/riscVreference.jpg" /> </p><BR>
 
 #### ALU Decoder
 
@@ -484,7 +484,7 @@ finish:
 
 The issue that I faced was that the `signExtend` was extending all 12 bits when it encountered an immediate logical/arithmetic operation. Which I had not noticed earlier when implementing the instructions in the single cycle processor. This is seen in the following row :
 
-**Insert image of the row of those immediate instructions with the shift portion highlighted**
+<p align="left"> <img src="../images/shiftImm.jpg" /> </p><BR>
  
 Inorder to fix that, I had to add 2 changes into my decode folder. 
 
@@ -525,7 +525,7 @@ While Jerry handled pipeline control (branching, PCSrc, flushing) and Brandon im
 
 - Decode signals were correct  
 - No instruction class was missing  
-- ImmGen and ALUControl always matched the ISA  
+- ALUControl always matched the ISA  
 - Hazard unit received correct metadata from decode  
 
 This division of work made debugging structured and efficient.
@@ -534,93 +534,66 @@ This division of work made debugging structured and efficient.
 
 # 3. Cached Pipelined CPU
 
-My third major contribution was working on the **decode compatibility, memory interface**, and **debugging the cached pipelined CPU** after integration.
-
-I helped ensure that:
-
-- Cache control logic matched the CPU’s MemRead/MemWrite conventions  
-- Addressing modes were correctly applied to loads/stores  
-- Pipeline stalls during cache misses did not corrupt decode or execute stages  
-- Dirty/valid/tag behaviours worked with our ISA semantics  
+My third contribution was working on the **design of the cache**. For this stage, Brandon did the implementation of the cache. My contribution to this portion was designing the cache with the rest of the team and helping to analyse the GTKWave and give my analysis on what I thought could have gone wrong.
 
 ---
 
-## 3.1 Cache Debugging: Identifying Pipeline Corruptions
+## 3.1 Cache Design
 
-After integrating the cache, we encountered issues where:
+We decided on implementing a cache that had temporal and spatial locality. The `CacheController` is split into 4 main states. Namely the `Idle`, `Compare Tag`, `Allocate` and `Write-Back` state.
 
-- ALUResultM was being flushed incorrectly  
-- Memory stage values were overwritten during cache stalls  
-- Decode/execute stages were progressing when they should freeze  
-- Loads/stores produced inconsistent results  
+In the `Idle` state, the cache waits for the CPU to send valid memory access. When that is done, it moves onto the next state, `Compare Tag`.
+In `Compare Tag`, the cache checks if the requested address is already in the cache by checking valid bits and if the tag matches.
+If it is a hit, then the data is either read from/written to. Reading is straightforward. However, we note that in order to keep the cache fast, when it is written to, the cache updates its local version and sets the dirty bit as an indicator that it is not a different version from the one in the DRAM. This is important so that if the data is evicted, we are able to note whether or not we have to update the data in our DRAM. After a hit, the next state would be back to `Idle`. If there is a miss, a victim way is chosen. If that set is filled, the cache will evict an entry based on the LRU (least recently used) policy. If the victim block is clean, the next state is `Allocate`. However, if it is dirty, we go to `Writeback` as we have to write the newest data to memory. 
 
-Through waveform analysis and tracing decode signals, I discovered that **mem_stall** was not being propagated to freeze the pipeline.
 
 ---
 
-## 3.2 Fix: Stall + Flush Logic Reconciliation
+# 4. In Process Superscalar Single Cycle CPU
 
-We solved the pipeline corruption by defining:
+For this portion, I did not have much time to implement a proper superscalar CPU. However, reading the Harris & Harris book got me interested into looking more into doing multiple calculations and instructions at once. As such, I decided to implement an simple superscalar CPU that only handles R/I arithmetic and logical operations.
 
-- `mem_stall` freezes F, D, and E pipeline registers  
-- Memory stage *does not flush* during cache stall  
-- Writeback stage does not receive invalid values  
-- Cache “ready” signal unblocks pipeline only when safe  
+## 4.1 Implementation
 
-**[Insert Image Here: GTKWave Screenshot Showing Correct Stall Behaviour]**
+For the implementation, it was a case of doubling the fetching of instructions, decoding and executing them. I doubled the bit width for most of my output signals as shown in this code :
 
----
+``` verilog
 
-## 3.3 Ensuring ISA correctness with cache enabled
+module controlUnit (
+    input logic         stall,
 
-After fixing the stall logic, I reran my assembly tests and ensured that:
+    input logic [6:0]   op1,
+    input logic [2:0]   funct3_1,
+    input logic         funct7_1,
 
-- LBU/SB  
-- LH/SH  
-- LW/SW  
-- JALR + load combinations  
-- Multi-cycle miss paths  
+    input logic [6:0]   op2,
+    input logic [2:0]   funct3_2,
+    input logic         funct7_2,
 
-all behaved correctly.
+    output logic        PCSrc, 
+    output logic [1:0]  ResultSrc,
+    output logic [1:0]  MemWrite, // 0 -> none write // 1 -> WE1 // 2 -> WE2 // 3 -> WE1 and WE2
+    output logic [1:0]  ALUSrc, // 00, 01, 10, 11 --> split bit for srcMux selectors
+    output logic [5:0]  ImmSrc, // 3 bits each [2:0] for Instr1 [5:3] for Instr2
+    output logic [1:0]  RegWrite, // 0 -> none write // 1 -> WE3 // 2 -> WE6 // 3 -> WE3 and WE6
+    output logic [7:0]  ALUControl, // 4 bits each --> [3:0] for Instr1 [7:4] for Instr2
+    output logic [1:0]  shiftImmFlag // 2 bits parse it and check if need to extend immediate for shift instruction
+);  
 
-This phase gave me the strongest understanding of timing, hazards, and memory-system behaviour.
+```
 
----
+I chose the LSBs to be used for `Instr1` and the MSBs to be used for `Instr2`.
 
-# 4. Mistakes I Made & What I Learned
+## Testing
 
-This section can stay honest but constructive.
-
-## 4.1 Underestimating the complexity of decode  
-I initially believed decode was “simple,” but implementing full ISA semantics revealed subtle interactions, especially with pipeline timing.
-
-## 4.2 Incomplete initial testing  
-My earliest tests only covered basic instructions, allowing SRAI to slip through. Writing much more rigorous tests (tests 6–15) taught me the value of targeted verification.
-
-## 4.3 Misalignment between decode and memory stages  
-During cache integration, I incorrectly assumed that decode signals would not impact memory timing. The bug proved otherwise.
-
-(You can expand and personalise this section.)
+The testing for this code can be seen in the team statement under the portion on superscalar.
 
 ---
 
 # 5. Personal Reflection & Takeaways
 
-This project gave me:
+Working on the RV32I CPU project significantly deepened my understanding of digital design, hardware architecture, and practical SystemVerilog implementation. One of the most important lessons I gained was learning to think beyond rigid textbook diagrams. As the project grew more complex, especially in the transition from a single-cycle to a pipelined processor, I had to make real design decisions rather than rely solely on predefined structures. Designing the decode logic in particular taught me how to evaluate instruction formats, choose appropriate control signals, and decide when additional bit-widths or multiplexing options were necessary. Each extension required balancing correctness, hardware cost, and pipeline compatibility. I also became more comfortable reading the ISA specification and translating it into hardware-level behavior. Writing my own assembly test programs forced me to understand every corner of the instruction set, from load/store edge cases to branch and jump sequencing. Through debugging, waveform inspection, and resolving mismatches between expected and actual behavior, I learned how hardware bugs differ from software bugs, and how subtle signal interactions can break a pipeline.Overall, this project made me more technically flexible. I learned how to design, explore alternatives, question assumptions, and ultimately create hardware that is both functional and extensible.
 
-### 1. A deep understanding of computer architecture  
-Not just “what each block does,” but **why each signal exists**, why timing matters, and how subtle misalignments cause unpredictable behaviour.
-
-### 2. Confidence in debugging and waveform analysis  
-By the end of the project, I could track stall, flush, hazards, and decode behaviour across hundreds of cycles.
-
-### 3. Appreciation for clear interfaces and modular design  
-The decision to create clean top modules (`decode_top`, `fetch_top`, `execute_top`) made integration much easier.
-
-### 4. Value of ownership  
-Implementing decode and ISA correctness end-to-end taught me that clear ownership leads to deeper understanding and fewer design conflicts.
-
-### 5. Stronger collaboration skills  
-Working with Brandon and Jerry—each handling different CPU subsystems—felt like a real hardware engineering workflow.
+Beyond the technical aspects, this project strengthened how I work with others. Implementing a CPU is not something one person can do efficiently in isolation, so teamwork became essential. I learned how to divide modules logically, synchronise our design decisions, and integrate separate components without conflicts. Communication was also a major theme. Whether explaining hazards, decode logic, or pipeline flow to teammates, I became more confident expressing technical reasoning clearly. Regular discussions, debugging sessions, and design reviews taught me how to both give and receive constructive feedback. These interactions helped ensure our final design was coherent, consistent, and robust.
 
 ---
