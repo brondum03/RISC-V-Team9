@@ -1,23 +1,26 @@
 # Personal Contribution Statement — Brandon Auyong
 
-This document outlines my individual contributions to the RISC-V CPU project, structured according to the main tasks I worked on:
+This document outlines my individual contributions to the RISC-V CPU project.
 
-1. [**Single-Cycle**](#Single-Cycle) 
-2. [**Pipelining**](#Pipelining)
-3. [**Caching**](#Caching)
-4. [**Branch Prediction**](#Branch-Predction)  
+## Table of Contents
+1. [**Introduction**](#Introduction)
+2. [**Single-Cycle**](#Single-Cycle) 
+3. [**Pipelining**](#Pipelining)
+4. [**Caching**](#Caching)
+5. [**Branch Prediction**](#Branch-Predction)  
+6. [**Conclusion**](#Conclusion)
 
-## Introduction
-I played the role of an RTL engineer in this project, simulating hardware design through SystemVerilog together with teammates Jerry and Ezekiel. The past weeks have been extremely engaging and fulfilling. The practical experience of implementing hardware design learned in lectures and the satisfaction of seeing our modules run is addictive.
+## 1. Introduction
+I played the role of an RTL engineer in this project, simulating hardware design through SystemVerilog together with teammates Jerry and Ezekiel. 
 
 My main contributions to the project came in the execute and memory stages of our CPU. Notably, I developed the **ALU** and **datamemory** within the base CPU. In the pipelined design, I desgined the **hazard unit** for detection and handling of control and data hazards. I also designed the full **cache** and **branch prediction** CPU for our extensions. Throughout the project, Jerry, Ezekiel, and I worked closely to integrate and debug our code.
 
 I try to avoid excess code snippets here to keep it concise, but I have included relevant excerpts to illustrate key design decisions and implementations. 
 
-## Single-Cycle
+## 2. Single-Cycle
 My primary responsibility during the single-cycle phase was the design and implementation of the Execution Stage and Memory Stage components. 
 
-1. Arithmetic Logic Unit (`alu.sv`)
+2.1. Arithmetic Logic Unit (`alu.sv`)
 
 I designed the ALU to support the full RV32I instruction set required for the project.
 I implemented a purely combinational module using a case statement to select operations based on the 4-bit ALUControl signal.
@@ -41,17 +44,17 @@ Output flags for branch and jump instructions:
             assign Negative = (ALUout[DATA_WIDTH-1] == 1);
 ````
 
-2. Data Memory (`datamemory.sv`)
+2.2. Data Memory (`datamemory.sv`)
 I defined the memory as a logic array and initialized it using $readmemh to load test data (such as the Gaussian distribution array for the PDF reference program)
 
-3. Testing and Debugging
+2.3. Testing and Debugging
 These modules were then integrated in top.sv, together with top level files for fetch and decode. Together with Ezekiel, I first used command verilator--lint-only <filename> to test each module, resolving all the errors that surfaced. Likely due to lack of experience at that point, this process took a while before our CPU was able to pass all 5 provided tests. We had messy naming conventions which made the integration difficult. From this point forward, our group decided to reference the design and naming convention of the textbook Digital Design and Computer Architecture by Harris & Harris. The design in the textbook would act as the basis for us to build upon for the rest of the project.
 
-## Pipelining
+## 3. Pipelining
 I began by defining the interfaces for the EX/MEM pipeline register, ensuring all necessary control signals (like RegWrite, MemWrite, and ResultSrc) and data signals (ALUResult, WriteData, Rd) were correctly propagated through the stages.
 Under the execute stage, I was also responsible for the hazard unit and pcsrc logic (for branch and jump instructions)
 
-1. Hazard Unit (`hazard_unit.sv`)
+3.1. Hazard Unit (`hazard_unit.sv`)
 I first designed the hazard unit to handle data dependency, when instructions in the execute stage required data from instructions in the memory or writeback stage. This is overcome with forwarding the data in the memory or writeback stage to the execute stage, such that the CPU does not need to stall while waiting for the data to be written back to the registers.
 
 ````SystemVerilog
@@ -90,7 +93,7 @@ At the same time, the execute stage is flushed to prevent incorrect execution:
  FlushE = lwStall;
 ````
 
-2. PCSrc Logic (`pcsrc_logic.sv`)
+3.2. PCSrc Logic (`pcsrc_logic.sv`)
 I designed the pcsrc logic to determine the next value of the program counter (PC) based on branch and jump instructions. The module takes in signals indicating whether the current instruction is a branch or jump, along with the Zero and Negative flags from the ALU. Based on these inputs, the module outputs a 2-bit (`PCSrc`) signal that dictates the source of the next PC value.
 
 ``` SystemVerilog
@@ -113,15 +116,15 @@ always_comb begin   // check for jump instructions
     end
 ```
 
-3. Integration and Testing
+3.3. Integration and Testing
 After implementing the hazard unit and pcsrc logic, I integrated these modules into the pipelined CPU design. Debugging this stage was challenging, as the interactions between pipeline stages could lead to subtle bugs. Jerry ultimately identified several issues which he painstakingly debugged, allowing us to pass all the given tests. After this experience, we became more proficient at debugging and integrating our modules for the subsequent caching and branch prediction stages. Additionally, we identified the need for better testbenches to catch bugs earlier in the process. Ezekiel took the lead in developing individual instruction testbenches for our modules.
 
-## Caching
+## 4. Caching
 For the caching stage, I took the lead for designing and implementing the entire cache module (`cache_top.sv`) and integrating it into the CPU design. I relied heavily on Harris & Harris' textbook for the cache architecture and design principles. For my design considerations, I wanted to go above and beyond the project requirements by implementing a 2-way set associative cache with LRU replacement policy and a 4-word block size. 
 
 This design choice was made to leverage **temporal and spatial locality**. A 2-way set associative cache can significantly reduce conflict misses compared to a direct-mapped cache, while increasing the block size would also be beneficial for programs with sequential memory access patterns. Implementing the LRU replacement policy further optimizes cache performance by ensuring that the least recently used data is replaced first, which is particularly effective in workloads with repeated access patterns. Finally, I designed the cache to be write-back with write-allocate, which helps to minimize write latency and improve overall performance.
 
-1. Cache Top Level Module (`cache_top.sv`)
+4.1. Cache Top Level Module (`cache_top.sv`)
 The 17-bit CPU address is parsed by `cache_top` into the following fields:
 
 ```
@@ -139,7 +142,7 @@ Address[16:0]:
 | Block Offset | [3:2] | Selects word within 4-word block |
 | Byte Offset | [1:0] | Selects byte within word (for LB/LH/SB/SH) |
 
-2. Cache Controller (`cache_controller.sv`)
+4.2. Cache Controller (`cache_controller.sv`)
 The cache controller manages read and write requests from the CPU, handling hits and misses. On a cache hit, it provides data directly from the cache. On a miss, it initiates a block fetch from main memory, updates the cache, and then serves the CPU request. The controller also manages write-backs for dirty blocks. This all done through a five-state finite state machine (FSM):
 
 ````SystemVerilog
@@ -203,7 +206,7 @@ logic [31:0] write_mask, shifted_wdata, merged;
     end
 ````
 
-3. SRAM Module (`cache_sram.sv`)
+4.3. SRAM Module (`cache_sram.sv`)
 I designed the SRAM module to store cache lines, each consisting of data, tag, valid, dirty, and LRU bits. The module supports read and write operations based on the provided address and control signals. 
 Each of the 32 sets contains 277 bits organized as follows:
 
@@ -216,13 +219,13 @@ Set[276:0]:
 └─────┴───────┴───────┴─────────┴─────────┴─────────┴─────────┴───────────┴───────┴───────┴─────────┴─────────┴─────────┴─────────┴───────────┘
 ```
 
-4. Integration and Testing
+4.4. Integration and Testing
 After completing the cache design, I integrated it into our pipelined CPU by replacing the existing data memory module with the cache module. This required modifying the memory stage to interface with the cache controller. Debugging the cache integration was extremely challenging, as cache misses and hits introduced new timing considerations. However, with the help of Jerry and Ezekiel, we were able to identify and resolve issues, ultimately passing our series of tests. Debugging this stage greatly improved my understanding of cache architectures and their impact on CPU performance. Additionally, I learned the importance of methodical debugging with the help of GTKWave to visualize signal transitions. This helped us to narrow down issues related to timing and control signal propagation, which was especially important due to the sheer complexity of the cache design.
 
-## Branch Prediction
+## 5. Branch Prediction
 For the branch prediction stage, I designed and implemented a 2-bit saturating counter-based branch predictor within the CPU. This predictor uses a simple state machine to track the history of branch outcomes and make predictions accordingly.
 
-1. Branch Predictor Module (`branch_predictor.sv`)
+5.1. Branch Predictor Module (`branch_predictor.sv`)
 The branch predictor maintains a table of 2-bit saturating counters indexed by the lower bits of the program counter (PC). I decided on a 256-entry predictor table, indexed by the lower 8 bits of the PC. This size provides a good balance between accuracy and resource usage.
 
 For both the branch predictor table and the BTB, I used the following indexing:
@@ -268,7 +271,7 @@ else if (BranchE != 3'b000) begin   // if there is a branch instr
 end
 ````
 
-2. BTB Module (`btb.sv`)
+5.2. BTB Module (`btb.sv`)
 I also designed a Branch Target Buffer (BTB) to store the target addresses of recently taken branches. The BTB is indexed similarly to the branch predictor and stores the target address along with a valid bit to indicate if the entry is valid.
 
 Whenever a branch instruction is fetched, the BTB is checked for a hit. If there is a hit, the predicted target address is provided to the fetch stage, which is passed along with the prediction from the branch predictor.
@@ -300,7 +303,7 @@ else if (BranchE != 3'b000) begin  // updates on any branch instructions
     btb_array[index_e].target <= BranchTargetE;
 end
 ````
-3. Misprediction Handling (within `hazard_unit.sv` and `pcsrc_logic.sv`)
+5.3. Misprediction Handling (within `hazard_unit.sv` and `pcsrc_logic.sv`)
 To handle mispredictions, I modified the hazard unit to detect when the actual branch outcome differs from the prediction. In such cases, the pipeline is flushed, and the PC is updated to the correct target address. This ensures that the CPU continues execution from the correct instruction following a misprediction.
 
 Within the hazard unit, I added the following logic to detect mispredictions and generate flush signals:
@@ -314,7 +317,7 @@ FlushD = mispredicted;
 FlushE = lwStall | mispredicted;
 ````
 
-4. Integration and Testing
+5.4. Integration and Testing
 After implementing the branch predictor and BTB, I integrated these modules into our pipelined CPU design. This involved modifying the fetch stage to utilize the predictions and target addresses provided by the branch predictor and BTB. This is the logic within `fetch_top.sv` that selects the next PC value based on predictions and mispredictions:
 
 ````SystemVerilog
@@ -373,7 +376,7 @@ done:
 
 Upon passing these tests, I confirmed the functionality of the branch predictor and BTB within our CPU design. I acknowledge that plenty of testing is yet to be done for this implementation, which I plan to undertake in the future without time constraint. This includes trying to measure the hit and miss rates of the predictor and BTB under various workloads, as well as stress-testing with more complex branching patterns. 
 
-## Conclusion
+## 6. Conclusion
 What a long 3 weeks this has been. I can confidently say I have poured my heart and soul into this project, learning a tremendous amount about CPU architecture, hardware design, and teamwork. I really mean it when I say that this has been one of the most rewarding experiences of my academic career so far. 
 
 To summarise my greatest takeaways:
