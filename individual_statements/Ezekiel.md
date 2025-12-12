@@ -66,28 +66,15 @@ The following is how i mapped ImmSrc to the instruction type :
 
 As I was trying to start on working on the full instruction set from the get go, I started to consider branch and jump instructions affecting the PC as well. Initially PCSrc was 1 bit as it was simply to move to the next instruction (PC + 4) or the branched instruction (PCTarget). I decided that to take into account stalling and jump instructions as well, we would require 2 bits for our PCSrc (maximum 4 types for PCNext).
 
-<table>
-  <tr>
-    <th style="text-align:center;">PCSrc (binary)</th>
-    <th style="text-align:center;">Instruction Type</th>
-  </tr>
-  <tr>
-    <td style="text-align:center;">00</td>
-    <td style="text-align:center;">PC + 4</td>
-  </tr>
-  <tr>
-    <td style="text-align:center;">01</td>
-    <td style="text-align:center;">PCTarget</td>
-  </tr>
-  <tr>
-    <td style="text-align:center;">10</td>
-    <td style="text-align:center;">ALUResult (Jump)</td>
-  </tr>
-  <tr>
-    <td style="text-align:center;">11</td>
-    <td style="text-align:center;">PC (Stall)</td>
-  </tr>
-</table>
+The following is how I mapped PCSrc to what kind of PCNext to take :
+
+| PCSrc (binary) | Meaning / Selected Next PC |
+|----------------|----------------------------|
+| `00`           | **PC + 4** (normal sequential execution) |
+| `01`           | **PCTarget** (branch taken or JAL) |
+| `10`           | **ALUResult** (JALR target) |
+| `11`           | **PC** (stall — hold current PC) |
+
 
 
 
