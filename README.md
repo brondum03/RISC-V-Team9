@@ -109,7 +109,7 @@ std::string dist = "gaussian";   // "gaussian" or "triangle" or "noisy"
 This design implements the full RV32I instruction set.
 
 ### Schematic Diagram
-<p align="left"> <img src="images/single_cycle_diagram.jpg" /> </p><BR>
+<p align="left"> <img src="images/single_cycle_diagram.jpg" /> </p>
 
 ### Module Breakdown
 
@@ -133,17 +133,24 @@ This design implements the full RV32I instruction set.
 
 - `datamemory.sv`
 
+### Memory Architecture
+
+The data memory uses a 17-bit address space (128KB) with byte-addressable memory:
+- **Address Range**: `0x00000` to `0x1FFFF`
+- **Data Section**: Initialized from `data.hex` starting at address `0x10000`
+- **Addressing Modes**: Word (32-bit), half-word (16-bit), and byte (8-bit) for both signed and unsigned loads
+
 ### Instruction Implemented
 
 | **Type** | **Instructions Supported** |
 | --- | --- |
 | R-Type | `add` `sub` `sll` `slt` `sltu` `xor` `srl` `sra` `or` `and` |
 | I-Type (ALU) | `addi` `slli` `slti` `sltiu` `xori` `srli` `srai` `ori` `andi` |
-| I-Type (Load) | `lw` `lbu` |
+| I-Type (Load) | `lw` `lh` `lhu` `lb` `lbu` |
 | I-Type (Jump) | `jalr` |
-| S-Type (Store) | `sw` `sb` |
+| S-Type (Store) | `sw` `sh` `sb` |
 | B-Type (Branch) | `beq` `bne` `blt` `bge` `bltu` `bgeu` |
-| U-Type | `lui` |
+| U-Type | `lui` `auipc` |
 | J-Type | `jal` |
 
 Also supports pseudo instructions (`li` `j` `beqz` `bnez` `snez` `seqz`)
@@ -202,8 +209,8 @@ rtl/
 
 1. All 5 provided tests
     
-    <p align="left"> <img src="images/test_result.jpg" /> </p><BR>
-    
+    <p align="left"> <img src="images/test_result.jpg" /> </p>
+
 2. F1 Program
    
     <video src="https://github.com/user-attachments/assets/1366c91d-25b0-442d-8088-113d66fe4528" controls></video>
@@ -249,11 +256,15 @@ This allows most dependent ALU instructions to execute without stalling.
 
 **Load-Use Hazard**
 
-Load requires one extra cycle before their data becomes available. If the instruction in ID needs a value being loaded in EX, the hazard unit will stall PC and IF/ID, and insert a bubble into ID/EX
+Load instructions require one extra cycle before their data becomes available. If the instruction in ID needs a value being loaded in EX, the hazard unit will stall PC and IF/ID, and insert a bubble into ID/EX.
 
 **Control Hazard**
 
-Branches and jumps are resolved in the EX stage. If a branch is taken, IF/ID is flushed and PC is updated to the branch target to remove incorrectly fetched instructions on the wrong path. 
+Branches and jumps are resolved in the EX stage. If a branch is taken, IF/ID is flushed and PC is updated to the branch target to remove incorrectly fetched instructions from the wrong path.
+
+**Branch Comparison**
+
+The ALU supports both signed (`blt`, `bge`) and unsigned (`bltu`, `bgeu`) comparisons. Signed comparisons use subtraction with overflow detection, while unsigned comparisons use the `SLTU` operation to correctly handle the full 32-bit unsigned range. 
 
 ### Schematic Diagram
 <p align="left"> <img src="images/pipeline_schematic.jpg" /> </p>
@@ -264,7 +275,7 @@ Digital Design and Computer Architecture: RISC-V Edition, © Morgan Kaufmann.*
 
 The pipelined CPU passed all of our tests.
 
-<p align="left"> <img src="images/pipeline/pipeline_test.png" width="500"/> </p><BR>
+<p align="left"> <img src="images/pipeline/pipeline_test.png" width="500"/> </p>
 
 ### Contribution
 
@@ -273,9 +284,11 @@ The pipelined CPU passed all of our tests.
 | Pipeline stages | ✓ | ✓ | ✓ | ✓ |
 | Hazard Unit | ✓ |  | ✓ |  |
 | Testbench | ✓ | ✓ | ✓ | ✓ |
-| Testing and Debugging  |  | ✓ |  | ✓ |
+| Testing and Debugging  | ✓ | ✓ |  | ✓ |
 
-## Cache 
+## Cache
+
+The cache is built on top of the single-cycle CPU and interfaces with the data memory stage. The CPU stalls when the cache is busy processing a miss.
 
 ### Cache Architecture
 The cache implements a **2-way set associative** design with a block size of 4 words (16 bytes). This configuration leverages:
@@ -345,7 +358,7 @@ The cache controller also implements all addressing modes (byte, half, word) thr
 
 The Cache implementation successfully passed the following tests: 
 
-<p align="left"> <img src="images/cache/cache_test.png" width="500" /> </p><BR>
+<p align="left"> <img src="images/cache/cache_test.png" width="500" /> </p>
 
 ### Contribution
 
@@ -367,7 +380,8 @@ The branch predictor implements a **2-bit saturating counter** with a **Branch T
 | Index Bits | 8 bits (from PC) |
 | Initial State | Weakly Not-Taken (01) |
 
-<p align="left"> <img src="images/Branch_Prediction_FSM.png" width="500" /> </p><BR>
+<p align="left"> <img src="images/Branch_Prediction_FSM.png" width="500" /> </p>
+
 *Figure taken from Harris & Harris,  
 Digital Design and Computer Architecture: RISC-V Edition, © Morgan Kaufmann.*
 
