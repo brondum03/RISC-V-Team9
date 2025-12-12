@@ -429,3 +429,49 @@ To test the logic, three programs were tested:
 | --- | --- | 
 | SV Implementation | ✓ |   
 | Testing and Debugging  | ✓ | 
+
+## In Process Superscalar
+
+### Overview
+
+The current implementation of the superscalar CPU is an extension of the single cycle CPU and allows for parallel execution of 2 instructions. This reduces the CPI to 0.5 as 2 instructions are executed each time. Due to time constraints, we were unable to implement more instructions and hazard handling. The current superscalar CPU only handles R and I instructions and the arithmetic and logic ones.
+
+### Implementation
+
+This was the drawing that was followed for the implementation. 
+
+<p align="left"> <img src="images/superscalar1.PNG" width="500" /> </p>
+
+<p align="left"> <img src="images/superscalar2.jpg" width="500" /> </p>
+
+For the implementation in code, we increased PCNext = PC + 8 instead of PC + 4 as 2 instructions are being fetched each time now.
+For the decode portion, we doubled the width of the output bits to allow the information of both instructions to be stored in 1 variable instead of splitting up into 2 outputs which could get very confusing. The MSBs are reserved for `Instr2` while the LSBs are reserved for `Instr1`. From then on the implementation of is simple as we double our ALU. 
+
+### Testing
+
+We tested our superscalar implementation to see if it could do in order processes.
+
+<p align="left"> <img src="images/inprocesstest.jpg" width="500" /> </p>
+
+To go further, we also checked the gtkwave to ensure that both registers were being written to at the same time.
+
+For this code :
+
+``` 
+addi x1, zero, 67
+addi x2, zero, 89
+add a0, x2, x1 # 156
+
+```
+
+We see the waveform :
+
+
+We can see that from this, the 2 registers `x1` and `x2` get written to at the same time. 
+
+### Contribution
+
+| **Task** | **Ezekiel** | 
+| --- | --- | 
+| SV Implementation | ✓ |   
+| Testing and Debugging  | ✓ | 
