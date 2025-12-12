@@ -256,5 +256,3 @@ Implementing decode and ISA correctness end-to-end taught me that clear ownershi
 Working with Brandon and Jerry—each handling different CPU subsystems—felt like a real hardware engineering workflow.
 
 ---
-
-# End of Report
