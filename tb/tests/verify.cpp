@@ -10,7 +10,7 @@ TEST_F(CpuTestbench, TestInProc1)
     setupTest("inprocess1");
     initSimulation();
     runSimulation(CYCLES);
-    EXPECT_EQ(top_->a0, 300);
+    EXPECT_EQ(top_->a0, 156);
 }
 
 TEST_F(CpuTestbench, TestInProc2)

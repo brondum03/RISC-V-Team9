@@ -7,9 +7,7 @@ start address 0xbfc00000
 
 Disassembly of section .text:
 
-bfc00000 <__BSS_END__-0x1014>:
-bfc00000:	06400093          	li	ra,100
-bfc00004:	03200113          	li	sp,50
-bfc00008:	001080b3          	add	ra,ra,ra
-bfc0000c:	00210133          	add	sp,sp,sp
-bfc00010:	00110533          	add	a0,sp,ra
+bfc00000 <__BSS_END__-0x100c>:
+bfc00000:	04300093          	li	ra,67
+bfc00004:	05900113          	li	sp,89
+bfc00008:	00110533          	add	a0,sp,ra
