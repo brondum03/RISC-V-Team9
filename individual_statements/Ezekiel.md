@@ -1,40 +1,95 @@
 # Personal Contribution Statement — Ezekiel Lim
 
-This document outlines my individual contributions to the RISC-V RV32I CPU project.  
-My work spans three major components:  
+This document outlines my individual contributions to the RISC-V RV32I CPU project. It goes over the completed tasks, how and why design decisions were made, the strategies I used to overcome challenges and mistakes encountered while embarking on this project. At the end I have included the insights and lessons learnt from building the RISC-V CPU.
+
+---
+
+My work spans four major components:  
 
 1. **Single-Cycle CPU Design & Integration**  
 2. **Pipelined CPU – Decode Unit, ISA Completion, and Testing**  
-3. **Cached Pipelined CPU – Functional Design, Debugging, and Verification**  
-
-I also include a section on **mistakes and lessons learned**, as well as **personal reflections**.
+3. **Cached Pipelined CPU – Functional Design and Debugging** 
+4. **Extension of Single-Cycle CPU to Superscalar Processor that handles in process instructions** 
 
 ---
 
 # 1. Single-Cycle CPU
 
-My primary role in the single-cycle CPU was designing the decode logic, ensuring architectural correctness, and integrating my modules with Brandon and Jerry’s fetch and execute subsystems. I took a reference-driven approach by studying Harris & Harris as well as the official RV32I ISA reference card. This guided many early design decisions, signal definitions, and control-path structure.
+My primary role in the single-cycle CPU was designing the decode logic, ensuring architectural correctness, and integrating my modules with Brandon, Jerry and Enqi's fetch, execute and memory submodules. I took a reference-driven approach by studying Harris & Harris as well as the official RV32I ISA reference card. This guided many early design decisions, signal definitions, and control-path structure.
 
 ---
 
 ## 1.1 Architectural Planning & Reference-Driven Design
 
-Before coding, I produced a complete design plan for the single-cycle processor, including:
+Before coding, I read up on the single cycle CPU in Harris & Harris to understand the basics of how to implement a simple decode_top module and the considerations to take into account when doing so. 
 
-- Instruction formats  
-- Immediate extraction logic  
-- Control-signal mapping for every RV32I instruction  
-- A unified decode unit interface for later pipelining  
-- A clear separation between datapath logic and control logic  
+As per the design in the book, I split the Control Unit up into an ALU Decoder and a Main Decoder. 
+The following design is what I referenced initially to make design the decode module:
 
 **[Insert Image Here: Single-Cycle CPU Block Diagram]**
+
+**[Insert Image of aludecoder and maindecoder here]**
 
 ---
 
 ## 1.2 Decode Unit Implementation (`decode/` directory)
 
-I implemented the decode logic for all RV32I instructions:  
-R-type, I-type, S-type, B-type, U-type, J-type, and special instructions such as LUI/AUIPC and JALR.
+---
+
+## Control Unit
+
+I started with the control unit which i believed would have been the most time consuming and core aspect of the decode section. Initially, I split the control unit into Main ecoder and ALU Decoder. I used the following references when implementing and parsing the instruction bits.
+
+**[Insert Image of riscV reference here]**
+
+### ALU Decoder
+
+Looking at the image above, I noticed that there were 10 instructions for R instructions. When comparing to the reference design, ALUControl only showed a 3 bit output (up to 8 combinations). This means that in order to account for all the instructions, the most straight forward approach was to increase ALUControl output to 4 bits (up to 16 combinations) and map that to each instruction. 
+
+The following image is my input and output for the ALUDecoder and also which operation each ALUControl maps to:
+
+**[Insert Image of ALUDecoder]**
+
+### Main Decoder
+
+When working on the Main Decoder, the initial step was to take a look at the core instruction formats and note how many instructions have to handle immediate extension as this would determine how I decide to implement the sign extend module. Looking at core instructions, I noted that there were a total of 6 instructions, R, I, S, B, U and J. However, R instructions do not require sign extension as they do not use immediates. As such, there are 5 instructions where immediate would have to be sign extended. When looking at the initial design, ImmSrc was 2 bits (maximum 4 types of instructions). As such, I increased ImmSrc to 3 bits so as to account for every type of instruction.
+
+The following is how i mapped ImmSrc to the instruction type :
+
+| ImmSrc (binary) | Instruction Type |
+|-----------------|------------------|
+| `000`           | **I-type**       |
+| `001`           | **S-type**       | 
+| `010`           | **B-type**       |
+| `011`           | **U-type**       |
+| `100`           | **J-type**       | 
+
+As I was trying to start on working on the full instruction set from the get go, I started to consider branch and jump instructions affecting the PC as well. Initially PCSrc was 1 bit as it was simply to move to the next instruction (PC + 4) or the branched instruction (PCTarget). I decided that to take into account stalling and jump instructions as well, we would require 2 bits for our PCSrc (maximum 4 types for PCNext).
+
+<table>
+  <tr>
+    <th style="text-align:center;">PCSrc (binary)</th>
+    <th style="text-align:center;">Instruction Type</th>
+  </tr>
+  <tr>
+    <td style="text-align:center;">00</td>
+    <td style="text-align:center;">PC + 4</td>
+  </tr>
+  <tr>
+    <td style="text-align:center;">01</td>
+    <td style="text-align:center;">PCTarget</td>
+  </tr>
+  <tr>
+    <td style="text-align:center;">10</td>
+    <td style="text-align:center;">ALUResult (Jump)</td>
+  </tr>
+  <tr>
+    <td style="text-align:center;">11</td>
+    <td style="text-align:center;">PC (Stall)</td>
+  </tr>
+</table>
+
+
 
 My implementation consisted of:
 
