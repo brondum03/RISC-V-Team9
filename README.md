@@ -14,8 +14,8 @@
   - [4.3 Memory Architecture](#43-memory-architecture)
   - [4.4 Instructions Implemented](#44-instructions-implemented)
   - [4.5 RTL File Structure](#45-rtl-file-structure)
-  - [4.6 Contribution](#46-contribution)
-  - [4.7 Integration Test Results](#47-integration-test-results)
+  - [4.6 Integration Test Results](#46-integration-test-results)
+  - [4.7 Contribution](#47-contribution)
 - [5. Pipelined RISC-V CPU](#5-pipelined-risc-v-cpu)
   - [5.1 Pipeline Architecture](#51-pipeline-architecture)
   - [5.2 Hazard Handling](#52-hazard-handling)
@@ -223,22 +223,7 @@ rtl/
 └── top.sv                    # Top-level single-cycle CPU integrating all stages
 ```
 
-### 4.6 Contribution
-
-| **Task** | **Brandon** | **En Qi** | **Ezekiel** | **Jerry** |
-| --- | --- | --- | --- | --- |
-| Control Unit |  |  | ✓ |  |
-| Sign Extend |  |  | ✓ |  |
-| Register File | ✓ |  |  |  |
-| ALU | ✓ |  |  |  |
-| Instruction Memory |  |  |  |  ✓ |
-| Program Counter |  |  |  | ✓ |
-| Data Memory | ✓ |  |  |  |
-| Overall Integration | ✓ |  | ✓ | ✓ |
-| Testbench |  | ✓ |  | ✓ |
-| F1 Program |  | ✓ |  |  |
-
-### 4.7 Integration Test Results
+### 4.6 Integration Test Results
 
 1. All 5 provided tests
     
@@ -259,6 +244,21 @@ rtl/
 5. PDF: Triangle
 
     <video src="https://github.com/user-attachments/assets/56c2b421-1848-4d30-9b90-5429c09b96f2" controls></video>
+
+### 4.7 Contribution
+
+| **Task** | **Brandon** | **En Qi** | **Ezekiel** | **Jerry** |
+| --- | --- | --- | --- | --- |
+| Control Unit |  |  | ✓ |  |
+| Sign Extend |  |  | ✓ |  |
+| Register File | ✓ |  |  |  |
+| ALU | ✓ |  |  |  |
+| Instruction Memory |  |  |  |  ✓ |
+| Program Counter |  |  |  | ✓ |
+| Data Memory | ✓ |  |  |  |
+| Overall Integration | ✓ |  | ✓ | ✓ |
+| Testbench |  | ✓ |  | ✓ |
+| F1 Program |  | ✓ |  |  |
 
 ## 5. Pipelined RISC-V CPU
 
