@@ -13,6 +13,14 @@ TEST_F(CpuTestbench, TestInProc1)
     EXPECT_EQ(top_->a0, 300);
 }
 
+TEST_F(CpuTestbench, TestInProc2)
+{
+    setupTest("inprocess2");
+    initSimulation();
+    runSimulation(CYCLES);
+    EXPECT_EQ(top_->a0, 155);
+}
+
 
 int main(int argc, char **argv)
 {
