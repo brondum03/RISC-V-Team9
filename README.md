@@ -176,7 +176,7 @@ rtl/
 | --- | --- | --- | --- | --- |
 | Control Unit |  |  | ✓ |  |
 | Sign Extend |  |  | ✓ |  |
-| Register File |  |  | ✓ |  |
+| Register File | ✓ |  |  |  |
 | ALU | ✓ |  |  |  |
 | Instruction Memory |  |  |  |  ✓ |
 | Program Counter |  |  |  | ✓ |
@@ -421,7 +421,8 @@ To test the logic, three programs were tested:
 - **bp_always** - always-taken loop
 - **bp_never** - never-taken loop
 
-<p align="left"> <img src="images/bp_tests.jpg" width="500" /> </p><BR>
+<p align="left"> <img src="images/bp_tests.jpg" width="500" /> </p>
+
 ### Contribution
 
 | **Task** | **Brandon** | 
