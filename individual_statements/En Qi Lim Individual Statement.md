@@ -92,7 +92,7 @@ The testbench allows Vbuddy to plot 3 different probability distribution graph u
   <img src="../images/gaussian_pdf_sc.png" width="200" />
   <img src="../images/noisy_pdf_sc.png" width="200" />
   <img src="../images/triangle_pdf_sc.png" width="200" />
-</div>
+</div><BR>
 
 
 

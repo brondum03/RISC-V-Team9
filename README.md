@@ -242,6 +242,12 @@ Load requires one extra cycle before their data becomes available. If the instru
 
 Branches and jumps are resolved in the EX stage. If a branch is taken, IF/ID is flushed and PC is updated to the branch target to remove incorrectly fetched instructions on the wrong path. 
 
+### Schematic Diagram
+<p align="left"> <img src="images/pipeline_schematic.jpg" /> </p>
+*Figure adapted from Harris & Harris,  
+Digital Design and Computer Architecture: RISC-V Edition, © Morgan Kaufmann.*
+
+
 ### Testing
 
 The pipelined CPU passed all of our tests.
@@ -255,7 +261,7 @@ The pipelined CPU passed all of our tests.
 | Pipeline stages | ✓ | ✓ | ✓ | ✓ |
 | Hazard Unit | ✓ |  | ✓ |  |
 | Testbench | ✓ | ✓ | ✓ | ✓ |
-| Testing and Debugging  | | |  | ✓ 
+| Testing and Debugging  | | ✓ |  | ✓ 
 
 ## Cache 
 
@@ -283,4 +289,11 @@ The Cache implementation succesfully passed the the following tests:
 | **Task** | **Brandon** | **Jerry** |
 | --- | --- | --- |
 | SV Implementation | ✓ |  |  |  |
-| Testing and Debugging  | | ✓ |  
+| Testing and Debugging  | | ✓ |
+
+
+### References
+Harris, D. M., & Harris, S. L.  
+*Digital Design and Computer Architecture: RISC-V Edition*.  
+Morgan Kaufmann, 2021.
+
