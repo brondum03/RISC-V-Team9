@@ -18,40 +18,45 @@ module datamemory #(
     
     initial begin
         $readmemh("data.hex", memory, 32'h00010000); 
+        // $readmemh("reference/data.mem", memory, 32'h00010000); 
     end
-
-    always_ff @(posedge clk) begin
-        logic [31:0] word;
-        word <= 32'b0;
-        read_data <= 32'b0;
-        if(Mem_ReadRequest) begin
-            word <= {memory[address+3], memory[address+2], memory[address+1], memory[address]};
-            case (addr_mode)
-                3'b000: read_data <= {{24{memory[address][7]}}, memory[address]};                      // LB
-                3'b001: read_data <= {{16{memory[address+1][7]}}, memory[address+1], memory[address]}; // LH
-                3'b010: read_data <= word;                                                             // LW
-                3'b011: read_data <= {24'b0, memory[address]};                                         // LBU
-                3'b100: read_data <= {16'b0, memory[address+1], memory[address]};                      // LHU
-                default: read_data <= word;
-            endcase
+    logic [ADDR_WIDTH-1:0] aligned_addr;
+    logic [7:0] debug_byte_10002;
+    logic [ADDR_WIDTH-1:0]  byte_addr; 
+    assign debug_byte_10002 = memory[32'h00010002];
+    
+    // Convert physical address → byte offset
+    assign byte_addr = address; // physical -> byte offset
+    // Align for word / halfword
+    assign aligned_addr = byte_addr & ~17'h3; // word-aligned base (clear bottom 2 bits)
+    always_comb begin
+        read_data = 32'b0;     // default to avoid latch
+        if (Mem_ReadRequest) begin
+            read_data = {
+                memory[aligned_addr + 3],
+                memory[aligned_addr + 2],
+                memory[aligned_addr + 1],
+                memory[aligned_addr + 0]
+            };
         end
     end
+
 
     always_ff @(posedge clk) begin
         if (write_enable) begin
             case (addr_mode)
                 3'b000,3'b011: begin                                                              // SB 
-                    memory[address] <= write_data[7:0];
+                    memory[byte_addr] <= write_data[7:0];
                 end
                 3'b001,3'b100: begin                                                              // SH 
-                    memory[address] <= write_data[7:0];
-                    memory[address+1] <= write_data[15:8];
+                    memory[byte_addr] <= write_data[7:0];
+                    memory[byte_addr+1] <= write_data[15:8];
                 end
                 3'b010: begin                                                                     // SW 
-                    memory[address] <= write_data[7:0];
-                    memory[address+1] <= write_data[15:8];
-                    memory[address+2] <= write_data[23:16];
-                    memory[address+3] <= write_data[31:24];
+                    memory[byte_addr] <= write_data[7:0];
+                    memory[byte_addr+1] <= write_data[15:8];
+                    memory[byte_addr+2] <= write_data[23:16];
+                    memory[byte_addr+3] <= write_data[31:24];
                 end
                 default: ;
             endcase

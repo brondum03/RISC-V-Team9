@@ -1,19 +1,27 @@
-.text
-.globl main
-
-.equ base_data, 0x10000
-
+    .text
+    .globl main
 main:
-    li   t0, base_data
+    li  t0, 0x100      # base_pdf
+    li  t1, 0          # expected value
+    li  t4, 200        # loop bound
 
-    lbu  t1, 0(t0)     # byte 0
-    lbu  t2, 1(t0)     # byte 1
-    lbu  t3, 2(t0)     # byte 2
-    lbu  t4, 3(t0)     # byte 3
+loop:
+    lbu t2, 0(t0)      # load bin
+    addi t2, t2, 1
+    sb  t2, 0(t0)      # store back
 
-    add  a0, t1, t2
-    add  a0, a0, t3
-    add  a0, a0, t4
+    lbu t3, 0(t0)      # IMMEDIATE reload
+    bne t3, t2, fail   # must match
+
+    addi t1, t1, 1
+    bne  t1, t4, loop
+
+pass:
+    li a0, 1
+    j end
+
+fail:
+    li a0, 0           # if this triggers, store→load is broken
 
 end:
-    bne  zero, zero, end  # loop forever
+    j end

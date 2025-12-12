@@ -29,13 +29,21 @@ static VerilatedVcdC* tfp = nullptr;
 //     EXPECT_EQ(top_->a0, 1000);
 // }
 
+// TEST_F(CpuTestbench, TestPdf)
+// {
+//     setupTest("5_pdf");
+//     setData("reference/gaussian.mem");
+//     initSimulation();
+//     runSimulation(CYCLES * 100);
+//     EXPECT_EQ(top_->a0, 15363);
+// }
+
 TEST_F(CpuTestbench, TestDebug)
 {
     setupTest("0_debug");
-    setData("reference/data.mem");
     initSimulation();
     runSimulation(CYCLES);
-    EXPECT_EQ(top_->a0, 51200);
+    EXPECT_EQ(top_->a0, 1);
 }
 
 // TEST_F(CpuTestbench, TestPdfWithCache)
@@ -51,7 +59,7 @@ TEST_F(CpuTestbench, TestDebug)
 //     initSimulation();
 //     runSimulation(CYCLES);
 //     EXPECT_EQ(top_->a0, 15363);
-//
+
 
 // TEST_F(CpuTestbench, TestJalRet)
 // {

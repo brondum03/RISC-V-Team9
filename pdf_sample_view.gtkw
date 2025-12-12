@@ -1,23 +1,83 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Thu Dec 11 08:57:57 2025
+[*] Fri Dec 12 17:14:39 2025
 [*]
 [dumpfile] "/home/jerryzhang/RISC-V-Team9/tb/test_out/0_debug/waveform.vcd"
-[dumpfile_mtime] "Thu Dec 11 08:55:49 2025"
-[dumpfile_size] 4235250
+[dumpfile_mtime] "Fri Dec 12 16:55:33 2025"
+[dumpfile_size] 4227700
 [savefile] "/home/jerryzhang/RISC-V-Team9/pdf_sample_view.gtkw"
-[timestart] 15
+[timestart] 16
 [size] 3828 2055
-[pos] -2470 -1142
-*-2.000000 25 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] -1109 -684
+*-1.000000 39 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.top.
+[treeopen] TOP.top.decode.
 [treeopen] TOP.top.memory.
 [treeopen] TOP.top.memory.cache.
 [sst_width] 214
-[signals_width] 659
+[signals_width] 687
 [sst_expanded] 1
-[sst_vpaned_height] 663
+[sst_vpaned_height] 1397
+@24
+TOP.top.memory.cache.cache_controller.current_state[2:0]
+@22
+TOP.top.fetch.InstrD[31:0]
+TOP.top.memory.memory_pipeline_register.ReadDataM[31:0]
+TOP.top.memory.memory_pipeline_register.ReadDataW[31:0]
+@28
+TOP.top.memory.memory_pipeline_register.ResultSrcM[1:0]
+@24
+TOP.top.memory.Data_Memory.addr_mode[2:0]
+@28
+TOP.top.memory.cache.cache_controller.current_state[2:0]
+@24
+TOP.top.memory.cache.cache_controller.TargetByteOffset[1:0]
+@28
+TOP.top.memory.cache.cache_controller.Hit
+@22
+TOP.top.memory.cache.cache_controller.sel_byte[7:0]
+TOP.top.memory.cache.cache_controller.Data[31:0]
+@28
+TOP.top.memory.cache.cache_controller.TargetBlockOffset[1:0]
+@22
+TOP.top.memory.cache.cache_controller.Way0_Data[31:0]
+TOP.top.memory.cache.cache_controller.Word0_0[31:0]
+@28
+TOP.top.memory.cache.cache_controller.Hit0
+TOP.top.memory.cache.cache_controller.Hit1
+@22
+TOP.top.memory.cache.cache_controller.Word0_1[31:0]
+TOP.top.memory.cache.cache_controller.Word1_0[31:0]
+TOP.top.memory.cache.cache_controller.Word1_1[31:0]
+@24
+TOP.top.memory.cache.cache_controller.Word2_0[31:0]
+@22
+TOP.top.memory.cache.cache_controller.Word2_1[31:0]
+@24
+TOP.top.memory.cache.cache_controller.Word3_0[31:0]
+@22
+TOP.top.memory.cache.cache_controller.Word3_1[31:0]
+@200
+-
+-
+@24
+TOP.top.memory.Data_Memory.read_data[31:0]
+@22
+TOP.top.memory.Data_Memory.address[16:0]
+@28
+TOP.top.memory.Data_Memory.addr_mode[2:0]
+@200
+-
+-
+@24
+TOP.top.memory.cache.cache_controller.Mem_ReadData[31:0]
+@22
+TOP.top.memory.cache.cache_controller.Way1_Data[31:0]
+TOP.top.memory.Data_Memory.debug_byte_10002[7:0]
+TOP.top.memory.cache.cache_controller.DataOut[31:0]
+TOP.top.memory.cache.cache_controller.load_data[31:0]
+TOP.top.decode.register_file.regfile[6][31:0]
 @24
 TOP.top.MemReadE
 TOP.top.MemReadM
@@ -29,13 +89,8 @@ TOP.top.RdW[4:0]
 TOP.top.RegWriteE
 TOP.top.decode.register_file.regfile[5][31:0]
 TOP.top.decode.register_file.regfile[6][31:0]
-TOP.top.decode.register_file.regfile[7][31:0]
-TOP.top.decode.register_file.regfile[28][31:0]
-TOP.top.decode.register_file.regfile[29][31:0]
 TOP.top.memory.mem_stall
 TOP.top.memory.mem_used
 TOP.top.memory.Cache_Ready
-@25
-TOP.top.memory.cache.cache_controller.current_state[2:0]
 [pattern_trace] 1
 [pattern_trace] 0

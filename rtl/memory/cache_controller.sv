@@ -152,6 +152,7 @@ module cache_controller #(
     typedef enum logic [2:0] {
         IDLE,
         CHECK_TAG,
+        // STORE_WAIT,
         ALLOCATE,
         REFILL,
         WRITE_BACK
@@ -181,11 +182,13 @@ module cache_controller #(
                 refill_count <= '0;
 
             if (current_state == WRITE_BACK && Mem_Ready)
-                writeback_count <= writeback_count + 1; // ensures all 4 words in the block are written back
+                writeback_count <= writeback_count + 1; // ensures all 4 words are written back
             else if (current_state == ALLOCATE)
                 writeback_count <= '0;
+
         end
     end
+
 
     always_comb begin   
         // default parameters
@@ -196,10 +199,11 @@ module cache_controller #(
         SRAM_WriteEnable = 1'b0;
         SRAM_WriteData = SetData;  
         SRAM_Address = TargetSet;
+        merged = 32'b0;
 
         Mem_ReadRequest = 1'b0;
         Mem_WriteEnable = 1'b0;
-        Mem_Address = '0;
+        // Mem_Address = '0;
         Mem_WriteData = '0;
 
         evict_way = LRU_bit;    // checks LRU bit to determine which way to evict
@@ -219,10 +223,11 @@ module cache_controller #(
 
             CHECK_TAG: begin
                 if (Hit) begin  // cache hit
-                    cache_ready = 1'b1;   // cpu can continue once data is available in cache
+                    
                     DataOut = load_data;
 
                     if (WriteEnable) begin  // writing to cache
+                        cache_ready = 1'b1;   // cpu can continue once data is available in cache
                         SRAM_WriteEnable = 1'b1;
                         SRAM_WriteData = SetData; // current data
 
@@ -247,18 +252,27 @@ module cache_controller #(
                             SRAM_WriteData[275] = 1'b1;     // set dirty bit
                             SRAM_WriteData[276] = 1'b0;     // way 0 becomes LRU
                         end
+                        next_state = IDLE;
+                        // next_state = STORE_WAIT;
                     
                     end else begin  // just reading from cache
-                        SRAM_WriteEnable = 1'b1;
+                        cache_ready = 1'b1;   // cpu can continue once data is available in cache
+                        SRAM_WriteEnable = 1'b0;
                         SRAM_WriteData = SetData;   // no change to data
                         SRAM_WriteData[276] = Hit0 ? 1'b1 : 1'b0;   // update LRU
+                        next_state = IDLE;
                     end
+                    
 
-                    next_state = IDLE;
                 end else begin  // cache miss
                     next_state = ALLOCATE;
                 end
             end
+
+            // STORE_WAIT: begin
+            //     cache_ready = 1'b0;        // SRAM write has committed
+            //     next_state = CHECK_TAG;
+            // end
 
             ALLOCATE: begin 
                 // this stage checks if the way to be evicted is dirty
@@ -334,7 +348,7 @@ module cache_controller #(
                         end
                     end
 
-                    if (refill_count == 2'd3) begin
+                    if (refill_count == 2'd3 && Mem_Ready) begin
                         next_state = CHECK_TAG;
                     end
                 end
