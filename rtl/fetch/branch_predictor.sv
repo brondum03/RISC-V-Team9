@@ -36,7 +36,7 @@ module branch_predictor #(
                 predictor_table[i] = 2'b01;    
             end
         end
-        else if (BranchTakenE && BranchE != 3'b000) begin   // if branch is active
+        else if (BranchE != 3'b000) begin   // if there is a branch instr
             // update state based on actual outcome
             case (predictor_table[index_e])
                 2'b00: predictor_table[index_e] <= (BranchTakenE) ? 2'b01 : 2'b00; // SNT - if taken, go to WNT. if not taken, stay SNT

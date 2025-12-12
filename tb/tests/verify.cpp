@@ -126,6 +126,33 @@ TEST_F(CpuTestbench, TestSltiu)
     EXPECT_EQ(top_->a0, 0);
 }
 
+TEST_F(CpuTestbench, TestBranchPredictAlways)
+{
+    setupTest("bp_always");
+    initSimulation();
+    runSimulation(500);
+    
+    EXPECT_EQ(top_->a0, 10);  
+}
+
+TEST_F(CpuTestbench, TestBranchPredictNever)
+{
+    setupTest("bp_never");
+    initSimulation();
+    runSimulation(200);
+    
+    EXPECT_EQ(top_->a0, 1);
+}
+
+TEST_F(CpuTestbench, TestBranchPredictAlt)
+{
+    setupTest("bp_alt");
+    initSimulation();
+    runSimulation(1000);
+    
+    EXPECT_EQ(top_->a0, 10);
+}
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);

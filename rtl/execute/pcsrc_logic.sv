@@ -14,15 +14,19 @@ module pcsrc_logic (
             default: JumpTakenE = 1'b0; 
         endcase
 
-        case (BranchE) 
-            3'b001: BranchTakenE = ZeroE;             // BEQ
-            3'b010: BranchTakenE = ~ZeroE;            // BNE
-            3'b011: BranchTakenE = NegativeE;         // BLT
-            3'b100: BranchTakenE = ~NegativeE;        // BGE
-            3'b101: BranchTakenE = Less_unsignedE;    // BLTU 
-            3'b110: BranchTakenE = ~Less_unsignedE;   // BGEU 
-            default: BranchTakenE = 1'b0;
-        endcase
+        if (BranchE != 3'b000)begin
+            case (BranchE) 
+                3'b001: BranchTakenE = ZeroE;             // BEQ
+                3'b010: BranchTakenE = ~ZeroE;            // BNE
+                3'b011: BranchTakenE = NegativeE;         // BLT
+                3'b100: BranchTakenE = ~NegativeE;        // BGE
+                3'b101: BranchTakenE = Less_unsignedE;    // BLTU 
+                3'b110: BranchTakenE = ~Less_unsignedE;   // BGEU 
+                default: BranchTakenE = 1'b0;
+            endcase
+        end else begin
+            BranchTakenE = 1'b0;
+        end
     end
 
 endmodule

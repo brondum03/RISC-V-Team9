@@ -62,7 +62,7 @@ module branch_target_buffer #(
                 btb_array[i].valid = 1'b0;
             end
         end
-        else if (BranchTakenE && (BranchE != 3'b000)) begin  // updates on any branch instructions
+        else if (BranchE != 3'b000) begin  // updates on any branch instructions
             btb_array[index_e].valid  <= 1'b1;
             btb_array[index_e].tag    <= tag_e;
             btb_array[index_e].target <= BranchTargetE;

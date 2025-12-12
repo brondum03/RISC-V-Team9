@@ -64,8 +64,8 @@ module hazard_unit(
         StallD = lwStall;
         
         // branch prediction logic
-        assign branch_is_active = (BranchE != 3'b000);
-        assign mispredicted = branch_is_active && ((PredictTakenE != BranchTakenE) || (BranchTakenE && (PredictTargetE != BranchTargetE)));
+        branch_is_active = (BranchE != 3'b000);
+        mispredicted = branch_is_active && ((PredictTakenE != BranchTakenE) || (BranchTakenE && (PredictTargetE != BranchTargetE)));
         
         //flush logic
         FlushD = mispredicted;
