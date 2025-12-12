@@ -1,4 +1,3 @@
-
 /*
 ALUControl              Meaning
 0000 =                  ADD
@@ -7,27 +6,15 @@ ALUControl              Meaning
 0011 =                  OR
 0100 =                  XOR
 0101 =                  SLL
-0101 =                  SRL
+0110 =                  SRL  // FIXED: Changed from 0101 to 0110
 0111 =                  SRA
 1000 =                  SLT
 1001 =                  SLTU
 */
 
-
 /*
 FUNCT3
 (000) --> I type, immediate
-
-(001) --> S type, store instructions
-
-(010) --> B type, branch instructions
-
-(011) --> U type (“Upper immediate” instructions) load a 20-bit immediate into the upper bits (31:12) of a register.
-2 types for U type
-    - LUI --> load upper immediate --> rd = imm[31:12] << 12
-    - AUIPC --> add upper immediate to PC --> rd = PC + (imm[31:12] << 12)
-
-(100) --> J type, jump instructions
 */
 
 // LSB FOR INSTRUCTION 1
@@ -57,88 +44,224 @@ module controlUnit (
     always_comb begin 
         if(stall) begin 
             RegWrite = 2'b00;
-            ImmSrc = 6'b0;
             MemWrite = 2'b00;
-            ResultSrc = 2'b00;
             PCSrc = 1'b1;
-            ALUSrc = 2'b0;
-        end
-        else begin
-            RegWrite = 2'b00;
-            ImmSrc = 6'b0; 
-            MemWrite = 2'b00; 
+            ImmSrc = 6'b0;
             ResultSrc = 2'b00;
             PCSrc = 1'b0;
             ALUSrc = 2'b00;
             ALUControl = 8'b0;
             shiftImmFlag = 2'b00;
-
-            // get the ALUControls for each instruction first instruction ALUControl[3:0] --> ALL LSBS      
+        end
+        else begin
+            // Default assignments
+            RegWrite = 2'b00;
+            ImmSrc = 6'b0;
+            MemWrite = 2'b00;
+            ResultSrc = 2'b00;
+            PCSrc = 1'b0;
+            ALUSrc = 2'b00;
+            ALUControl = 8'b0;
+            shiftImmFlag = 2'b00;
+            // Handle instruction 1
             case(op1) 
                 // R - Arithmetic and Logic
                 7'b0110011 : begin 
+                    // For R-type, ALUSrc = 0 (use register), ImmSrc doesn't matter
+                    ALUSrc[0] = 1'b0;  // Use register for ALU input 2
+                    
                     case(funct3_1) 
-                        3'd0 : begin ALUControl[3:0] =  funct7_1 ? 4'b0001 : 4'b0000; RegWrite[0] = 1;  end// if funct7_1 (sub) else (add) 
-                        3'd4 : begin ALUControl[3:0] =  4'b0100; RegWrite[0] = 1; end// xor
-                        3'd6 : begin ALUControl[3:0] =  4'b0011; RegWrite[0] = 1; end// or
-                        3'd7 : begin ALUControl[3:0] =  4'b0010; RegWrite[0] = 1; end// and
-                        3'd1 : begin ALUControl[3:0] =  4'b0101; RegWrite[0] = 1; end// sll
-                        3'd5 : begin ALUControl[3:0] =  funct7_1 ? 4'b0111 : 4'b0110; RegWrite[0] = 1; end// srl / sra
-                        3'd2 : begin ALUControl[3:0] =  4'b1000; RegWrite[0] = 1; end// slt
-                        3'd3 : begin ALUControl[3:0] =  4'b1001; RegWrite[0] = 1; end// sltu
-
-                        default : ALUControl[3:0] = 4'b0000;
+                        3'd0 : begin 
+                            ALUControl[3:0] = funct7_1 ? 4'b0001 : 4'b0000;  // SUB if funct7=1 else ADD
+                            RegWrite[0] = 1'b1;
+                        end
+                        3'd4 : begin 
+                            ALUControl[3:0] = 4'b0100;  // XOR
+                            RegWrite[0] = 1'b1;
+                        end
+                        3'd6 : begin 
+                            ALUControl[3:0] = 4'b0011;  // OR
+                            RegWrite[0] = 1'b1;
+                        end
+                        3'd7 : begin 
+                            ALUControl[3:0] = 4'b0010;  // AND
+                            RegWrite[0] = 1'b1;
+                        end
+                        3'd1 : begin 
+                            ALUControl[3:0] = 4'b0101;  // SLL
+                            RegWrite[0] = 1'b1;
+                        end
+                        3'd5 : begin 
+                            ALUControl[3:0] = funct7_1 ? 4'b0111 : 4'b0110;  // SRA if funct7=1 else SRL
+                            RegWrite[0] = 1'b1;
+                        end
+                        3'd2 : begin 
+                            ALUControl[3:0] = 4'b1000;  // SLT
+                            RegWrite[0] = 1'b1;
+                        end
+                        3'd3 : begin 
+                            ALUControl[3:0] = 4'b1001;  // SLTU
+                            RegWrite[0] = 1'b1;
+                        end
+                        default : begin 
+                            ALUControl[3:0] = 4'b0000;  // Default to ADD
+                            RegWrite[0] = 1'b0;
+                        end
                     endcase
                 end
+                
                 // I - Arithmetic and Logic
                 7'b0010011 : begin 
+                    // For I-type, ALUSrc = 1 (use immediate)
+                    ALUSrc[0] = 1'b1;
+                    // I-type immediate encoding (12-bit immediate, sign-extended)
+                    ImmSrc[2:0] = 3'b000;  // I-type immediate
+                    
                     case(funct3_1)
-                        3'd0 : begin ALUControl[3:0] =  funct7_1 ? 4'b0001 : 4'b0000; RegWrite[0] = 1; ImmSrc[2:0] = 3'b0; end// if funct7_1 (sub) else (add) 
-                        3'd4 : begin ALUControl[3:0] =  4'b0100; RegWrite[0] = 1; ImmSrc[2:0] = 3'b0; end// xor
-                        3'd6 : begin ALUControl[3:0] =  4'b0011; RegWrite[0] = 1; ImmSrc[2:0] = 3'b0; end// or
-                        3'd7 : begin ALUControl[3:0] =  4'b0010; RegWrite[0] = 1; ImmSrc[2:0] = 3'b0; end// and
-                        3'd1 : begin ALUControl[3:0] =  4'b0101; RegWrite[0] = 1; ImmSrc[2:0] = 3'b0; shiftImmFlag[0] = 1; end// sll
-                        3'd5 : begin ALUControl[3:0] =  funct7_1 ? 4'b0111 : 4'b0110; RegWrite[0] = 1; ImmSrc[2:0] = 3'b0; shiftImmFlag[0] = 1; end// srl / sra
-                        3'd2 : begin ALUControl[3:0] =  4'b1000; RegWrite[0] = 1; ImmSrc[2:0] = 3'b0; end// slt
-                        3'd3 : begin ALUControl[3:0] =  4'b1001; RegWrite[0] = 1; ImmSrc[2:0] = 3'b0; end// sltu
+                        3'd0 : begin  // ADDI
+                            ALUControl[3:0] = 4'b0000;  // ADD operation
+                            RegWrite[0] = 1'b1;
+                        end
+                        3'd4 : begin  // XORI
+                            ALUControl[3:0] = 4'b0100;
+                            RegWrite[0] = 1'b1;
+                        end
+                        3'd6 : begin  // ORI
+                            ALUControl[3:0] = 4'b0011;
+                            RegWrite[0] = 1'b1;
+                        end
+                        3'd7 : begin  // ANDI
+                            ALUControl[3:0] = 4'b0010;
+                            RegWrite[0] = 1'b1;
+                        end
+                        3'd1 : begin  // SLLI
+                            ALUControl[3:0] = 4'b0101;
+                            RegWrite[0] = 1'b1;
+                            shiftImmFlag[0] = 1'b1;  // Special handling for shift immediate
+                        end
+                        3'd5 : begin  // SRLI/SRAI
+                            ALUControl[3:0] = funct7_1 ? 4'b0111 : 4'b0110;  // SRAI if funct7=1 else SRLI
+                            RegWrite[0] = 1'b1;
+                            shiftImmFlag[0] = 1'b1;  // Special handling for shift immediate
+                        end
+                        3'd2 : begin  // SLTI
+                            ALUControl[3:0] = 4'b1000;
+                            RegWrite[0] = 1'b1;
+                        end
+                        3'd3 : begin  // SLTIU
+                            ALUControl[3:0] = 4'b1001;
+                            RegWrite[0] = 1'b1;
+                        end
+                        default : begin
+                            ALUControl[3:0] = 4'b0000;
+                            RegWrite[0] = 1'b0;
+                        end
                     endcase
                 end
 
-                default : begin end
-
+                default : begin 
+                    RegWrite[0] = 1'b0;
+                    ALUSrc[0] = 1'b0;
+                end
             endcase
 
+            // Handle instruction 2 (same logic as instruction 1)
             case(op2) 
                 // R - Arithmetic and Logic
                 7'b0110011 : begin 
-                    case(funct3_2) 
-                        3'd0 : begin ALUControl[7:4] = funct7_2 ? 4'b0001 : 4'b0000; RegWrite[1] = 1;  end// if funct7_1 (sub) else (add) 
-                        3'd4 : begin ALUControl[7:4] = 4'b0100; RegWrite[1] = 1; end// xor
-                        3'd6 : begin ALUControl[7:4] = 4'b0011; RegWrite[1] = 1; end// or
-                        3'd7 : begin ALUControl[7:4] = 4'b0010; RegWrite[1] = 1; end// and
-                        3'd1 : begin ALUControl[7:4] = 4'b0101; RegWrite[1] = 1; end// sll
-                        3'd5 : begin ALUControl[7:4] = funct7_2 ? 4'b0111 : 4'b0110; RegWrite[1] = 1; end// srl / sra
-                        3'd2 : begin ALUControl[7:4] = 4'b1000; RegWrite[1] = 1; end// slt
-                        3'd3 : begin ALUControl[7:4] = 4'b1001; RegWrite[1] = 1; end// sltu
-
-                        default : ALUControl[7:4] = 4'b0000;
+                    ALUSrc[1] = 1'b0;  // Use register for ALU input 2
+                    
+                    case(funct3_2)  // FIXED: Changed funct3_1 to funct3_2
+                        3'd0 : begin 
+                            ALUControl[7:4] = funct7_2 ? 4'b0001 : 4'b0000;
+                            RegWrite[1] = 1'b1;
+                        end
+                        3'd4 : begin 
+                            ALUControl[7:4] = 4'b0100;
+                            RegWrite[1] = 1'b1;
+                        end
+                        3'd6 : begin 
+                            ALUControl[7:4] = 4'b0011;
+                            RegWrite[1] = 1'b1;
+                        end
+                        3'd7 : begin 
+                            ALUControl[7:4] = 4'b0010;
+                            RegWrite[1] = 1'b1;
+                        end
+                        3'd1 : begin 
+                            ALUControl[7:4] = 4'b0101;
+                            RegWrite[1] = 1'b1;
+                        end
+                        3'd5 : begin 
+                            ALUControl[7:4] = funct7_2 ? 4'b0111 : 4'b0110;
+                            RegWrite[1] = 1'b1;
+                        end
+                        3'd2 : begin 
+                            ALUControl[7:4] = 4'b1000;
+                            RegWrite[1] = 1'b1;
+                        end
+                        3'd3 : begin 
+                            ALUControl[7:4] = 4'b1001;
+                            RegWrite[1] = 1'b1;
+                        end
+                        default : begin 
+                            ALUControl[7:4] = 4'b0000;
+                            RegWrite[1] = 1'b0;
+                        end
                     endcase
                 end
+                
                 // I - Arithmetic and Logic
                 7'b0010011 : begin 
-                    case(funct3_1)
-                        3'd0 : begin ALUControl[7:4] = funct7_2 ? 4'b0001 : 4'b0000; RegWrite[1] = 1; ImmSrc[5:3] = 3'b0; end// if funct7_1 (sub) else (add) 
-                        3'd4 : begin ALUControl[7:4] = 4'b0100; RegWrite[1] = 1; ImmSrc[5:3] = 3'b0; end// xor
-                        3'd6 : begin ALUControl[7:4] = 4'b0011; RegWrite[1] = 1; ImmSrc[5:3] = 3'b0; end// or
-                        3'd7 : begin ALUControl[7:4] = 4'b0010; RegWrite[1] = 1; ImmSrc[5:3] = 3'b0; end// and
-                        3'd1 : begin ALUControl[7:4] = 4'b0101; RegWrite[1] = 1; ImmSrc[5:3] = 3'b0; shiftImmFlag[1] = 1; end// sll
-                        3'd5 : begin ALUControl[7:4] = funct7_1 ? 4'b0111 : 4'b0110; RegWrite[1] = 1; ImmSrc[5:3] = 3'b0; shiftImmFlag[1] = 1; end// srl / sra
-                        3'd2 : begin ALUControl[7:4] = 4'b1000; RegWrite[1] = 1; ImmSrc[5:3] = 3'b0; end// slt
-                        3'd3 : begin ALUControl[7:4] = 4'b1001; RegWrite[1] = 1; ImmSrc[5:3] = 3'b0; end// sltu
+                    ALUSrc[1] = 1'b1;  // Use immediate
+                    ImmSrc[5:3] = 3'b000;  // I-type immediate
+                    
+                    case(funct3_2)  // FIXED: Changed funct3_1 to funct3_2
+                        3'd0 : begin  // ADDI
+                            ALUControl[7:4] = 4'b0000;
+                            RegWrite[1] = 1'b1;
+                        end
+                        3'd4 : begin  // XORI
+                            ALUControl[7:4] = 4'b0100;
+                            RegWrite[1] = 1'b1;
+                        end
+                        3'd6 : begin  // ORI
+                            ALUControl[7:4] = 4'b0011;
+                            RegWrite[1] = 1'b1;
+                        end
+                        3'd7 : begin  // ANDI
+                            ALUControl[7:4] = 4'b0010;
+                            RegWrite[1] = 1'b1;
+                        end
+                        3'd1 : begin  // SLLI
+                            ALUControl[7:4] = 4'b0101;
+                            RegWrite[1] = 1'b1;
+                            shiftImmFlag[1] = 1'b1;
+                        end
+                        3'd5 : begin  // SRLI/SRAI
+                            ALUControl[7:4] = funct7_2 ? 4'b0111 : 4'b0110;  // FIXED: Changed funct7_1 to funct7_2
+                            RegWrite[1] = 1'b1;
+                            shiftImmFlag[1] = 1'b1;
+                        end
+                        3'd2 : begin  // SLTI
+                            ALUControl[7:4] = 4'b1000;
+                            RegWrite[1] = 1'b1;
+                        end
+                        3'd3 : begin  // SLTIU
+                            ALUControl[7:4] = 4'b1001;
+                            RegWrite[1] = 1'b1;
+                        end
+                        default : begin
+                            ALUControl[7:4] = 4'b0000;
+                            RegWrite[1] = 1'b0;
+                        end
                     endcase
                 end
 
-                default : begin end
+                default : begin 
+                    RegWrite[1] = 1'b0;
+                    ALUSrc[1] = 1'b0;
+                end
             endcase
         end
     end
